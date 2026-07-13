@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Record Vitals | Vatsalya Shree Hospital</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="css/receptionist.css" />
+    </head>
+
+    <body>
+        <div class="app-shell">
+            <aside class="sidebar" aria-label="Main navigation">
+                <a class="brand" href="receptionist_dashboard.html">
+                    <span class="brand-mark">
+                        <i class="bi bi-heart-pulse-fill"></i>
+                    </span>
+                    <span>Vatsalya Shree Hospital</span>
+                </a>
+                <nav class="sidebar-nav">
+                    <div class="nav-section-label">Main Menu</div>
+                    <a class="nav-link" href="receptionist_dashboard.html">
+                        <i class="bi bi-grid-1x2"></i>
+                        Dashboard
+                    </a>
+                    <a class="nav-link" href="patient_registration.html">
+                        <i class="bi bi-person-plus"></i>
+                        Patient / OPD Registration
+                    </a>
+                    <a class="nav-link" href="patient_list.html">
+                        <i class="bi bi-people"></i>
+                        Patient List
+                    </a>
+                    <a class="nav-link active" href="vitals_entry.html">
+                        <i class="bi bi-heart-pulse"></i>
+                        Vitals
+                    </a>
+                    <a class="nav-link" href="../login.html">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Logout
+                    </a>
+                </nav>
+            </aside>
+            <main class="main-area">
+                <header class="top-navbar">
+                    <div class="d-flex align-items-center gap-2">
+                        <button
+                            class="btn btn-light btn-icon mobile-toggle"
+                            data-sidebar-toggle
+                            aria-label="Toggle navigation"
+                        >
+                            <i class="bi bi-list"></i>
+                        </button>
+                        <span class="current-date">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            <span data-current-date>Friday, 10 July 2026</span>
+                        </span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <button
+                            class="btn btn-light btn-icon position-relative"
+                            aria-label="Notifications"
+                        >
+                            <i class="bi bi-bell"></i>
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            >
+                                3
+                            </span>
+                        </button>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="user-avatar">RS</span>
+                            <span class="user-name fw-semibold small">
+                                Riya Shah
+                            </span>
+                            <i class="bi bi-chevron-down text-muted small"></i>
+                        </div>
+                    </div>
+                </header>
+                <div class="page-content">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="receptionist_dashboard.html">Home</a>
+                            </li>
+                            <li class="breadcrumb-item">
+                                <a href="patient_list.html">Patient List</a>
+                            </li>
+                            <li
+                                class="breadcrumb-item active"
+                                aria-current="page"
+                            >
+                                Record Vitals
+                            </li>
+                        </ol>
+                    </nav>
+                    <div
+                        class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
+                    >
+                        <div>
+                            <h1 class="page-title">Record Vitals</h1>
+                            <p class="text-muted mb-0 mt-1">
+                                Capture the patient’s vital signs before doctor
+                                examination.
+                            </p>
+                        </div>
+                        <span class="badge badge-soft-primary py-2 px-3">
+                            <i class="bi bi-clipboard2-pulse me-1"></i>
+                            OPD-024
+                        </span>
+                    </div>
+                    <article
+                        class="clinic-card patient-hero mb-4"
+                        aria-label="Patient Summary"
+                    >
+                        <div class="patient-hero-top">
+                            <div class="patient-photo">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <span class="patient-info-label">
+                                    Patient Summary
+                                </span>
+                                <h2 class="patient-hero-name">
+                                    Ishaan Malhotra
+                                    <span
+                                        class="badge badge-soft-primary ms-1 align-middle"
+                                    >
+                                        New
+                                    </span>
+                                </h2>
+                                <div class="patient-hero-meta">
+                                    <span>Patient ID: LC-10483</span>
+                                    <span>5 yrs</span>
+                                    <span>Male</span>
+                                </div>
+                            </div>
+                            <div class="text-end d-none d-md-block">
+                                <span class="data-label">Visit Date</span>
+                                <span class="data-value">10 Jul 2026</span>
+                            </div>
+                        </div>
+                        <div class="patient-info-grid">
+                            <div class="patient-info-item">
+                                <span class="patient-info-label">
+                                    Mobile Number
+                                </span>
+                                <span class="patient-info-value">
+                                    +91 98765 10234
+                                </span>
+                            </div>
+                            <div class="patient-info-item">
+                                <span class="patient-info-label">
+                                    OPD Number
+                                </span>
+                                <span class="patient-info-value">OPD-024</span>
+                            </div>
+                        </div>
+                    </article>
+                    <div class="row g-4">
+                        <section class="col-xl-8">
+                            <form class="clinic-card" data-static-form>
+                                <div
+                                    class="card-header d-flex justify-content-between align-items-center"
+                                >
+                                    <h2 class="form-section-title">
+                                        <i class="bi bi-heart-pulse"></i>
+                                        Vital Signs
+                                    </h2>
+                                    <span class="text-muted fw-normal small">
+                                        All fields marked
+                                        <span class="required-mark">*</span>
+                                        are required
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-4">
+                                        <div class="col-12">
+                                            <label
+                                                class="form-label"
+                                                for="chiefComplaint"
+                                            >
+                                                Chief Complaint
+                                                <span class="required-mark">
+                                                    *
+                                                </span>
+                                            </label>
+                                            <textarea
+                                                id="chiefComplaint"
+                                                class="form-control"
+                                                rows="3"
+                                                placeholder="Enter patient's main complaint"
+                                                required
+                                            ></textarea>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label
+                                                class="form-label"
+                                                for="weight"
+                                            >
+                                                Weight
+                                                <span class="required-mark">
+                                                    *
+                                                </span>
+                                            </label>
+                                            <div class="input-group">
+                                                <input
+                                                    id="weight"
+                                                    class="form-control"
+                                                    type="number"
+                                                    step="0.1"
+                                                    value="16.8"
+                                                    required
+                                                    autofocus
+                                                />
+                                                <span class="input-group-text">
+                                                    kg
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label
+                                                class="form-label"
+                                                for="temperature"
+                                            >
+                                                Temperature
+                                                <span class="required-mark">
+                                                    *
+                                                </span>
+                                            </label>
+                                            <div class="input-group">
+                                                <input
+                                                    id="temperature"
+                                                    class="form-control"
+                                                    type="number"
+                                                    step="0.1"
+                                                    value="37.4"
+                                                    required
+                                                />
+                                                <span class="input-group-text">
+                                                    °C
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label
+                                                class="form-label"
+                                                for="heartRate"
+                                            >
+                                                Heart Rate
+                                                <span class="required-mark">
+                                                    *
+                                                </span>
+                                            </label>
+                                            <div class="input-group">
+                                                <input
+                                                    id="heartRate"
+                                                    class="form-control"
+                                                    type="number"
+                                                    value="104"
+                                                    required
+                                                />
+                                                <span class="input-group-text">
+                                                    bpm
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label
+                                                class="form-label"
+                                                for="pulseRate"
+                                            >
+                                                Pulse Rate
+                                                <span class="required-mark">
+                                                    *
+                                                </span>
+                                            </label>
+                                            <div class="input-group">
+                                                <input
+                                                    id="pulseRate"
+                                                    class="form-control"
+                                                    type="number"
+                                                    value="102"
+                                                    required
+                                                />
+                                                <span class="input-group-text">
+                                                    bpm
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label
+                                                class="form-label"
+                                                for="bloodPressure"
+                                            >
+                                                Blood Pressure
+                                                <span class="required-mark">
+                                                    *
+                                                </span>
+                                            </label>
+                                            <div class="input-group">
+                                                <input
+                                                    id="bloodPressure"
+                                                    class="form-control"
+                                                    value="96/62"
+                                                    placeholder="e.g. 96/62"
+                                                    required
+                                                />
+                                                <span class="input-group-text">
+                                                    mmHg
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label
+                                                class="form-label"
+                                                for="spo2"
+                                            >
+                                                SpO₂
+                                                <span class="required-mark">
+                                                    *
+                                                </span>
+                                            </label>
+                                            <div class="input-group">
+                                                <input
+                                                    id="spo2"
+                                                    class="form-control"
+                                                    type="number"
+                                                    value="98"
+                                                    required
+                                                />
+                                                <span class="input-group-text">
+                                                    %
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <a
+                                        class="btn btn-light"
+                                        href="opd_registration.html"
+                                    >
+                                        <i class="bi bi-x-lg"></i>
+                                        Cancel
+                                    </a>
+                                    <button
+                                        class="btn btn-outline-primary"
+                                        type="reset"
+                                    >
+                                        <i
+                                            class="bi bi-arrow-counterclockwise"
+                                        ></i>
+                                        Reset
+                                    </button>
+                                    <button
+                                        class="btn btn-primary"
+                                        type="submit"
+                                    >
+                                        <i class="bi bi-check2-circle"></i>
+                                        Save Vitals
+                                    </button>
+
+
+                                    <!-- <button class="btn btn-success" type="button"><i class="bi bi-arrow-right-circle"></i>Continue to Doctor Examination</button> -->
+                                </div>
+                            </form>
+                        </section>
+                        <aside class="col-xl-4">
+                            <article class="clinic-card mb-4">
+                                <div
+                                    class="card-header d-flex justify-content-between align-items-center"
+                                >
+                                    <span>
+                                        <i
+                                            class="bi bi-clock-history text-primary me-2"
+                                        ></i>
+                                        Previous Vitals
+                                    </span>
+                                    <span class="text-muted fw-normal small">
+                                        04 Apr 2026
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="vital-tile">
+                                                <span class="data-label">
+                                                    Weight
+                                                </span>
+                                                <span class="value">
+                                                    16.5
+                                                    <span class="unit">kg</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="vital-tile">
+                                                <span class="data-label">
+                                                    Temperature
+                                                </span>
+                                                <span class="value">
+                                                    36.8
+                                                    <span class="unit">°C</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="vital-tile">
+                                                <span class="data-label">
+                                                    Heart Rate
+                                                </span>
+                                                <span class="value">
+                                                    98
+                                                    <span class="unit">
+                                                        bpm
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="vital-tile">
+                                                <span class="data-label">
+                                                    Pulse Rate
+                                                </span>
+                                                <span class="value">
+                                                    96
+                                                    <span class="unit">
+                                                        bpm
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="vital-tile">
+                                                <span class="data-label">
+                                                    Blood Pressure
+                                                </span>
+                                                <span class="value">
+                                                    94/60
+                                                    <span class="unit">
+                                                        mmHg
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="vital-tile">
+                                                <span class="data-label">
+                                                    SpO₂
+                                                </span>
+                                                <span class="value">
+                                                    99
+                                                    <span class="unit">%</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        </aside>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="js/receptionist.js"></script>
+    </body>
+</html>
