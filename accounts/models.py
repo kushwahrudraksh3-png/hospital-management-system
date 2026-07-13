@@ -9,6 +9,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         ADMIN = "ADMIN", "Admin"
         RECEPTIONIST = "RECEPTIONIST", "Receptionist"
         DOCTOR = "DOCTOR", "Doctor"
+        LAB_ADMINISTRATOR = "LAB_ADMINISTRATOR", "Lab Administrator"
 
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=150, unique=True)
@@ -42,3 +43,18 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+
+class PasswordResetOTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_verified = models.BooleanField(default=False)
+
+    def is_expired(self):
+        from django.utils import timezone
+        return timezone.now() > self.expires_at
+
+    def __str__(self):
+        return f"{self.user.email} - {self.otp_code}"

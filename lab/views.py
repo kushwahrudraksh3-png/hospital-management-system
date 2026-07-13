@@ -4,4 +4,4 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def dashboard(request):
-    return render(request, "receptionist/receptionist_dashboard.html")
+    return render(request, "lab/dashboard.html")
