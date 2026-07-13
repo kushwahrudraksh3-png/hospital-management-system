@@ -1,473 +1,381 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Dashboard | Vatsalya Shree Hospital</title>
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-        />
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-            rel="stylesheet"
-        />
-        <link rel="stylesheet" href="{% static 'css/receptionist.css' %}" />
-    </head>
+{% extends "receptionist/base.html" %}
 
-    <body>
-        <div class="app-shell">
-            <aside class="sidebar" aria-label="Main navigation">
-                <a class="brand" href="receptionist_dashboard.html">
-                    <span class="brand-mark">
-                        <i class="bi bi-heart-pulse-fill"></i>
-                    </span>
-                    <span>Vatsalya Shree Hospital</span>
-                </a>
-                <nav class="sidebar-nav">
-                    <div class="nav-section-label">Main Menu</div>
-                    <a
-                        class="nav-link active"
-                        href="receptionist_dashboard.html"
-                    >
-                        <i class="bi bi-grid-1x2"></i>
-                        Dashboard
-                    </a>
-                    <a class="nav-link" href="patient_registration.html">
-                        <i class="bi bi-person-plus"></i>
-                        Patient / OPD Registration
-                    </a>
-                    <a class="nav-link" href="patient_list.html">
+{% block title %}Dashboard | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li
+            class="breadcrumb-item active"
+            aria-current="page"
+        >
+            Dashboard
+        </li>
+    </ol>
+</nav>
+<div
+    class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
+>
+    <div>
+        <h1 class="page-title">
+            Good morning, Dr. Kalpesh Manager (Patidar)
+        </h1>
+        <p class="text-muted mb-0 mt-1">
+            Here’s a clear view of your clinic for today.
+        </p>
+    </div>
+    <div
+        class="d-flex align-items-center gap-2 px-3 py-2 u-bg-surface u-border u-rounded"
+    >
+        <i class="bi bi-clock text-primary"></i>
+        <span class="small fw-semibold" data-current-time>
+            10:32 AM
+        </span>
+    </div>
+</div>
+<section class="mb-4" aria-label="Today's summary">
+    <div class="row g-3">
+        <div class="col-sm-6 col-md-4">
+            <article class="clinic-card metric-card">
+                <div class="d-flex justify-content-between">
+                    <div class="metric-icon icon-primary">
                         <i class="bi bi-people"></i>
-                        Patient List
-                    </a>
-                    <a class="nav-link" href="vitals_entry.html">
-                        <i class="bi bi-heart-pulse"></i>
-                        Vitals
-                    </a>
-                    <a class="nav-link" href="../login.html">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Logout
-                    </a>
-                </nav>
-            </aside>
-            <main class="main-area">
-                <header class="top-navbar">
-                    <div class="d-flex align-items-center gap-2">
-                        <button
-                            class="btn btn-light btn-icon mobile-toggle"
-                            data-sidebar-toggle
-                            aria-label="Toggle navigation"
-                        >
-                            <i class="bi bi-list"></i>
-                        </button>
-                        <span class="current-date">
-                            <i class="bi bi-calendar3 me-1"></i>
-                            <span data-current-date>Friday, 10 July 2026</span>
-                        </span>
                     </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <button
-                            class="btn btn-light btn-icon position-relative"
-                            aria-label="Notifications"
-                        >
-                            <i class="bi bi-bell"></i>
-                            <span
-                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            >
-                                3
-                            </span>
-                        </button>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="user-avatar">KP</span>
-                            <span class="user-name fw-semibold small">
-                                Dr. Kalpesh Manager (Patidar)
-                            </span>
-                            <i class="bi bi-chevron-down text-muted small"></i>
-                        </div>
-                    </div>
-                </header>
-                <div class="page-content">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="receptionist_dashboard.html">Home</a>
-                            </li>
-                            <li
-                                class="breadcrumb-item active"
-                                aria-current="page"
-                            >
-                                Dashboard
-                            </li>
-                        </ol>
-                    </nav>
-                    <div
-                        class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
+                    <span
+                        class="badge badge-soft-success align-self-start"
                     >
-                        <div>
-                            <h1 class="page-title">
-                                Good morning, Dr. Kalpesh Manager (Patidar)
-                            </h1>
-                            <p class="text-muted mb-0 mt-1">
-                                Here’s a clear view of your clinic for today.
-                            </p>
-                        </div>
-                        <div
-                            class="d-flex align-items-center gap-2 px-3 py-2 u-bg-surface u-border u-rounded"
+                        <i class="bi bi-arrow-up-short"></i>
+                        12%
+                    </span>
+                </div>
+                <p class="metric-label">Today's Patients</p>
+                <div class="metric-value">48</div>
+                <span class="text-muted small">
+                    8 new registrations
+                </span>
+            </article>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <article class="clinic-card metric-card">
+                <div class="d-flex justify-content-between">
+                    <div class="metric-icon icon-success">
+                        <i
+                            class="bi bi-clipboard2-pulse"
+                        ></i>
+                    </div>
+                    <span
+                        class="badge badge-soft-success align-self-start"
+                    >
+                        <i class="bi bi-arrow-up-short"></i>
+                        8%
+                    </span>
+                </div>
+                <p class="metric-label">Today's OPD</p>
+                <div class="metric-value">36</div>
+                <span class="text-muted small">
+                    12 awaiting consultation
+                </span>
+            </article>
+        </div>
+        <div class="col-sm-6 col-md-4">
+            <article class="clinic-card metric-card">
+                <div class="d-flex justify-content-between">
+                    <div class="metric-icon icon-danger">
+                        <i
+                            class="bi bi-file-earmark-medical"
+                        ></i>
+                    </div>
+                    <span
+                        class="badge badge-soft-warning align-self-start"
+                    >
+                        Action needed
+                    </span>
+                </div>
+                <p class="metric-label">
+                    Pending Lab Reports
+                </p>
+                <div class="metric-value">7</div>
+                <span class="text-muted small">
+                    2 reports due this hour
+                </span>
+            </article>
+        </div>
+    </div>
+</section>
+<div class="row g-4 mb-4">
+    <section class="col-12">
+        <article class="clinic-card h-100">
+            <div
+                class="card-header d-flex justify-content-between align-items-center"
+            >
+                <span>Quick Actions</span>
+                <span class="text-muted fw-normal small">
+                    Common reception tasks
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a
+                            class="quick-action"
+                            href="{% url 'receptionist:patient_registration' %}"
                         >
-                            <i class="bi bi-clock text-primary"></i>
-                            <span class="small fw-semibold" data-current-time>
-                                10:32 AM
+                            <span class="quick-action-icon">
+                                <i
+                                    class="bi bi-person-plus"
+                                ></i>
                             </span>
-                        </div>
+                            <span>
+                                <strong>
+                                    Register New Patient
+                                </strong>
+                                <small>
+                                    Create a patient profile
+                                    in seconds
+                                </small>
+                            </span>
+                            <i
+                                class="bi bi-arrow-right ms-auto text-muted"
+                            ></i>
+                        </a>
                     </div>
-                    <section class="mb-4" aria-label="Today's summary">
-                        <div class="row g-3">
-                            <div class="col-sm-6 col-md-4">
-                                <article class="clinic-card metric-card">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="metric-icon icon-primary">
-                                            <i class="bi bi-people"></i>
-                                        </div>
-                                        <span
-                                            class="badge badge-soft-success align-self-start"
-                                        >
-                                            <i class="bi bi-arrow-up-short"></i>
-                                            12%
-                                        </span>
-                                    </div>
-                                    <p class="metric-label">Today's Patients</p>
-                                    <div class="metric-value">48</div>
-                                    <span class="text-muted small">
-                                        8 new registrations
-                                    </span>
-                                </article>
-                            </div>
-                            <div class="col-sm-6 col-md-4">
-                                <article class="clinic-card metric-card">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="metric-icon icon-success">
-                                            <i
-                                                class="bi bi-clipboard2-pulse"
-                                            ></i>
-                                        </div>
-                                        <span
-                                            class="badge badge-soft-success align-self-start"
-                                        >
-                                            <i class="bi bi-arrow-up-short"></i>
-                                            8%
-                                        </span>
-                                    </div>
-                                    <p class="metric-label">Today's OPD</p>
-                                    <div class="metric-value">36</div>
-                                    <span class="text-muted small">
-                                        12 awaiting consultation
-                                    </span>
-                                </article>
-                            </div>
-                            <div class="col-sm-6 col-md-4">
-                                <article class="clinic-card metric-card">
-                                    <div class="d-flex justify-content-between">
-                                        <div class="metric-icon icon-danger">
-                                            <i
-                                                class="bi bi-file-earmark-medical"
-                                            ></i>
-                                        </div>
-                                        <span
-                                            class="badge badge-soft-warning align-self-start"
-                                        >
-                                            Action needed
-                                        </span>
-                                    </div>
-                                    <p class="metric-label">
-                                        Pending Lab Reports
-                                    </p>
-                                    <div class="metric-value">7</div>
-                                    <span class="text-muted small">
-                                        2 reports due this hour
-                                    </span>
-                                </article>
-                            </div>
-                        </div>
-                    </section>
-                    <div class="row g-4 mb-4">
-                        <section class="col-12">
-                            <article class="clinic-card h-100">
-                                <div
-                                    class="card-header d-flex justify-content-between align-items-center"
-                                >
-                                    <span>Quick Actions</span>
-                                    <span class="text-muted fw-normal small">
-                                        Common reception tasks
-                                    </span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <a
-                                                class="quick-action"
-                                                href="patient_registration.html"
-                                            >
-                                                <span class="quick-action-icon">
-                                                    <i
-                                                        class="bi bi-person-plus"
-                                                    ></i>
-                                                </span>
-                                                <span>
-                                                    <strong>
-                                                        Register New Patient
-                                                    </strong>
-                                                    <small>
-                                                        Create a patient profile
-                                                        in seconds
-                                                    </small>
-                                                </span>
-                                                <i
-                                                    class="bi bi-arrow-right ms-auto text-muted"
-                                                ></i>
-                                            </a>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <a
-                                                class="quick-action"
-                                                href="patient_list.html"
-                                            >
-                                                <span class="quick-action-icon">
-                                                    <i class="bi bi-search"></i>
-                                                </span>
-                                                <span>
-                                                    <strong>
-                                                        Search Patient
-                                                    </strong>
-                                                    <small>
-                                                        Find by name or mobile
-                                                        number
-                                                    </small>
-                                                </span>
-                                                <i
-                                                    class="bi bi-arrow-right ms-auto text-muted"
-                                                ></i>
-                                            </a>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <a
-                                                class="quick-action"
-                                                href="../billing.html"
-                                            >
-                                                <span class="quick-action-icon">
-                                                    <i
-                                                        class="bi bi-receipt"
-                                                    ></i>
-                                                </span>
-                                                <span>
-                                                    <strong>Create Bill</strong>
-                                                    <small>
-                                                        Start a new billing
-                                                        transaction
-                                                    </small>
-                                                </span>
-                                                <i
-                                                    class="bi bi-arrow-right ms-auto text-muted"
-                                                ></i>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        </section>
+                    <div class="col-md-6">
+                        <a
+                            class="quick-action"
+                            href="{% url 'receptionist:patient_list' %}"
+                        >
+                            <span class="quick-action-icon">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <span>
+                                <strong>
+                                    Search Patient
+                                </strong>
+                                <small>
+                                    Find by name or mobile
+                                    number
+                                </small>
+                            </span>
+                            <i
+                                class="bi bi-arrow-right ms-auto text-muted"
+                            ></i>
+                        </a>
                     </div>
-                    <div class="row g-4 mb-4">
-                        <section class="col-12">
-                            <article class="clinic-card h-100">
-                                <div
-                                    class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center"
-                                >
-                                    <span>Recent Patients</span>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="search-field">
-                                            <i class="bi bi-search"></i>
-                                            <input
-                                                class="form-control form-control-sm"
-                                                aria-label="Search recent patients"
-                                                placeholder="Search patients"
-                                            />
-                                        </div>
-                                        <button
-                                            class="btn btn-primary btn-sm"
-                                            type="button"
-                                        >
-                                            <i class="bi bi-search"></i>
-                                            Search
-                                        </button>
-                                    </div>
-                                </div>
-                                <div
-                                    class="table-responsive border-0 rounded-0"
-                                >
-                                    <table class="table clinic-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Patient ID</th>
-                                                <th>Name</th>
-                                                <th>Age</th>
-                                                <th>Gender</th>
-                                                <th>Mobile</th>
-                                                <th>Visit time</th>
-                                                <th>Status</th>
-                                                <th class="text-end">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    LC-10482
-                                                </td>
-                                                <td>
-                                                    <div class="fw-semibold">
-                                                        Aarav Sharma
-                                                    </div>
-                                                    <small class="text-muted">
-                                                        Dr. Kalpesh Manager
-                                                        (Patidar)
-                                                    </small>
-                                                </td>
-                                                <td>4 yrs</td>
-                                                <td>Male</td>
-                                                <td>98765 43210</td>
-                                                <td>10:20 AM</td>
-                                                <td>
-                                                    <span
-                                                        class="badge badge-soft-primary"
-                                                    >
-                                                        In consultation
-                                                    </span>
-                                                </td>
-                                                <td class="text-end">
-                                                    <a
-                                                        class="btn btn-light btn-sm"
-                                                        href="patient_profile.html"
-                                                    >
-                                                        View
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    LC-10481
-                                                </td>
-                                                <td>
-                                                    <div class="fw-semibold">
-                                                        Siya Patel
-                                                    </div>
-                                                    <small class="text-muted">
-                                                        Follow-up visit
-                                                    </small>
-                                                </td>
-                                                <td>2 yrs</td>
-                                                <td>Female</td>
-                                                <td>98231 56094</td>
-                                                <td>10:05 AM</td>
-                                                <td>
-                                                    <span
-                                                        class="badge badge-soft-success"
-                                                    >
-                                                        Completed
-                                                    </span>
-                                                </td>
-                                                <td class="text-end">
-                                                    <a
-                                                        class="btn btn-light btn-sm"
-                                                        href="patient_profile.html"
-                                                    >
-                                                        View
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    LC-10480
-                                                </td>
-                                                <td>
-                                                    <div class="fw-semibold">
-                                                        Vivaan Gupta
-                                                    </div>
-                                                    <small class="text-muted">
-                                                        Dr. Kalpesh Manager
-                                                        (Patidar)
-                                                    </small>
-                                                </td>
-                                                <td>7 yrs</td>
-                                                <td>Male</td>
-                                                <td>99102 78543</td>
-                                                <td>09:48 AM</td>
-                                                <td>
-                                                    <span
-                                                        class="badge badge-soft-warning"
-                                                    >
-                                                        Waiting
-                                                    </span>
-                                                </td>
-                                                <td class="text-end">
-                                                    <a
-                                                        class="btn btn-light btn-sm"
-                                                        href="patient_profile.html"
-                                                    >
-                                                        View
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    LC-10479
-                                                </td>
-                                                <td>
-                                                    <div class="fw-semibold">
-                                                        Anaya Verma
-                                                    </div>
-                                                    <small class="text-muted">
-                                                        New registration
-                                                    </small>
-                                                </td>
-                                                <td>10 mo</td>
-                                                <td>Female</td>
-                                                <td>97654 32108</td>
-                                                <td>09:30 AM</td>
-                                                <td>
-                                                    <span
-                                                        class="badge badge-soft-muted"
-                                                    >
-                                                        Registered
-                                                    </span>
-                                                </td>
-                                                <td class="text-end">
-                                                    <a
-                                                        class="btn btn-light btn-sm"
-                                                        href="patient_profile.html"
-                                                    >
-                                                        View
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="card-body pt-3">
-                                    <a
-                                        class="small fw-semibold"
-                                        href="patient_list.html"
-                                    >
-                                        View all patients
-                                        <i class="bi bi-arrow-right ms-1"></i>
-                                    </a>
-                                </div>
-                            </article>
-                        </section>
+                    <div class="col-md-6">
+                        <a
+                            class="quick-action"
+                            href="{% url 'receptionist:billing' %}"
+                        >
+                            <span class="quick-action-icon">
+                                <i
+                                    class="bi bi-receipt"
+                                ></i>
+                            </span>
+                            <span>
+                                <strong>Create Bill</strong>
+                                <small>
+                                    Start a new billing
+                                    transaction
+                                </small>
+                            </span>
+                            <i
+                                class="bi bi-arrow-right ms-auto text-muted"
+                            ></i>
+                        </a>
                     </div>
                 </div>
-            </main>
-        </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="{% static 'js/receptionist.js' %}"></script>
-    </body>
-</html>
+            </div>
+        </article>
+    </section>
+</div>
+<div class="row g-4 mb-4">
+    <section class="col-12">
+        <article class="clinic-card h-100">
+            <div
+                class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center"
+            >
+                <span>Recent Patients</span>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="search-field">
+                        <i class="bi bi-search"></i>
+                        <input
+                            class="form-control form-control-sm"
+                            aria-label="Search recent patients"
+                            placeholder="Search patients"
+                        />
+                    </div>
+                    <button
+                        class="btn btn-primary btn-sm"
+                        type="button"
+                    >
+                        <i class="bi bi-search"></i>
+                        Search
+                    </button>
+                </div>
+            </div>
+            <div
+                class="table-responsive border-0 rounded-0"
+            >
+                <table class="table clinic-table">
+                    <thead>
+                        <tr>
+                            <th>Patient ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Mobile</th>
+                            <th>Visit time</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-semibold">
+                                LC-10482
+                            </td>
+                            <td>
+                                <div class="fw-semibold">
+                                    Aarav Sharma
+                                </div>
+                                <small class="text-muted">
+                                    Dr. Kalpesh Manager
+                                    (Patidar)
+                                </small>
+                            </td>
+                            <td>4 yrs</td>
+                            <td>Male</td>
+                            <td>98765 43210</td>
+                            <td>10:20 AM</td>
+                            <td>
+                                <span
+                                    class="badge badge-soft-primary"
+                                >
+                                    In consultation
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a
+                                    class="btn btn-light btn-sm"
+                                    href="{% url 'receptionist:patient_profile' %}"
+                                >
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                LC-10481
+                            </td>
+                            <td>
+                                <div class="fw-semibold">
+                                    Siya Patel
+                                </div>
+                                <small class="text-muted">
+                                    Follow-up visit
+                                </small>
+                            </td>
+                            <td>2 yrs</td>
+                            <td>Female</td>
+                            <td>98231 56094</td>
+                            <td>10:05 AM</td>
+                            <td>
+                                <span
+                                    class="badge badge-soft-success"
+                                >
+                                    Completed
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a
+                                    class="btn btn-light btn-sm"
+                                    href="{% url 'receptionist:patient_profile' %}"
+                                >
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                LC-10480
+                            </td>
+                            <td>
+                                <div class="fw-semibold">
+                                    Vivaan Gupta
+                                </div>
+                                <small class="text-muted">
+                                    Dr. Kalpesh Manager
+                                    (Patidar)
+                                </small>
+                            </td>
+                            <td>7 yrs</td>
+                            <td>Male</td>
+                            <td>99102 78543</td>
+                            <td>09:48 AM</td>
+                            <td>
+                                <span
+                                    class="badge badge-soft-warning"
+                                >
+                                    Waiting
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a
+                                    class="btn btn-light btn-sm"
+                                    href="{% url 'receptionist:patient_profile' %}"
+                                >
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                LC-10479
+                            </td>
+                            <td>
+                                <div class="fw-semibold">
+                                    Anaya Verma
+                                </div>
+                                <small class="text-muted">
+                                    New registration
+                                </small>
+                            </td>
+                            <td>10 mo</td>
+                            <td>Female</td>
+                            <td>97654 32108</td>
+                            <td>09:30 AM</td>
+                            <td>
+                                <span
+                                    class="badge badge-soft-muted"
+                                >
+                                    Registered
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <a
+                                    class="btn btn-light btn-sm"
+                                    href="{% url 'receptionist:patient_profile' %}"
+                                >
+                                    View
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-body pt-3">
+                <a
+                    class="small fw-semibold"
+                    href="{% url 'receptionist:patient_list' %}"
+                >
+                    View all patients
+                    <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </article>
+    </section>
+</div>
+{% endblock %}

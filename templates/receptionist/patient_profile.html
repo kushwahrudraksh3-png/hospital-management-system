@@ -1,1053 +1,965 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Aarav Sharma | Patient Profile | Vatsalya Shree Hospital</title>
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-        />
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-            rel="stylesheet"
-        />
-        <link rel="stylesheet" href="{% static 'css/receptionist.css' %}" />
-    </head>
-    <body>
-        <div class="app-shell">
-            <aside class="sidebar" aria-label="Main navigation">
-                <a class="brand" href="receptionist_dashboard.html">
-                    <span class="brand-mark">
-                        <i class="bi bi-heart-pulse-fill"></i>
+{% extends "receptionist/base.html" %}
+
+{% block title %}Patient Profile | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:patient_list' %}">Patients</a>
+        </li>
+        <li
+            class="breadcrumb-item active"
+            aria-current="page"
+        >
+            Aarav Sharma
+        </li>
+    </ol>
+</nav>
+<div
+    class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
+>
+    <div>
+        <h1 class="page-title">Patient Profile</h1>
+        <p class="text-muted mb-0 mt-1">
+            Clinical record and care journey for Aarav
+            Sharma.
+        </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-light" href="{% url 'receptionist:patient_summary' %}">
+            <i class="bi bi-arrow-left"></i>
+            Back to Patient Summary
+        </a>
+        <a class="btn btn-light" href="{% url 'receptionist:receipt' %}">
+            <i class="bi bi-printer"></i>
+            Print Profile
+        </a>
+        <a
+            class="btn btn-primary"
+            href="{% url 'receptionist:patient_registration' %}"
+        >
+            <i class="bi bi-pencil"></i>
+            Edit Patient
+        </a>
+    </div>
+</div>
+<article
+    class="clinic-card patient-hero mb-4"
+    aria-label="Patient Summary"
+>
+    <div class="patient-hero-top">
+        <div
+            class="patient-photo"
+            aria-label="Patient photo placeholder"
+        >
+            <i class="bi bi-person-fill"></i>
+        </div>
+        <div class="flex-grow-1">
+            <span class="patient-info-label">
+                Patient Summary
+            </span>
+            <h2 class="patient-hero-name">
+                Aarav Sharma
+                <span
+                    class="badge badge-soft-success ms-1 align-middle"
+                >
+                    Active
+                </span>
+            </h2>
+            <div class="patient-hero-meta">
+                <span>Patient ID: LC-10482</span>
+                <span>4 years 2 months</span>
+                <span>Male</span>
+                <span>DOB: 08 May 2022</span>
+            </div>
+        </div>
+        <div class="text-end d-none d-md-block">
+            <span class="data-label">Last Visit Date</span>
+            <span class="data-value">
+                10 Jul 2026 · 10:20 AM
+            </span>
+        </div>
+    </div>
+    <div class="patient-info-grid">
+        <div class="patient-info-item">
+            <span class="patient-info-label">
+                Father's Name
+            </span>
+            <span class="patient-info-value">
+                Rohit Sharma
+            </span>
+        </div>
+        <div class="patient-info-item">
+            <span class="patient-info-label">
+                Mobile Number
+            </span>
+            <span class="patient-info-value">
+                +91 98765 43210
+            </span>
+        </div>
+        <div class="patient-info-item">
+            <span class="patient-info-label">Address</span>
+            <span class="patient-info-value">
+                Vijay Nagar, Indore, MP
+            </span>
+        </div>
+        <div class="patient-info-item">
+            <span class="patient-info-label">
+                Registration Date
+            </span>
+            <span class="patient-info-value">
+                14 Jan 2025
+            </span>
+        </div>
+    </div>
+</article>
+<section class="mb-4" aria-label="Quick health summary">
+    <div
+        class="d-flex justify-content-between align-items-center mb-3"
+    >
+        <h2 class="section-heading mb-0">
+            Quick Health Summary
+        </h2>
+        <span class="text-muted small">
+            Latest vitals · 10 Jul 2026, 10:24 AM
+        </span>
+    </div>
+    <div class="row g-3">
+        <div class="col-6 col-md-4 col-xl-2">
+            <article
+                class="clinic-card health-summary-card"
+            >
+                <div class="health-summary-icon">
+                    <i class="bi bi-speedometer"></i>
+                </div>
+                <p class="health-summary-label">
+                    Latest Weight
+                </p>
+                <div class="health-summary-value">
+                    16.8
+                    <span class="health-summary-unit">
+                        kg
                     </span>
-                    <span>Vatsalya Shree Hospital</span>
-                </a>
-                <nav class="sidebar-nav">
-                    <div class="nav-section-label">Main Menu</div>
-                    <a class="nav-link" href="receptionist_dashboard.html">
-                        <i class="bi bi-grid-1x2"></i>
-                        Dashboard
-                    </a>
-                    <a class="nav-link" href="patient_registration.html">
-                        <i class="bi bi-person-plus"></i>
-                        Patient / OPD Registration
-                    </a>
-                    <a class="nav-link active" href="patient_list.html">
-                        <i class="bi bi-people"></i>
-                        Patient List
-                    </a>
-                    <a class="nav-link" href="vitals_entry.html">
-                        <i class="bi bi-heart-pulse"></i>
-                        Vitals
-                    </a>
-                    <a class="nav-link" href="../login.html">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Logout
-                    </a>
-                </nav>
-            </aside>
-            <main class="main-area">
-                <header class="top-navbar">
-                    <div class="d-flex align-items-center gap-2">
-                        <button
-                            class="btn btn-light btn-icon mobile-toggle"
-                            data-sidebar-toggle
-                            aria-label="Toggle navigation"
-                        >
-                            <i class="bi bi-list"></i>
-                        </button>
-                        <span class="current-date">
-                            <i class="bi bi-calendar3 me-1"></i>
-                            <span data-current-date>Friday, 10 July 2026</span>
-                        </span>
+                </div>
+            </article>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <article
+                class="clinic-card health-summary-card"
+            >
+                <div class="health-summary-icon">
+                    <i class="bi bi-activity"></i>
+                </div>
+                <p class="health-summary-label">
+                    Blood Pressure
+                </p>
+                <div class="health-summary-value">
+                    96/62
+                    <span class="health-summary-unit">
+                        mmHg
+                    </span>
+                </div>
+            </article>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <article
+                class="clinic-card health-summary-card"
+            >
+                <div class="health-summary-icon">
+                    <i class="bi bi-thermometer-half"></i>
+                </div>
+                <p class="health-summary-label">
+                    Temperature
+                </p>
+                <div class="health-summary-value">
+                    99.4
+                    <span class="health-summary-unit">
+                        °F
+                    </span>
+                </div>
+            </article>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <article
+                class="clinic-card health-summary-card"
+            >
+                <div class="health-summary-icon">
+                    <i class="bi bi-lungs"></i>
+                </div>
+                <p class="health-summary-label">SpO₂</p>
+                <div class="health-summary-value">
+                    98
+                    <span class="health-summary-unit">
+                        %
+                    </span>
+                </div>
+            </article>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <article
+                class="clinic-card health-summary-card"
+            >
+                <div class="health-summary-icon">
+                    <i class="bi bi-heart-pulse"></i>
+                </div>
+                <p class="health-summary-label">
+                    Heart Rate
+                </p>
+                <div class="health-summary-value">
+                    104
+                    <span class="health-summary-unit">
+                        bpm
+                    </span>
+                </div>
+            </article>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <article
+                class="clinic-card health-summary-card"
+            >
+                <div class="health-summary-icon">
+                    <i class="bi bi-heart"></i>
+                </div>
+                <p class="health-summary-label">
+                    Pulse Rate
+                </p>
+                <div class="health-summary-value">
+                    102
+                    <span class="health-summary-unit">
+                        /min
+                    </span>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+<ul class="nav profile-tabs mb-4" role="tablist">
+    <li class="nav-item">
+        <button
+            class="nav-link active"
+            data-bs-toggle="tab"
+            data-bs-target="#overview"
+            type="button"
+        >
+            <i class="bi bi-grid me-1"></i>
+            Overview
+        </button>
+    </li>
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#opd"
+            type="button"
+        >
+            <i class="bi bi-clipboard2-pulse me-1"></i>
+            OPD
+        </button>
+    </li>
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#vitals"
+            type="button"
+        >
+            <i class="bi bi-heart-pulse me-1"></i>
+            Vitals
+        </button>
+    </li>
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#examination"
+            type="button"
+        >
+            <i class="bi bi-file-earmark-medical me-1"></i>
+            Doctor Examination
+        </button>
+    </li>
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#medicines"
+            type="button"
+        >
+            <i class="bi bi-capsule me-1"></i>
+            Medicines
+        </button>
+    </li>
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#lab"
+            type="button"
+        >
+            <i class="bi bi-eyedropper me-1"></i>
+            Lab
+        </button>
+    </li>
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#billing"
+            type="button"
+        >
+            <i class="bi bi-receipt me-1"></i>
+            Billing
+        </button>
+    </li>
+    <li class="nav-item">
+        <button
+            class="nav-link"
+            data-bs-toggle="tab"
+            data-bs-target="#history"
+            type="button"
+        >
+            <i class="bi bi-clock-history me-1"></i>
+            Visit History
+        </button>
+    </li>
+</ul>
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="overview">
+        <div class="row g-4">
+            <section class="col-xl-7">
+                <article class="clinic-card mb-4">
+                    <div class="card-header">
+                        Basic Information
                     </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <button
-                            class="btn btn-light btn-icon position-relative"
-                            aria-label="Notifications"
-                        >
-                            <i class="bi bi-bell"></i>
-                            <span
-                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            >
-                                3
-                            </span>
-                        </button>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="user-avatar">AK</span>
-                            <span class="user-name fw-semibold small">
-                                Dr. Kalpesh Manager (Patidar)
-                            </span>
-                            <i class="bi bi-chevron-down text-muted small"></i>
-                        </div>
-                    </div>
-                </header>
-                <div class="page-content">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="receptionist_dashboard.html">Home</a>
-                            </li>
-                            <li class="breadcrumb-item">
-                                <a href="patient_list.html">Patients</a>
-                            </li>
-                            <li
-                                class="breadcrumb-item active"
-                                aria-current="page"
-                            >
-                                Aarav Sharma
-                            </li>
-                        </ol>
-                    </nav>
-                    <div
-                        class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
-                    >
-                        <div>
-                            <h1 class="page-title">Patient Profile</h1>
-                            <p class="text-muted mb-0 mt-1">
-                                Clinical record and care journey for Aarav
-                                Sharma.
-                            </p>
-                        </div>
-                        <div class="d-flex flex-wrap gap-2">
-                            <a class="btn btn-light" href="patient_summary.html">
-                                <i class="bi bi-arrow-left"></i>
-                                Back to Patient Summary
-                            </a>
-                            <a class="btn btn-light" href="../receipt.html">
-                                <i class="bi bi-printer"></i>
-                                Print Profile
-                            </a>
-                            <a
-                                class="btn btn-primary"
-                                href="patient_registration.html"
-                            >
-                                <i class="bi bi-pencil"></i>
-                                Edit Patient
-                            </a>
-                        </div>
-                    </div>
-                    <article
-                        class="clinic-card patient-hero mb-4"
-                        aria-label="Patient Summary"
-                    >
-                        <div class="patient-hero-top">
-                            <div
-                                class="patient-photo"
-                                aria-label="Patient photo placeholder"
-                            >
-                                <i class="bi bi-person-fill"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <span class="patient-info-label">
-                                    Patient Summary
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-sm-6">
+                                <span class="data-label">
+                                    Patient ID
                                 </span>
-                                <h2 class="patient-hero-name">
-                                    Aarav Sharma
-                                    <span
-                                        class="badge badge-soft-success ms-1 align-middle"
-                                    >
-                                        Active
-                                    </span>
-                                </h2>
-                                <div class="patient-hero-meta">
-                                    <span>Patient ID: LC-10482</span>
-                                    <span>4 years 2 months</span>
-                                    <span>Male</span>
-                                    <span>DOB: 08 May 2022</span>
-                                </div>
-                            </div>
-                            <div class="text-end d-none d-md-block">
-                                <span class="data-label">Last Visit Date</span>
                                 <span class="data-value">
-                                    10 Jul 2026 · 10:20 AM
+                                    LC-10482
                                 </span>
                             </div>
-                        </div>
-                        <div class="patient-info-grid">
-                            <div class="patient-info-item">
-                                <span class="patient-info-label">
+                            <div class="col-sm-6">
+                                <span class="data-label">
+                                    Full Name
+                                </span>
+                                <span class="data-value">
+                                    Aarav Sharma
+                                </span>
+                            </div>
+                            <div class="col-sm-6">
+                                <span class="data-label">
+                                    Age / Gender
+                                </span>
+                                <span class="data-value">
+                                    4 years 2 months / Male
+                                </span>
+                            </div>
+                            <div class="col-sm-6">
+                                <span class="data-label">
                                     Father's Name
                                 </span>
-                                <span class="patient-info-value">
+                                <span class="data-value">
                                     Rohit Sharma
                                 </span>
                             </div>
-                            <div class="patient-info-item">
-                                <span class="patient-info-label">
+                            <div class="col-sm-6">
+                                <span class="data-label">
                                     Mobile Number
                                 </span>
-                                <span class="patient-info-value">
+                                <span class="data-value">
                                     +91 98765 43210
                                 </span>
                             </div>
-                            <div class="patient-info-item">
-                                <span class="patient-info-label">Address</span>
-                                <span class="patient-info-value">
-                                    Vijay Nagar, Indore, MP
-                                </span>
-                            </div>
-                            <div class="patient-info-item">
-                                <span class="patient-info-label">
+                            <div class="col-sm-6">
+                                <span class="data-label">
                                     Registration Date
                                 </span>
-                                <span class="patient-info-value">
+                                <span class="data-value">
                                     14 Jan 2025
                                 </span>
                             </div>
                         </div>
-                    </article>
-                    <section class="mb-4" aria-label="Quick health summary">
-                        <div
-                            class="d-flex justify-content-between align-items-center mb-3"
+                    </div>
+                </article>
+                <article class="clinic-card">
+                    <div
+                        class="card-header d-flex justify-content-between"
+                    >
+                        <span>Latest Prescription</span>
+                        <span
+                            class="text-muted fw-normal small"
                         >
-                            <h2 class="section-heading mb-0">
-                                Quick Health Summary
-                            </h2>
-                            <span class="text-muted small">
-                                Latest vitals · 10 Jul 2026, 10:24 AM
-                            </span>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-6 col-md-4 col-xl-2">
-                                <article
-                                    class="clinic-card health-summary-card"
-                                >
-                                    <div class="health-summary-icon">
-                                        <i class="bi bi-speedometer"></i>
-                                    </div>
-                                    <p class="health-summary-label">
-                                        Latest Weight
-                                    </p>
-                                    <div class="health-summary-value">
-                                        16.8
-                                        <span class="health-summary-unit">
-                                            kg
-                                        </span>
-                                    </div>
-                                </article>
-                            </div>
-                            <div class="col-6 col-md-4 col-xl-2">
-                                <article
-                                    class="clinic-card health-summary-card"
-                                >
-                                    <div class="health-summary-icon">
-                                        <i class="bi bi-activity"></i>
-                                    </div>
-                                    <p class="health-summary-label">
-                                        Blood Pressure
-                                    </p>
-                                    <div class="health-summary-value">
-                                        96/62
-                                        <span class="health-summary-unit">
-                                            mmHg
-                                        </span>
-                                    </div>
-                                </article>
-                            </div>
-                            <div class="col-6 col-md-4 col-xl-2">
-                                <article
-                                    class="clinic-card health-summary-card"
-                                >
-                                    <div class="health-summary-icon">
-                                        <i class="bi bi-thermometer-half"></i>
-                                    </div>
-                                    <p class="health-summary-label">
-                                        Temperature
-                                    </p>
-                                    <div class="health-summary-value">
-                                        99.4
-                                        <span class="health-summary-unit">
-                                            °F
-                                        </span>
-                                    </div>
-                                </article>
-                            </div>
-                            <div class="col-6 col-md-4 col-xl-2">
-                                <article
-                                    class="clinic-card health-summary-card"
-                                >
-                                    <div class="health-summary-icon">
-                                        <i class="bi bi-lungs"></i>
-                                    </div>
-                                    <p class="health-summary-label">SpO₂</p>
-                                    <div class="health-summary-value">
-                                        98
-                                        <span class="health-summary-unit">
-                                            %
-                                        </span>
-                                    </div>
-                                </article>
-                            </div>
-                            <div class="col-6 col-md-4 col-xl-2">
-                                <article
-                                    class="clinic-card health-summary-card"
-                                >
-                                    <div class="health-summary-icon">
-                                        <i class="bi bi-heart-pulse"></i>
-                                    </div>
-                                    <p class="health-summary-label">
-                                        Heart Rate
-                                    </p>
-                                    <div class="health-summary-value">
-                                        104
-                                        <span class="health-summary-unit">
-                                            bpm
-                                        </span>
-                                    </div>
-                                </article>
-                            </div>
-                            <div class="col-6 col-md-4 col-xl-2">
-                                <article
-                                    class="clinic-card health-summary-card"
-                                >
-                                    <div class="health-summary-icon">
-                                        <i class="bi bi-heart"></i>
-                                    </div>
-                                    <p class="health-summary-label">
-                                        Pulse Rate
-                                    </p>
-                                    <div class="health-summary-value">
-                                        102
-                                        <span class="health-summary-unit">
-                                            /min
-                                        </span>
-                                    </div>
-                                </article>
-                            </div>
-                        </div>
-                    </section>
-                    <ul class="nav profile-tabs mb-4" role="tablist">
-                        <li class="nav-item">
-                            <button
-                                class="nav-link active"
-                                data-bs-toggle="tab"
-                                data-bs-target="#overview"
-                                type="button"
-                            >
-                                <i class="bi bi-grid me-1"></i>
-                                Overview
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button
-                                class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#opd"
-                                type="button"
-                            >
-                                <i class="bi bi-clipboard2-pulse me-1"></i>
-                                OPD
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button
-                                class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#vitals"
-                                type="button"
-                            >
-                                <i class="bi bi-heart-pulse me-1"></i>
-                                Vitals
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button
-                                class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#examination"
-                                type="button"
-                            >
-                                <i class="bi bi-file-earmark-medical me-1"></i>
-                                Doctor Examination
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button
-                                class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#medicines"
-                                type="button"
-                            >
-                                <i class="bi bi-capsule me-1"></i>
-                                Medicines
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button
-                                class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#lab"
-                                type="button"
-                            >
-                                <i class="bi bi-eyedropper me-1"></i>
-                                Lab
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button
-                                class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#billing"
-                                type="button"
-                            >
-                                <i class="bi bi-receipt me-1"></i>
-                                Billing
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <button
-                                class="nav-link"
-                                data-bs-toggle="tab"
-                                data-bs-target="#history"
-                                type="button"
-                            >
-                                <i class="bi bi-clock-history me-1"></i>
-                                Visit History
-                            </button>
-                        </li>
-                    </ul>
-                    <div class="tab-content">
-                        <div class="tab-pane fade show active" id="overview">
-                            <div class="row g-4">
-                                <section class="col-xl-7">
-                                    <article class="clinic-card mb-4">
-                                        <div class="card-header">
-                                            Basic Information
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row g-4">
-                                                <div class="col-sm-6">
-                                                    <span class="data-label">
-                                                        Patient ID
-                                                    </span>
-                                                    <span class="data-value">
-                                                        LC-10482
-                                                    </span>
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <span class="data-label">
-                                                        Full Name
-                                                    </span>
-                                                    <span class="data-value">
-                                                        Aarav Sharma
-                                                    </span>
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <span class="data-label">
-                                                        Age / Gender
-                                                    </span>
-                                                    <span class="data-value">
-                                                        4 years 2 months / Male
-                                                    </span>
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <span class="data-label">
-                                                        Father's Name
-                                                    </span>
-                                                    <span class="data-value">
-                                                        Rohit Sharma
-                                                    </span>
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <span class="data-label">
-                                                        Mobile Number
-                                                    </span>
-                                                    <span class="data-value">
-                                                        +91 98765 43210
-                                                    </span>
-                                                </div>
-                                                <div class="col-sm-6">
-                                                    <span class="data-label">
-                                                        Registration Date
-                                                    </span>
-                                                    <span class="data-value">
-                                                        14 Jan 2025
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </article>
-                                    <article class="clinic-card">
-                                        <div
-                                            class="card-header d-flex justify-content-between"
-                                        >
-                                            <span>Latest Prescription</span>
-                                            <span
-                                                class="text-muted fw-normal small"
-                                            >
-                                                10 Jul 2026
-                                            </span>
-                                        </div>
-                                        <div
-                                            class="table-responsive border-0 rounded-0"
-                                        >
-                                            <table class="table clinic-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Medicine</th>
-                                                        <th>Dosage</th>
-                                                        <th>Frequency</th>
-                                                        <th>Duration</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr>
-                                                        <td class="fw-semibold">
-                                                            Paracetamol Syrup
-                                                        </td>
-                                                        <td>5 ml</td>
-                                                        <td>Every 6 hours</td>
-                                                        <td>3 days</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="fw-semibold">
-                                                            Cetirizine Syrup
-                                                        </td>
-                                                        <td>2.5 ml</td>
-                                                        <td>At bedtime</td>
-                                                        <td>5 days</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </article>
-                                </section>
-                                <aside class="col-xl-5">
-                                    <article class="clinic-card mb-4">
-                                        <div
-                                            class="card-header d-flex justify-content-between align-items-center"
-                                        >
-                                            <span>Latest Visit</span>
-                                            <span
-                                                class="badge badge-soft-primary"
-                                            >
-                                                In Consultation
-                                            </span>
-                                        </div>
-                                        <div class="card-body">
-                                            <h3 class="mb-1">
-                                                OPD Visit · 10 Jul 2026
-                                            </h3>
-                                            <p class="text-muted small">
-                                                10:20 AM · Dr. Kalpesh Manager
-                                                (Patidar) · OPD-024
-                                            </p>
-                                            <div class="clinical-note">
-                                                Chief complaint: Fever and cough
-                                                for two days. Appetite slightly
-                                                reduced; no known allergies.
-                                            </div>
-                                        </div>
-                                    </article>
-                                    <article class="clinic-card mb-4">
-                                        <div class="card-header">
-                                            Latest Bill
-                                        </div>
-                                        <div class="card-body">
-                                            <div
-                                                class="d-flex justify-content-between"
-                                            >
-                                                <span class="data-label">
-                                                    Bill Number
-                                                </span>
-                                                <span
-                                                    class="badge badge-soft-success"
-                                                >
-                                                    Paid
-                                                </span>
-                                            </div>
-                                            <div class="data-value mb-3">
-                                                BL-2026-0842
-                                            </div>
-                                            <div
-                                                class="d-flex justify-content-between"
-                                            >
-                                                <span class="text-muted small">
-                                                    OPD Consultation
-                                                </span>
-                                                <strong>₹650</strong>
-                                            </div>
-                                            <div
-                                                class="d-flex justify-content-between mt-2"
-                                            >
-                                                <span class="text-muted small">
-                                                    Receipt Number
-                                                </span>
-                                                <strong>RC-2026-0842</strong>
-                                            </div>
-                                        </div>
-                                    </article>
-                                    <article class="clinic-card">
-                                        <div class="card-header">
-                                            Latest Lab Advice
-                                        </div>
-                                        <div class="card-body">
-                                            <div
-                                                class="d-flex justify-content-between align-items-start"
-                                            >
-                                                <div>
-                                                    <h3 class="mb-1">
-                                                        CBC with Differential
-                                                    </h3>
-                                                    <p
-                                                        class="text-muted small mb-0"
-                                                    >
-                                                        Advised today by Dr.
-                                                        Kalpesh Manager
-                                                        (Patidar)
-                                                    </p>
-                                                </div>
-                                                <span
-                                                    class="badge badge-soft-warning"
-                                                >
-                                                    Pending
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </article>
-                                </aside>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="opd">
-                            <article class="clinic-card">
-                                <div
-                                    class="card-header d-flex justify-content-between align-items-center"
-                                >
-                                    <span>OPD Visit Information</span>
-                                    <a class="btn btn-primary btn-sm" href="patient_registration.html">
-                                        <i class="bi bi-plus-lg"></i>
-                                        New OPD Visit
-                                    </a>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row g-4">
-                                        <div class="col-md-3">
-                                            <span class="data-label">
-                                                Visit Date & Time
-                                            </span>
-                                            <span class="data-value">
-                                                10 Jul 2026 · 10:20 AM
-                                            </span>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <span class="data-label">
-                                                OPD Token
-                                            </span>
-                                            <span class="data-value">
-                                                OPD-024
-                                            </span>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <span class="data-label">
-                                                Visit Type
-                                            </span>
-                                            <span class="data-value">
-                                                Follow-up
-                                            </span>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <span class="data-label">
-                                                Consulting Doctor
-                                            </span>
-                                            <span class="data-value">
-                                                Dr. Kalpesh Manager (Patidar)
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <hr />
-                                    <div class="clinical-note">
-                                        <strong>Visit note:</strong>
-                                        Fever and cough for two days. Child is
-                                        hydrated, active and tolerating oral
-                                        feeds.
-                                    </div>
-                                </div>
-                            </article>
-                        </div>
-                        <div class="tab-pane fade" id="vitals">
-                            <article class="clinic-card">
-                                <div
-                                    class="card-header d-flex justify-content-between align-items-center"
-                                >
-                                    <span>Vitals Record</span>
-                                    <span class="text-muted fw-normal small">
-                                        Recorded 10 Jul 2026 · 10:24 AM
-                                    </span>
-                                </div>
-                                <div
-                                    class="table-responsive border-0 rounded-0"
-                                >
-                                    <table class="table clinic-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Vital</th>
-                                                <th>Recorded Value</th>
-                                                <th>Reference / Unit</th>
-                                                <th>Recorded By</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    Weight
-                                                </td>
-                                                <td>16.8</td>
-                                                <td>kg</td>
-                                                <td>Riya Shah</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    Temperature
-                                                </td>
-                                                <td>99.4</td>
-                                                <td>°F</td>
-                                                <td>Riya Shah</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    Heart Rate
-                                                </td>
-                                                <td>104</td>
-                                                <td>bpm</td>
-                                                <td>Riya Shah</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    Pulse Rate
-                                                </td>
-                                                <td>102</td>
-                                                <td>/min</td>
-                                                <td>Riya Shah</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    Blood Pressure
-                                                </td>
-                                                <td>96/62</td>
-                                                <td>mmHg</td>
-                                                <td>Riya Shah</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    SpO₂
-                                                </td>
-                                                <td>98</td>
-                                                <td>% on room air</td>
-                                                <td>Riya Shah</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </article>
-                        </div>
-                        <div class="tab-pane fade" id="examination">
-                            <div class="row g-4">
-                                <div class="col-md-6">
-                                    <article class="clinic-card h-100">
-                                        <div class="card-header">
-                                            Chief Complaint
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="mb-0">
-                                                Fever and cough for two days,
-                                                with mild nasal congestion. No
-                                                vomiting or breathing
-                                                difficulty.
-                                            </p>
-                                        </div>
-                                    </article>
-                                </div>
-                                <div class="col-md-6">
-                                    <article class="clinic-card h-100">
-                                        <div class="card-header">
-                                            Clinical Findings
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="mb-0">
-                                                Alert and active. Mild
-                                                pharyngeal congestion present.
-                                                Chest clear on auscultation.
-                                                Hydration adequate.
-                                            </p>
-                                        </div>
-                                    </article>
-                                </div>
-                                <div class="col-md-6">
-                                    <article class="clinic-card h-100">
-                                        <div class="card-header">Diagnosis</div>
-                                        <div class="card-body">
-                                            <p class="mb-0">
-                                                Acute upper respiratory tract
-                                                infection with low-grade fever.
-                                            </p>
-                                        </div>
-                                    </article>
-                                </div>
-                                <div class="col-md-6">
-                                    <article class="clinic-card h-100">
-                                        <div class="card-header">
-                                            Doctor Advice
-                                        </div>
-                                        <div class="card-body">
-                                            <p class="mb-0">
-                                                Ensure adequate fluids and rest.
-                                                Use prescribed medicines as
-                                                directed. Review after 3 days or
-                                                earlier if fever worsens.
-                                            </p>
-                                        </div>
-                                    </article>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="medicines">
-                            <article class="clinic-card">
-                                <div
-                                    class="card-header d-flex justify-content-between align-items-center"
-                                >
-                                    <span>Current Prescription</span>
-                                    <span class="text-muted fw-normal small">
-                                        Prescribed 10 Jul 2026
-                                    </span>
-                                </div>
-                                <div
-                                    class="table-responsive border-0 rounded-0"
-                                >
-                                    <table class="table clinic-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Medicine Name</th>
-                                                <th>Dosage</th>
-                                                <th>Frequency</th>
-                                                <th>Duration</th>
-                                                <th>Instructions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    Paracetamol Syrup 250 mg/5
-                                                    ml
-                                                </td>
-                                                <td>5 ml</td>
-                                                <td>Every 6 hours, if fever</td>
-                                                <td>3 days</td>
-                                                <td>
-                                                    After food; do not exceed 4
-                                                    doses/day.
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    Cetirizine Syrup
-                                                </td>
-                                                <td>2.5 ml</td>
-                                                <td>Once at bedtime</td>
-                                                <td>5 days</td>
-                                                <td>May cause drowsiness.</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </article>
-                        </div>
-                        <div class="tab-pane fade" id="lab">
-                            <article class="clinic-card">
-                                <div class="card-header">
-                                    Lab Advice & Requested Tests
-                                </div>
-                                <div
-                                    class="table-responsive border-0 rounded-0"
-                                >
-                                    <table class="table clinic-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Requested Test</th>
-                                                <th>Requested On</th>
-                                                <th>Status</th>
-                                                <th>Remarks</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    CBC with Differential
-                                                </td>
-                                                <td>10 Jul 2026</td>
-                                                <td>
-                                                    <span
-                                                        class="badge badge-soft-warning"
-                                                    >
-                                                        Sample Pending
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    To be collected if fever
-                                                    persists beyond 48 hours.
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    C-Reactive Protein (CRP)
-                                                </td>
-                                                <td>10 Jul 2026</td>
-                                                <td>
-                                                    <span
-                                                        class="badge badge-soft-muted"
-                                                    >
-                                                        Advised
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    Optional based on clinical
-                                                    progression.
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </article>
-                        </div>
-                        <div class="tab-pane fade" id="billing">
-                            <article class="clinic-card">
-                                <div class="card-header">
-                                    Billing Information
-                                </div>
-                                <div
-                                    class="table-responsive border-0 rounded-0"
-                                >
-                                    <table class="table clinic-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Bill Number</th>
-                                                <th>Visit Date</th>
-                                                <th>Charges</th>
-                                                <th>Payment Status</th>
-                                                <th>Receipt Number</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    BL-2026-0842
-                                                </td>
-                                                <td>10 Jul 2026</td>
-                                                <td>₹650 · OPD Consultation</td>
-                                                <td>
-                                                    <span
-                                                        class="badge badge-soft-success"
-                                                    >
-                                                        Paid
-                                                    </span>
-                                                </td>
-                                                <td>RC-2026-0842</td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-semibold">
-                                                    BL-2026-0629
-                                                </td>
-                                                <td>04 Apr 2026</td>
-                                                <td>
-                                                    ₹650 · Follow-up
-                                                    Consultation
-                                                </td>
-                                                <td>
-                                                    <span
-                                                        class="badge badge-soft-success"
-                                                    >
-                                                        Paid
-                                                    </span>
-                                                </td>
-                                                <td>RC-2026-0629</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </article>
-                        </div>
-                        <div class="tab-pane fade" id="history">
-                            <article class="clinic-card">
-                                <div class="card-header">Visit History</div>
-                                <div class="card-body">
-                                    <ol class="timeline">
-                                        <li class="timeline-item">
-                                            <span class="timeline-dot"></span>
-                                            <span class="visit-history-date">
-                                                10 Jul 2026
-                                            </span>
-                                            <h4 class="mt-2">
-                                                Follow-up OPD Visit
-                                            </h4>
-                                            <p>
-                                                Fever and cough; vitals
-                                                recorded, prescription issued
-                                                and CBC advised.
-                                            </p>
-                                            <time>
-                                                Dr. Kalpesh Manager (Patidar) ·
-                                                OPD-024
-                                            </time>
-                                        </li>
-                                        <li class="timeline-item">
-                                            <span
-                                                class="timeline-dot"
-                                                style="
-                                                    background: var(
-                                                        --clinic-success
-                                                    );
-                                                "
-                                            ></span>
-                                            <span class="visit-history-date">
-                                                04 Apr 2026
-                                            </span>
-                                            <h4 class="mt-2">
-                                                Follow-up Consultation
-                                            </h4>
-                                            <p>
-                                                Seasonal allergic rhinitis;
-                                                antihistamine advice provided.
-                                            </p>
-                                            <time>
-                                                Dr. Kalpesh Manager (Patidar) ·
-                                                OPD-011
-                                            </time>
-                                        </li>
-                                        <li class="timeline-item">
-                                            <span
-                                                class="timeline-dot"
-                                                style="
-                                                    background: var(
-                                                        --clinic-warning
-                                                    );
-                                                "
-                                            ></span>
-                                            <span class="visit-history-date">
-                                                14 Jan 2025
-                                            </span>
-                                            <h4 class="mt-2">
-                                                Patient Registration
-                                            </h4>
-                                            <p>
-                                                First visit completed and
-                                                demographic details verified.
-                                            </p>
-                                            <time>
-                                                Reception Desk · Vatsalya Shree
-                                                Hospital
-                                            </time>
-                                        </li>
-                                    </ol>
-                                </div>
-                            </article>
+                            10 Jul 2026
+                        </span>
+                    </div>
+                    <div
+                        class="table-responsive border-0 rounded-0"
+                    >
+                        <table class="table clinic-table">
+                            <thead>
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Dosage</th>
+                                    <th>Frequency</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="fw-semibold">
+                                        Paracetamol Syrup
+                                    </td>
+                                    <td>5 ml</td>
+                                    <td>Every 6 hours</td>
+                                    <td>3 days</td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-semibold">
+                                        Cetirizine Syrup
+                                    </td>
+                                    <td>2.5 ml</td>
+                                    <td>At bedtime</td>
+                                    <td>5 days</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            </section>
+            <aside class="col-xl-5">
+                <article class="clinic-card mb-4">
+                    <div
+                        class="card-header d-flex justify-content-between align-items-center"
+                    >
+                        <span>Latest Visit</span>
+                        <span
+                            class="badge badge-soft-primary"
+                        >
+                            In Consultation
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="mb-1">
+                            OPD Visit · 10 Jul 2026
+                        </h3>
+                        <p class="text-muted small">
+                            10:20 AM · Dr. Kalpesh Manager
+                            (Patidar) · OPD-024
+                        </p>
+                        <div class="clinical-note">
+                            Chief complaint: Fever and cough
+                            for two days. Appetite slightly
+                            reduced; no known allergies.
                         </div>
                     </div>
-                </div>
-            </main>
+                </article>
+                <article class="clinic-card mb-4">
+                    <div class="card-header">
+                        Latest Bill
+                    </div>
+                    <div class="card-body">
+                        <div
+                            class="d-flex justify-content-between"
+                        >
+                            <span class="data-label">
+                                Bill Number
+                            </span>
+                            <span
+                                class="badge badge-soft-success"
+                            >
+                                Paid
+                            </span>
+                        </div>
+                        <div class="data-value mb-3">
+                            BL-2026-0842
+                        </div>
+                        <div
+                            class="d-flex justify-content-between"
+                        >
+                            <span class="text-muted small">
+                                OPD Consultation
+                            </span>
+                            <strong>₹650</strong>
+                        </div>
+                        <div
+                            class="d-flex justify-content-between mt-2"
+                        >
+                            <span class="text-muted small">
+                                Receipt Number
+                            </span>
+                            <strong>RC-2026-0842</strong>
+                        </div>
+                    </div>
+                </article>
+                <article class="clinic-card">
+                    <div class="card-header">
+                        Latest Lab Advice
+                    </div>
+                    <div class="card-body">
+                        <div
+                            class="d-flex justify-content-between align-items-start"
+                        >
+                            <div>
+                                <h3 class="mb-1">
+                                    CBC with Differential
+                                </h3>
+                                <p
+                                    class="text-muted small mb-0"
+                                >
+                                    Advised today by Dr.
+                                    Kalpesh Manager
+                                    (Patidar)
+                                </p>
+                            </div>
+                            <span
+                                class="badge badge-soft-warning"
+                            >
+                                Pending
+                            </span>
+                        </div>
+                    </div>
+                </article>
+            </aside>
         </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="{% static 'js/receptionist.js' %}"></script>
-    </body>
-</html>
+    </div>
+    <div class="tab-pane fade" id="opd">
+        <article class="clinic-card">
+            <div
+                class="card-header d-flex justify-content-between align-items-center"
+            >
+                <span>OPD Visit Information</span>
+                <a class="btn btn-primary btn-sm" href="{% url 'receptionist:patient_registration' %}">
+                    <i class="bi bi-plus-lg"></i>
+                    New OPD Visit
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <span class="data-label">
+                            Visit Date & Time
+                        </span>
+                        <span class="data-value">
+                            10 Jul 2026 · 10:20 AM
+                        </span>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="data-label">
+                            OPD Token
+                        </span>
+                        <span class="data-value">
+                            OPD-024
+                        </span>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="data-label">
+                            Visit Type
+                        </span>
+                        <span class="data-value">
+                            Follow-up
+                        </span>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="data-label">
+                            Consulting Doctor
+                        </span>
+                        <span class="data-value">
+                            Dr. Kalpesh Manager (Patidar)
+                        </span>
+                    </div>
+                </div>
+                <hr />
+                <div class="clinical-note">
+                    <strong>Visit note:</strong>
+                    Fever and cough for two days. Child is
+                    hydrated, active and tolerating oral
+                    feeds.
+                </div>
+            </div>
+        </article>
+    </div>
+    <div class="tab-pane fade" id="vitals">
+        <article class="clinic-card">
+            <div
+                class="card-header d-flex justify-content-between align-items-center"
+            >
+                <span>Vitals Record</span>
+                <span class="text-muted fw-normal small">
+                    Recorded 10 Jul 2026 · 10:24 AM
+                </span>
+            </div>
+            <div
+                class="table-responsive border-0 rounded-0"
+            >
+                <table class="table clinic-table">
+                    <thead>
+                        <tr>
+                            <th>Vital</th>
+                            <th>Recorded Value</th>
+                            <th>Reference / Unit</th>
+                            <th>Recorded By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-semibold">
+                                Weight
+                            </td>
+                            <td>16.8</td>
+                            <td>kg</td>
+                            <td>Riya Shah</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                Temperature
+                            </td>
+                            <td>99.4</td>
+                            <td>°F</td>
+                            <td>Riya Shah</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                Heart Rate
+                            </td>
+                            <td>104</td>
+                            <td>bpm</td>
+                            <td>Riya Shah</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                Pulse Rate
+                            </td>
+                            <td>102</td>
+                            <td>/min</td>
+                            <td>Riya Shah</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                Blood Pressure
+                            </td>
+                            <td>96/62</td>
+                            <td>mmHg</td>
+                            <td>Riya Shah</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                SpO₂
+                            </td>
+                            <td>98</td>
+                            <td>% on room air</td>
+                            <td>Riya Shah</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+    <div class="tab-pane fade" id="examination">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <article class="clinic-card h-100">
+                    <div class="card-header">
+                        Chief Complaint
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">
+                            Fever and cough for two days,
+                            with mild nasal congestion. No
+                            vomiting or breathing
+                            difficulty.
+                        </p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-6">
+                <article class="clinic-card h-100">
+                    <div class="card-header">
+                        Clinical Findings
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">
+                            Alert and active. Mild
+                            pharyngeal congestion present.
+                            Chest clear on auscultation.
+                            Hydration adequate.
+                        </p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-6">
+                <article class="clinic-card h-100">
+                    <div class="card-header">Diagnosis</div>
+                    <div class="card-body">
+                        <p class="mb-0">
+                            Acute upper respiratory tract
+                            infection with low-grade fever.
+                        </p>
+                    </div>
+                </article>
+            </div>
+            <div class="col-md-6">
+                <article class="clinic-card h-100">
+                    <div class="card-header">
+                        Doctor Advice
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">
+                            Ensure adequate fluids and rest.
+                            Use prescribed medicines as
+                            directed. Review after 3 days or
+                            earlier if fever worsens.
+                        </p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="medicines">
+        <article class="clinic-card">
+            <div
+                class="card-header d-flex justify-content-between align-items-center"
+            >
+                <span>Current Prescription</span>
+                <span class="text-muted fw-normal small">
+                    Prescribed 10 Jul 2026
+                </span>
+            </div>
+            <div
+                class="table-responsive border-0 rounded-0"
+            >
+                <table class="table clinic-table">
+                    <thead>
+                        <tr>
+                            <th>Medicine Name</th>
+                            <th>Dosage</th>
+                            <th>Frequency</th>
+                            <th>Duration</th>
+                            <th>Instructions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-semibold">
+                                Paracetamol Syrup 250 mg/5
+                                ml
+                            </td>
+                            <td>5 ml</td>
+                            <td>Every 6 hours, if fever</td>
+                            <td>3 days</td>
+                            <td>
+                                After food; do not exceed 4
+                                doses/day.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                Cetirizine Syrup
+                            </td>
+                            <td>2.5 ml</td>
+                            <td>Once at bedtime</td>
+                            <td>5 days</td>
+                            <td>May cause drowsiness.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+    <div class="tab-pane fade" id="lab">
+        <article class="clinic-card">
+            <div class="card-header">
+                Lab Advice & Requested Tests
+            </div>
+            <div
+                class="table-responsive border-0 rounded-0"
+            >
+                <table class="table clinic-table">
+                    <thead>
+                        <tr>
+                            <th>Requested Test</th>
+                            <th>Requested On</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-semibold">
+                                CBC with Differential
+                            </td>
+                            <td>10 Jul 2026</td>
+                            <td>
+                                <span
+                                    class="badge badge-soft-warning"
+                                >
+                                    Sample Pending
+                                </span>
+                            </td>
+                            <td>
+                                To be collected if fever
+                                persists beyond 48 hours.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                C-Reactive Protein (CRP)
+                            </td>
+                            <td>10 Jul 2026</td>
+                            <td>
+                                <span
+                                    class="badge badge-soft-muted"
+                                >
+                                    Advised
+                                </span>
+                            </td>
+                            <td>
+                                Optional based on clinical
+                                progression.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+    <div class="tab-pane fade" id="billing">
+        <article class="clinic-card">
+            <div class="card-header">
+                Billing Information
+            </div>
+            <div
+                class="table-responsive border-0 rounded-0"
+            >
+                <table class="table clinic-table">
+                    <thead>
+                        <tr>
+                            <th>Bill Number</th>
+                            <th>Visit Date</th>
+                            <th>Charges</th>
+                            <th>Payment Status</th>
+                            <th>Receipt Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-semibold">
+                                BL-2026-0842
+                            </td>
+                            <td>10 Jul 2026</td>
+                            <td>₹650 · OPD Consultation</td>
+                            <td>
+                                <span
+                                    class="badge badge-soft-success"
+                                >
+                                    Paid
+                                </span>
+                            </td>
+                            <td>RC-2026-0842</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-semibold">
+                                BL-2026-0629
+                            </td>
+                            <td>04 Apr 2026</td>
+                            <td>
+                                ₹650 · Follow-up
+                                Consultation
+                            </td>
+                            <td>
+                                <span
+                                    class="badge badge-soft-success"
+                                >
+                                    Paid
+                                </span>
+                            </td>
+                            <td>RC-2026-0629</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </div>
+    <div class="tab-pane fade" id="history">
+        <article class="clinic-card">
+            <div class="card-header">Visit History</div>
+            <div class="card-body">
+                <ol class="timeline">
+                    <li class="timeline-item">
+                        <span class="timeline-dot"></span>
+                        <span class="visit-history-date">
+                            10 Jul 2026
+                        </span>
+                        <h4 class="mt-2">
+                            Follow-up OPD Visit
+                        </h4>
+                        <p>
+                            Fever and cough; vitals
+                            recorded, prescription issued
+                            and CBC advised.
+                        </p>
+                        <time>
+                            Dr. Kalpesh Manager (Patidar) ·
+                            OPD-024
+                        </time>
+                    </li>
+                    <li class="timeline-item">
+                        <span
+                            class="timeline-dot"
+                            style="
+                                background: var(
+                                    --clinic-success
+                                );
+                            "
+                        ></span>
+                        <span class="visit-history-date">
+                            04 Apr 2026
+                        </span>
+                        <h4 class="mt-2">
+                            Follow-up Consultation
+                        </h4>
+                        <p>
+                            Seasonal allergic rhinitis;
+                            antihistamine advice provided.
+                        </p>
+                        <time>
+                            Dr. Kalpesh Manager (Patidar) ·
+                            OPD-011
+                        </time>
+                    </li>
+                    <li class="timeline-item">
+                        <span
+                            class="timeline-dot"
+                            style="
+                                background: var(
+                                    --clinic-warning
+                                );
+                            "
+                        ></span>
+                        <span class="visit-history-date">
+                            14 Jan 2025
+                        </span>
+                        <h4 class="mt-2">
+                            Patient Registration
+                        </h4>
+                        <p>
+                            First visit completed and
+                            demographic details verified.
+                        </p>
+                        <time>
+                            Reception Desk · Vatsalya Shree
+                            Hospital
+                        </time>
+                    </li>
+                </ol>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

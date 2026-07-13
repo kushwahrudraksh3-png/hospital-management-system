@@ -1,0 +1,149 @@
+{% extends "receptionist/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .receipt-logo {
+        width: 90px;
+        height: auto;
+        object-fit: contain;
+    }
+    .receipt-signature-container {
+        page-break-inside: avoid;
+    }
+    .receipt-signature-line {
+        width: 200px;
+    }
+</style>
+{% endblock %}
+
+{% block title %}OPD Receipt | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:patient_list' %}">Patients</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            OPD Receipt
+        </li>
+    </ol>
+</nav>
+
+<!-- Screen-only action header -->
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4 page-heading-screen receipt-actions">
+    <div>
+        <h1 class="page-title">OPD Receipt</h1>
+        <p class="text-muted mb-0 mt-1">
+            Generate and print OPD visit receipts.
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'receptionist:patient_registration' %}" class="btn btn-light">
+            <i class="bi bi-person-plus-fill"></i> New Registration
+        </a>
+        <button class="btn btn-primary" onclick="window.print()">
+            <i class="bi bi-printer-fill"></i> Print Receipt
+        </button>
+    </div>
+</div>
+
+<!-- Receipt Document -->
+<div class="receipt-paper">
+    <div class="text-start mb-3">
+        <small class="text-muted">{{ current_datetime|date:"d-m-Y h:i A" }}</small>
+    </div>
+    <div class="row align-items-center mb-4">
+        <div class="col-8 text-start d-flex align-items-center gap-3">
+            <img src="{{ hospital.hospital_logo.url }}" alt="Hospital Logo" class="receipt-logo">
+            <div>
+                <h2 class="receipt-clinic-name text-primary fw-bold">{{ hospital.hospital_name }}</h2>
+                <p class="receipt-meta mb-0 mt-1">
+                    <i class="bi bi-geo-alt-fill me-1"></i> {{ hospital.address }}
+                    <br>
+                    <i class="bi bi-telephone-fill me-1"></i> {{ hospital.phone_number }} | <i class="bi bi-envelope-fill me-1"></i> {{ hospital.email }}
+                </p>
+            </div>
+        </div>
+        <div class="col-4 text-end">
+            <span class="badge badge-soft-success py-2 px-3 fs-6 fw-bold">OPD RECEIPT</span>
+        </div>
+    </div>
+
+    <hr class="receipt-rule">
+
+    <div class="receipt-details mb-4">
+        <div>
+            <span class="data-label">OPD Number</span>
+            <span class="data-value fw-semibold">{{ visit.opd_number }}</span>
+        </div>
+        <div>
+            <span class="data-label">Date & Time</span>
+            <span class="data-value">{{ visit.visit_date|date:"d-m-Y" }} at {{ visit.visit_time|time:"h:i A" }}</span>
+        </div>
+        <div>
+            <span class="data-label">Patient Name</span>
+            <span class="data-value fw-bold">{{ patient.full_name }}</span>
+        </div>
+        <div>
+            <span class="data-label">UHID (Patient ID)</span>
+            <span class="data-value">{{ patient.uhid }}</span>
+        </div>
+        <div>
+            <span class="data-label">Age & Gender</span>
+            <span class="data-value">{{ patient.age }} / {{ patient.gender }}</span>
+        </div>
+        <div>
+            <span class="data-label">Father's Name</span>
+            <span class="data-value">{{ patient.father_name|default:"N/A" }}</span>
+        </div>
+        <div>
+            <span class="data-label">Mobile Number</span>
+            <span class="data-value">+91 {{ patient.mobile_number }}</span>
+        </div>
+        <div>
+            <span class="data-label">Address</span>
+            <span class="data-value">{{ patient.address }}</span>
+        </div>
+    </div>
+
+    <hr class="receipt-rule">
+
+    <div class="table-responsive border-0 mt-3">
+        <table class="table clinic-table w-100">
+            <thead>
+                <tr>
+                    <th class="text-start">Description</th>
+                    <th class="text-end">Amount (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-start fw-semibold">OPD Consultation Fee ({{ visit.visit_type }})</td>
+                    <td class="text-end fw-semibold">₹{{ hospital.consultation_fee }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="receipt-total d-flex justify-content-between align-items-center mt-3 py-3">
+        <span class="fw-bold text-uppercase">Total Amount Paid</span>
+        <span class="fs-4 fw-bold text-primary">₹{{ hospital.consultation_fee }}</span>
+    </div>
+
+    <div class="d-flex flex-column align-items-end mt-5 pt-3 pe-4 receipt-signature-container">
+        <div class="receipt-signature-line text-center">
+            <span class="d-block fw-semibold text-muted">__________________</span>
+            <span class="d-block mt-2 fw-semibold">Receptionist Signature</span>
+        </div>
+    </div>
+
+    <div class="receipt-footer mt-5">
+        <p class="mb-1">Thank you for visiting. Please keep this receipt safe.</p>
+    </div>
+</div>
+{% endblock %}

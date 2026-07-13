@@ -78,6 +78,8 @@ WSGI_APPLICATION = 'cms.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+import sys
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -88,6 +90,12 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
 
 
 # Password validation
@@ -112,9 +120,11 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# Internationalization
 
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = "en-in"
+
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
 

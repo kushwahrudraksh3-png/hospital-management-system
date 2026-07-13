@@ -64,23 +64,52 @@
     var dobInput = document.querySelector("[data-date-of-birth]");
     var ageInput = document.querySelector("[data-patient-age]");
     function updateAge() {
-        if (!dobInput || !ageInput || !dobInput.value) return;
+        if (!dobInput || !ageInput || !dobInput.value) {
+            if (ageInput) ageInput.value = "";
+            return;
+        }
         var birthDate = new Date(dobInput.value + "T00:00:00");
         var today = new Date();
-        var months =
-            (today.getFullYear() - birthDate.getFullYear()) * 12 +
-            today.getMonth() -
-            birthDate.getMonth();
-        if (today.getDate() < birthDate.getDate()) months -= 1;
-        ageInput.value =
-            months < 24
-                ? Math.max(months, 0) + " months"
-                : Math.floor(months / 12) + " years";
+        
+        if (birthDate > today) {
+            ageInput.value = "";
+            return;
+        }
+
+        var years = today.getFullYear() - birthDate.getFullYear();
+        var months = today.getMonth() - birthDate.getMonth();
+        var days = today.getDate() - birthDate.getDate();
+
+        if (days < 0) {
+            months -= 1;
+            var prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+            days += prevMonth.getDate();
+        }
+
+        if (months < 0) {
+            years -= 1;
+            months += 12;
+        }
+
+        var ageString = "";
+        if (years >= 1) {
+            var yStr = years === 1 ? "1 Year" : years + " Years";
+            var mStr = months === 1 ? "1 Month" : months + " Months";
+            ageString = yStr + " " + mStr;
+        } else if (months >= 1) {
+            var mStr = months === 1 ? "1 Month" : months + " Months";
+            ageString = mStr;
+        } else {
+            var dStr = days === 1 ? "1 Day" : days + " Days";
+            ageString = dStr;
+        }
+        ageInput.value = ageString;
     }
     if (dobInput && ageInput) {
         dobInput.addEventListener("change", updateAge);
         updateAge();
     }
+
 
     document.querySelectorAll("[data-static-form]").forEach(function (form) {
         form.addEventListener("submit", function (event) {

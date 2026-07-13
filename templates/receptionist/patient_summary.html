@@ -1,186 +1,98 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Patient Summary | Vatsalya Shree Hospital</title>
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-        />
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-            rel="stylesheet"
-        />
-        <link rel="stylesheet" href="{% static 'css/receptionist.css' %}" />
-    </head>
-    <body>
-        <div class="app-shell">
-            <aside class="sidebar" aria-label="Main navigation">
-                <a class="brand" href="receptionist_dashboard.html">
-                    <span class="brand-mark">
-                        <i class="bi bi-heart-pulse-fill"></i>
-                    </span>
-                    <span>Vatsalya Shree Hospital</span>
-                </a>
-                <nav class="sidebar-nav">
-                    <div class="nav-section-label">Main Menu</div>
-                    <a class="nav-link" href="receptionist_dashboard.html">
-                        <i class="bi bi-grid-1x2"></i>
-                        Dashboard
-                    </a>
-                    <a class="nav-link" href="patient_registration.html">
-                        <i class="bi bi-person-plus"></i>
-                        Patient / OPD Registration
-                    </a>
-                    <a class="nav-link active" href="patient_list.html">
-                        <i class="bi bi-people"></i>
-                        Patient List
-                    </a>
-                    <a class="nav-link" href="vitals_entry.html">
-                        <i class="bi bi-heart-pulse"></i>
-                        Vitals
-                    </a>
-                    <a class="nav-link" href="../login.html">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Logout
-                    </a>
-                </nav>
-            </aside>
-            <main class="main-area">
-                <header class="top-navbar">
-                    <div class="d-flex align-items-center gap-2">
-                        <button
-                            class="btn btn-light btn-icon mobile-toggle"
-                            data-sidebar-toggle
-                            aria-label="Toggle navigation"
-                        >
-                            <i class="bi bi-list"></i>
-                        </button>
-                        <span class="current-date">
-                            <i class="bi bi-calendar3 me-1"></i>
-                            <span data-current-date>Friday, 10 July 2026</span>
-                        </span>
-                    </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <button
-                            class="btn btn-light btn-icon position-relative"
-                            aria-label="Notifications"
-                        >
-                            <i class="bi bi-bell"></i>
-                            <span
-                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            >
-                                3
-                            </span>
-                        </button>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="user-avatar">RS</span>
-                            <span class="user-name fw-semibold small">
-                                Riya Shah
-                            </span>
-                            <i class="bi bi-chevron-down text-muted small"></i>
-                        </div>
-                    </div>
-                </header>
-                <div class="page-content">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="receptionist_dashboard.html">Home</a>
-                            </li>
-                            <li class="breadcrumb-item">
-                                <a href="patient_list.html">Patient List</a>
-                            </li>
-                            <li
-                                class="breadcrumb-item active"
-                                aria-current="page"
-                            >
-                                Patient Summary
-                            </li>
-                        </ol>
-                    </nav>
-                    <div
-                        class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
-                    >
-                        <div>
-                            <h1 class="page-title">Patient Summary</h1>
-                            <p class="text-muted mb-0 mt-1">
-                                Summary of the patient's records and visits.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="row justify-content-center">
-                        <div class="col-lg-8 col-xl-7">
-                            <article class="clinic-card patient-hero mb-4" aria-label="Patient Summary Details">
-                                <div class="patient-hero-top">
-                                    <div class="patient-photo" aria-label="Patient photo placeholder">
-                                        <i class="bi bi-person-fill"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <span class="patient-info-label">Patient ID: LC-10483</span>
-                                        <h2 class="patient-hero-name">
-                                            Ishaan Malhotra
-                                            <span class="badge badge-soft-primary ms-1 align-middle">New</span>
-                                        </h2>
-                                        <div class="patient-hero-meta">
-                                            <span>5 yrs</span>
-                                            <span>Male</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="patient-info-grid border-top pt-4 mt-4">
-                                    <div class="patient-info-item">
-                                        <span class="patient-info-label">Father / Guardian Name</span>
-                                        <span class="patient-info-value">Rajesh Malhotra</span>
-                                    </div>
-                                    <div class="patient-info-item">
-                                        <span class="patient-info-label">Mobile Number</span>
-                                        <span class="patient-info-value">+91 98765 10234</span>
-                                    </div>
-                                    <div class="patient-info-item">
-                                        <span class="patient-info-label">Blood Group</span>
-                                        <span class="patient-info-value">O+</span>
-                                    </div>
-                                    <div class="patient-info-item">
-                                        <span class="patient-info-label">Address</span>
-                                        <span class="patient-info-value">Vijay Nagar, Indore</span>
-                                    </div>
-                                    <div class="patient-info-item">
-                                        <span class="patient-info-label">Registration Date</span>
-                                        <span class="patient-info-value">10 Jul 2026</span>
-                                    </div>
-                                    <div class="patient-info-item">
-                                        <span class="patient-info-label">Last Visit Date</span>
-                                        <span class="patient-info-value">10 Jul 2026</span>
-                                    </div>
-                                </div>
-                                <div class="d-flex flex-wrap gap-2 justify-content-end border-top pt-4 mt-4">
-                                    <a class="btn btn-outline-primary" href="patient_profile.html">
-                                        <i class="bi bi-person-vcard me-1"></i>
-                                        View Full Profile
-                                    </a>
-                                    <a class="btn btn-outline-primary" href="vitals_entry.html">
-                                        <i class="bi bi-heart-pulse me-1"></i>
-                                        Enter Vitals
-                                    </a>
-                                    <a class="btn btn-outline-primary" href="edit_profile.html">
-                                        <i class="bi bi-pencil me-1"></i>
-                                        Edit Profile
-                                    </a>
-                                    <a class="btn btn-primary" href="patient_registration.html">
-                                        <i class="bi bi-plus-circle me-1"></i>
-                                        New OPD
-                                    </a>
-                                </div>
-                            </article>
-                        </div>
+{% extends "receptionist/base.html" %}
+
+{% block title %}Patient Summary | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:patient_list' %}">Patient List</a>
+        </li>
+        <li
+            class="breadcrumb-item active"
+            aria-current="page"
+        >
+            Patient Summary
+        </li>
+    </ol>
+</nav>
+<div
+    class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
+>
+    <div>
+        <h1 class="page-title">Patient Summary</h1>
+        <p class="text-muted mb-0 mt-1">
+            Summary of the patient's records and visits.
+        </p>
+    </div>
+</div>
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+        <article class="clinic-card patient-hero mb-4" aria-label="Patient Summary Details">
+            <div class="patient-hero-top">
+                <div class="patient-photo" aria-label="Patient photo placeholder">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <span class="patient-info-label">Patient ID: LC-10483</span>
+                    <h2 class="patient-hero-name">
+                        Ishaan Malhotra
+                        <span class="badge badge-soft-primary ms-1 align-middle">New</span>
+                    </h2>
+                    <div class="patient-hero-meta">
+                        <span>5 yrs</span>
+                        <span>Male</span>
                     </div>
                 </div>
-            </main>
-        </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="{% static 'js/receptionist.js' %}"></script>
-    </body>
-</html>
+            </div>
+            <div class="patient-info-grid border-top pt-4 mt-4">
+                <div class="patient-info-item">
+                    <span class="patient-info-label">Father / Guardian Name</span>
+                    <span class="patient-info-value">Rajesh Malhotra</span>
+                </div>
+                <div class="patient-info-item">
+                    <span class="patient-info-label">Mobile Number</span>
+                    <span class="patient-info-value">+91 98765 10234</span>
+                </div>
+                <div class="patient-info-item">
+                    <span class="patient-info-label">Blood Group</span>
+                    <span class="patient-info-value">O+</span>
+                </div>
+                <div class="patient-info-item">
+                    <span class="patient-info-label">Address</span>
+                    <span class="patient-info-value">Vijay Nagar, Indore</span>
+                </div>
+                <div class="patient-info-item">
+                    <span class="patient-info-label">Registration Date</span>
+                    <span class="patient-info-value">10 Jul 2026</span>
+                </div>
+                <div class="patient-info-item">
+                    <span class="patient-info-label">Last Visit Date</span>
+                    <span class="patient-info-value">10 Jul 2026</span>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2 justify-content-end border-top pt-4 mt-4">
+                <a class="btn btn-outline-primary" href="{% url 'receptionist:patient_profile' %}">
+                    <i class="bi bi-person-vcard me-1"></i>
+                    View Full Profile
+                </a>
+                <a class="btn btn-outline-primary" href="{% url 'receptionist:vitals_entry' %}">
+                    <i class="bi bi-heart-pulse me-1"></i>
+                    Enter Vitals
+                </a>
+                <a class="btn btn-outline-primary" href="{% url 'receptionist:edit_profile' %}">
+                    <i class="bi bi-pencil me-1"></i>
+                    Edit Profile
+                </a>
+                <a class="btn btn-primary" href="{% url 'receptionist:patient_registration' %}">
+                    <i class="bi bi-plus-circle me-1"></i>
+                    New OPD
+                </a>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

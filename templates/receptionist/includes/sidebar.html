@@ -1,0 +1,31 @@
+<aside class="sidebar" aria-label="Main navigation">
+    <a class="brand" href="{% url 'receptionist:dashboard' %}">
+        <span class="brand-mark">
+            <i class="bi bi-heart-pulse-fill"></i>
+        </span>
+        <span>Vatsalya Shree Hospital</span>
+    </a>
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Main Menu</div>
+        <a class="nav-link{% if active_nav == 'dashboard' %} active{% endif %}" href="{% url 'receptionist:dashboard' %}">
+            <i class="bi bi-grid-1x2"></i>
+            Dashboard
+        </a>
+        <a class="nav-link{% if active_nav == 'patient_registration' or active_nav == 'opd_registration' %} active{% endif %}" href="{% url 'receptionist:patient_registration' %}">
+            <i class="bi bi-person-plus"></i>
+            Patient / OPD Registration
+        </a>
+        <a class="nav-link{% if active_nav == 'patient_list' or active_nav == 'patient_summary' or active_nav == 'patient_profile' or active_nav == 'edit_profile' %} active{% endif %}" href="{% url 'receptionist:patient_list' %}">
+            <i class="bi bi-people"></i>
+            Patient List
+        </a>
+        <a class="nav-link{% if active_nav == 'vitals_entry' %} active{% endif %}" href="{% url 'receptionist:vitals_entry' %}">
+            <i class="bi bi-heart-pulse"></i>
+            Vitals
+        </a>
+        <a class="nav-link" href="{% url 'accounts:login' %}">
+            <i class="bi bi-box-arrow-right"></i>
+            Logout
+        </a>
+    </nav>
+</aside>

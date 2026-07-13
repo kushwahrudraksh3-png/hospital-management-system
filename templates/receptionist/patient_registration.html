@@ -1,361 +1,345 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Patient / OPD Registration | Vatsalya Shree Hospital</title>
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-        />
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-            rel="stylesheet"
-        />
-        <link rel="stylesheet" href="{% static 'css/receptionist.css' %}" />
-    </head>
-    <body>
-        <div class="app-shell">
-            <aside class="sidebar" aria-label="Main navigation">
-                <a class="brand" href="receptionist_dashboard.html">
-                    <span class="brand-mark">
-                        <i class="bi bi-heart-pulse-fill"></i>
-                    </span>
-                    <span>Vatsalya Shree Hospital</span>
-                </a>
-                <nav class="sidebar-nav">
-                    <div class="nav-section-label">Main Menu</div>
-                    <a class="nav-link" href="receptionist_dashboard.html">
-                        <i class="bi bi-grid-1x2"></i>
-                        Dashboard
-                    </a>
-                    <a
-                        class="nav-link active"
-                        href="patient_registration.html"
-                    >
-                        <i class="bi bi-person-plus"></i>
-                        Patient / OPD Registration
-                    </a>
-                    <a class="nav-link" href="patient_list.html">
-                        <i class="bi bi-people"></i>
-                        Patient List
-                    </a>
-                    <a class="nav-link" href="vitals_entry.html">
-                        <i class="bi bi-heart-pulse"></i>
-                        Vitals
-                    </a>
-                    <a class="nav-link" href="../login.html">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Logout
-                    </a>
-                </nav>
-            </aside>
-            <main class="main-area">
-                <header class="top-navbar">
-                    <div class="d-flex align-items-center gap-2">
-                        <button
-                            class="btn btn-light btn-icon mobile-toggle"
-                            data-sidebar-toggle
-                            aria-label="Toggle navigation"
-                        >
-                            <i class="bi bi-list"></i>
-                        </button>
-                        <span class="current-date">
-                            <i class="bi bi-calendar3 me-1"></i>
-                            <span data-current-date>Friday, 10 July 2026</span>
-                        </span>
-                    </div>
-                    <div class="d-flex align-items-center gap-3">
-                        <button
-                            class="btn btn-light btn-icon position-relative"
-                            aria-label="Notifications"
-                        >
-                            <i class="bi bi-bell"></i>
-                            <span
-                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            >
-                                3
-                            </span>
-                        </button>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="user-avatar">RS</span>
-                            <span class="user-name fw-semibold small">
-                                Riya Shah
-                            </span>
-                            <i class="bi bi-chevron-down text-muted small"></i>
-                        </div>
-                    </div>
-                </header>
-                <div class="page-content">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb">
-                            <li class="breadcrumb-item">
-                                <a href="receptionist_dashboard.html">Home</a>
-                            </li>
-                            <li class="breadcrumb-item">
-                                <a href="patient_list.html">Patients</a>
-                            </li>
-                            <li
-                                class="breadcrumb-item active"
-                                aria-current="page"
-                            >
-                                Patient / OPD Registration
-                            </li>
-                        </ol>
-                    </nav>
-                    <div
-                        class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
-                    >
-                        <div>
-                            <h1 class="page-title">Patient / OPD Registration</h1>
-                            <p class="text-muted mb-0 mt-1">
-                                Register a walk-in patient and create today’s
-                                visit record.
-                            </p>
-                        </div>
-                        <span class="badge badge-soft-primary py-2 px-3">
-                            <i class="bi bi-person-badge me-1"></i>
-                            Reception Desk
-                        </span>
-                    </div>
-                    <form id="patientRegistrationForm" data-static-form>
-                        <article class="clinic-card mb-4">
-                            <div class="card-header">
-                                <h2 class="form-section-title">
-                                    <i class="bi bi-person-vcard"></i>
-                                    Patient Information
-                                </h2>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-md-4 col-xl-3">
-                                        <label
-                                            class="form-label"
-                                            for="patientId"
-                                        >
-                                            Patient ID
-                                        </label>
-                                        <input
-                                            id="patientId"
-                                            class="form-control readonly-control"
-                                            value="LC-10483"
-                                            readonly
-                                        />
-                                    </div>
-                                    <div class="col-md-8 col-xl-5">
-                                        <label
-                                            class="form-label"
-                                            for="fullName"
-                                        >
-                                            Full Name
-                                            <span class="required-mark">*</span>
-                                        </label>
-                                        <input
-                                            id="fullName"
-                                            class="form-control"
-                                            placeholder="Enter patient's full name"
-                                            required
-                                            autofocus
-                                        />
-                                    </div>
-                                    <div class="col-md-6 col-xl-2">
-                                        <label
-                                            class="form-label"
-                                            for="dateOfBirth"
-                                        >
-                                            Date of Birth
-                                            <span class="required-mark">*</span>
-                                        </label>
-                                        <input
-                                            id="dateOfBirth"
-                                            class="form-control"
-                                            type="date"
-                                            value="2021-07-10"
-                                            data-date-of-birth
-                                            required
-                                        />
-                                    </div>
-                                    <div class="col-md-6 col-xl-2">
-                                        <label
-                                            class="form-label"
-                                            for="patientAge"
-                                        >
-                                            Age
-                                        </label>
-                                        <input
-                                            id="patientAge"
-                                            class="form-control readonly-control"
-                                            data-patient-age
-                                            readonly
-                                        />
-                                    </div>
-                                    <div class="col-md-6 col-xl-4">
-                                        <label class="form-label" for="gender">
-                                            Gender
-                                            <span class="required-mark">*</span>
-                                        </label>
-                                        <select
-                                            id="gender"
-                                            class="form-select"
-                                            required
-                                        >
-                                            <option value="" selected disabled>
-                                                Select gender
-                                            </option>
-                                            <option>Female</option>
-                                            <option>Male</option>
-                                            <option>Other</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6 col-xl-4">
-                                        <label
-                                            class="form-label"
-                                            for="fatherName"
-                                        >
-                                            Father's Name
-                                        </label>
-                                        <input
-                                            id="fatherName"
-                                            class="form-control"
-                                            placeholder="Enter father's full name"
-                                        />
-                                    </div>
-                                    <div class="col-md-6 col-xl-4">
-                                        <label
-                                            class="form-label"
-                                            for="mobileNumber"
-                                        >
-                                            Mobile Number
-                                            <span class="required-mark">*</span>
-                                        </label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">
-                                                +91
-                                            </span>
-                                            <input
-                                                id="mobileNumber"
-                                                class="form-control"
-                                                type="tel"
-                                                inputmode="numeric"
-                                                placeholder="10-digit mobile number"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label" for="address">
-                                            Address
-                                        </label>
-                                        <textarea
-                                            id="address"
-                                            class="form-control"
-                                            rows="3"
-                                            placeholder="House number, street, locality, city and PIN code"
-                                        ></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
-                        <article class="clinic-card">
-                            <div class="card-header">
-                                <h2 class="form-section-title">
-                                    <i class="bi bi-calendar2-check"></i>
-                                    Visit Information
-                                </h2>
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-md-4">
-                                        <label
-                                            class="form-label"
-                                            for="visitDate"
-                                        >
-                                            Visit Date
-                                            <span class="required-mark">*</span>
-                                        </label>
-                                        <input
-                                            id="visitDate"
-                                            class="form-control"
-                                            type="date"
-                                            value="2026-07-10"
-                                            required
-                                        />
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label
-                                            class="form-label"
-                                            for="visitTime"
-                                        >
-                                            Visit Time
-                                            <span class="required-mark">*</span>
-                                        </label>
-                                        <input
-                                            id="visitTime"
-                                            class="form-control"
-                                            type="time"
-                                            value="10:45"
-                                            required
-                                        />
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label
-                                            class="form-label"
-                                            for="visitType"
-                                        >
-                                            Visit Type
-                                            <span class="required-mark">*</span>
-                                        </label>
-                                        <select
-                                            id="visitType"
-                                            class="form-select"
-                                            required
-                                        >
-                                            <option value="New Visit" selected>
-                                                New Visit
-                                            </option>
-                                            <option value="Follow-up">
-                                                Follow-up
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-actions">
-                                <a
-                                    class="btn btn-light"
-                                    href="receptionist_dashboard.html"
-                                >
-                                    <i class="bi bi-x-lg"></i>
-                                    Cancel
-                                </a>
-                                <button
-                                    class="btn btn-outline-primary"
-                                    type="reset"
-                                >
-                                    <i class="bi bi-arrow-counterclockwise"></i>
-                                    Reset
-                                </button>
-                                <button class="btn btn-primary" type="submit">
-                                    <i class="bi bi-check2-circle"></i>
-                                    Save
-                                </button>
-                                <button
-                                    id="printReceiptBtn"
-                                    class="btn btn-outline-success"
-                                    type="button"
-                                    disabled
-                                >
-                                    <i class="bi bi-printer"></i>
-                                    Print OPD Receipt
-                                </button>
-                            </div>
-                        </article>
-                    </form>
-                </div>
-            </main>
+{% extends "receptionist/base.html" %}
+
+{% block title %}Patient / OPD Registration | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:patient_list' %}">Patients</a>
+        </li>
+        <li
+            class="breadcrumb-item active"
+            aria-current="page"
+        >
+            Patient / OPD Registration
+        </li>
+    </ol>
+</nav>
+<div
+    class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
+>
+    <div>
+        <h1 class="page-title">Patient / OPD Registration</h1>
+        <p class="text-muted mb-0 mt-1">
+            Register a walk-in patient and create today’s
+            visit record.
+        </p>
+    </div>
+    <span class="badge badge-soft-primary py-2 px-3">
+        <i class="bi bi-person-badge me-1"></i>
+        Reception Desk
+    </span>
+</div>
+<form id="patientRegistrationForm" method="POST" action="">
+    {% csrf_token %}
+    <article class="clinic-card mb-4">
+        <div class="card-header">
+            <h2 class="form-section-title">
+                <i class="bi bi-person-vcard"></i>
+                Patient Information
+            </h2>
         </div>
-        <!-- Toast Notification Container -->
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4 col-xl-3">
+                    <label
+                        class="form-label"
+                        for="patientId"
+                    >
+                        Patient ID
+                    </label>
+                    <input
+                        id="patientId"
+                        class="form-control readonly-control"
+                        value="Auto-generated"
+                        readonly
+                    />
+                </div>
+                <div class="col-md-8 col-xl-5">
+                    <label
+                        class="form-label"
+                        for="fullName"
+                    >
+                        Full Name
+                        <span class="required-mark">*</span>
+                    </label>
+                    <input
+                        id="fullName"
+                        name="full_name"
+                        class="form-control"
+                        placeholder="Enter patient's full name"
+                        value="{{ patient_form.full_name.value|default_if_none:'' }}"
+                        required
+                        autofocus
+                    />
+                    {% if patient_form.full_name.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in patient_form.full_name.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 col-xl-2">
+                    <label
+                        class="form-label"
+                        for="dateOfBirth"
+                    >
+                        Date of Birth
+                        <span class="required-mark">*</span>
+                    </label>
+                    <input
+                        id="dateOfBirth"
+                        name="date_of_birth"
+                        class="form-control"
+                        type="date"
+                        value="{% if patient_form.date_of_birth.value %}{{ patient_form.date_of_birth.value|date:'Y-m-d' }}{% endif %}"
+                        data-date-of-birth
+                        required
+                    />
+                    {% if patient_form.date_of_birth.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in patient_form.date_of_birth.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 col-xl-2">
+                    <label
+                        class="form-label"
+                        for="patientAge"
+                    >
+                        Age
+                    </label>
+                    <input
+                        id="patientAge"
+                        class="form-control readonly-control"
+                        data-patient-age
+                        readonly
+                    />
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="gender">
+                        Gender
+                        <span class="required-mark">*</span>
+                    </label>
+                    <select
+                        id="gender"
+                        name="gender"
+                        class="form-select"
+                        required
+                    >
+                        <option value="" {% if not patient_form.gender.value %}selected{% endif %} disabled>
+                            Select gender
+                        </option>
+                        <option value="Female" {% if patient_form.gender.value == 'Female' %}selected{% endif %}>Female</option>
+                        <option value="Male" {% if patient_form.gender.value == 'Male' %}selected{% endif %}>Male</option>
+                        <option value="Other" {% if patient_form.gender.value == 'Other' %}selected{% endif %}>Other</option>
+                    </select>
+                    {% if patient_form.gender.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in patient_form.gender.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label
+                        class="form-label"
+                        for="fatherName"
+                    >
+                        Father's Name
+                    </label>
+                    <input
+                        id="fatherName"
+                        name="father_name"
+                        class="form-control"
+                        placeholder="Enter father's full name"
+                        value="{{ patient_form.father_name.value|default_if_none:'' }}"
+                    />
+                    {% if patient_form.father_name.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in patient_form.father_name.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 col-xl-4">
+                    <label
+                        class="form-label"
+                        for="mobileNumber"
+                    >
+                        Mobile Number
+                        <span class="required-mark">*</span>
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            +91
+                        </span>
+                        <input
+                            id="mobileNumber"
+                            name="mobile_number"
+                            class="form-control"
+                            type="tel"
+                            inputmode="numeric"
+                            placeholder="10-digit mobile number"
+                            value="{{ patient_form.mobile_number.value|default_if_none:'' }}"
+                            required
+                        />
+                    </div>
+                    {% if patient_form.mobile_number.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in patient_form.mobile_number.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="address">
+                        Address
+                    </label>
+                    <textarea
+                        id="address"
+                        name="address"
+                        class="form-control"
+                        rows="3"
+                        placeholder="House number, street, locality, city and PIN code"
+                    >{{ patient_form.address.value|default_if_none:'' }}</textarea>
+                    {% if patient_form.address.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in patient_form.address.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </article>
+    <article class="clinic-card">
+        <div class="card-header">
+            <h2 class="form-section-title">
+                <i class="bi bi-calendar2-check"></i>
+                Visit Information
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label
+                        class="form-label"
+                        for="visitDate"
+                    >
+                        Visit Date
+                        <span class="required-mark">*</span>
+                    </label>
+                    <input
+                        id="visitDate"
+                        name="visit_date"
+                        class="form-control"
+                        type="date"
+                        value="{{ visit_form.initial.visit_date|date:'Y-m-d' }}"
+                        readonly
+                        required
+                    />
+                    {% if visit_form.visit_date.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in visit_form.visit_date.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label
+                        class="form-label"
+                        for="visitTime"
+                    >
+                        Visit Time
+                        <span class="required-mark">*</span>
+                    </label>
+                    <input
+                        id="visitTime"
+                        name="visit_time"
+                        class="form-control"
+                        type="time"
+                        value="{{ visit_form.initial.visit_time|time:'H:i' }}"
+                        readonly
+                        required
+                    />
+                    {% if visit_form.visit_time.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in visit_form.visit_time.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-4">
+                    <label
+                        class="form-label"
+                        for="visitType"
+                    >
+                        Visit Type
+                        <span class="required-mark">*</span>
+                    </label>
+                    <select
+                        id="visitType"
+                        name="visit_type"
+                        class="form-select"
+                        required
+                    >
+                        <option value="New Visit" {% if visit_form.visit_type.value == 'New Visit' or not visit_form.visit_type.value %}selected{% endif %}>
+                            New Visit
+                        </option>
+                        <option value="Follow-up" {% if visit_form.visit_type.value == 'Follow-up' %}selected{% endif %}>
+                            Follow-up
+                        </option>
+                    </select>
+                    {% if visit_form.visit_type.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in visit_form.visit_type.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="form-actions">
+            <a
+                class="btn btn-light"
+                href="{% url 'receptionist:dashboard' %}"
+            >
+                <i class="bi bi-x-lg"></i>
+                Cancel
+            </a>
+            <button
+                class="btn btn-outline-primary"
+                type="reset"
+            >
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Reset
+            </button>
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-check2-circle"></i>
+                Save & Print OPD Receipt
+            </button>
+        </div>
+    </article>
+</form>
+{% endblock %}
+
+{% block before_scripts %}
+<!-- Toast Notification Container -->
         <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
             <div id="successToast" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
@@ -367,36 +351,101 @@
                 </div>
             </div>
         </div>
+{% endblock %}
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="{% static 'js/receptionist.js' %}"></script>
-        <script>
+{% block extra_js %}
+<script>
             document.addEventListener("DOMContentLoaded", function () {
                 var form = document.getElementById("patientRegistrationForm");
-                var printBtn = document.getElementById("printReceiptBtn");
                 var successToast = document.getElementById("successToast");
 
-                if (form && printBtn) {
+                if (form) {
                     form.addEventListener("submit", function (event) {
-                        event.preventDefault();
-                        if (form.checkValidity()) {
-                            // Enable the Print OPD Receipt button
-                            printBtn.removeAttribute("disabled");
-                            
-                            // Show success toast
-                            if (successToast && window.bootstrap) {
-                                var toast = bootstrap.Toast.getOrCreateInstance(successToast);
-                                toast.show();
+                        if (form.hasAttribute("data-static-form")) {
+                            event.preventDefault();
+                            if (form.checkValidity()) {
+                                // Show success toast
+                                if (successToast && window.bootstrap) {
+                                    var toast = bootstrap.Toast.getOrCreateInstance(successToast);
+                                    toast.show();
+                                }
                             }
                         }
                     });
+                }
 
-                    // Disable the Print button on reset
-                    form.addEventListener("reset", function () {
-                        printBtn.setAttribute("disabled", "true");
+                // Medical standard age calculation
+                var dobInput = document.querySelector("[data-date-of-birth]");
+                var ageInput = document.querySelector("[data-patient-age]");
+
+                function calculateMedicalAge() {
+                    if (!dobInput || !ageInput || !dobInput.value) {
+                        if (ageInput) ageInput.value = "";
+                        return;
+                    }
+                    var birthDate = new Date(dobInput.value + "T00:00:00");
+                    var today = new Date();
+
+                    if (birthDate > today) {
+                        ageInput.value = "";
+                        return;
+                    }
+
+                    var years = today.getFullYear() - birthDate.getFullYear();
+                    var months = today.getMonth() - birthDate.getMonth();
+                    var days = today.getDate() - birthDate.getDate();
+
+                    if (days < 0) {
+                        months -= 1;
+                        // Days in the previous month relative to today
+                        var prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                        days += prevMonth.getDate();
+                    }
+
+                    if (months < 0) {
+                        years -= 1;
+                        months += 12;
+                    }
+
+                    var ageString = "";
+                    if (years >= 1) {
+                        var yStr = years === 1 ? "1 Year" : years + " Years";
+                        var mStr = months === 1 ? "1 Month" : months + " Months";
+                        ageString = yStr + " " + mStr;
+                    } else if (months >= 1) {
+                        var mStr = months === 1 ? "1 Month" : months + " Months";
+                        if (days > 0) {
+                            var dStr = days === 1 ? "1 Day" : days + " Days";
+                            ageString = mStr + " " + dStr;
+                        } else {
+                            ageString = mStr;
+                        }
+                    } else {
+                        var dStr = days === 1 ? "1 Day" : days + " Days";
+                        ageString = dStr;
+                    }
+
+                    ageInput.value = ageString;
+                }
+
+                if (dobInput && ageInput) {
+                    dobInput.addEventListener("change", function () {
+                        // Use setTimeout to run after receptionist.js listener
+                        setTimeout(calculateMedicalAge, 0);
                     });
+                    dobInput.addEventListener("input", function () {
+                        setTimeout(calculateMedicalAge, 0);
+                    });
+                    
+                    if (form) {
+                        form.addEventListener("reset", function () {
+                            setTimeout(calculateMedicalAge, 50);
+                        });
+                    }
+
+                    // Run initially
+                    setTimeout(calculateMedicalAge, 100);
                 }
             });
         </script>
-    </body>
-</html>
+{% endblock %}
