@@ -1,4 +1,4 @@
-<aside class="sidebar" aria-label="Main navigation">
+<aside class="sidebar d-flex flex-column" aria-label="Main navigation">
     <a class="brand" href="{% url 'receptionist:dashboard' %}">
         <span class="brand-mark">
             <i class="bi bi-heart-pulse-fill"></i>
@@ -24,4 +24,19 @@
             Logout
         </a>
     </nav>
+    <div class="user-summary d-flex align-items-center gap-2 p-3 m-3 rounded mt-auto">
+        <div class="user-avatar">
+            {% if request.user.first_name and request.user.last_name %}
+                {{ request.user.first_name|make_list|first }}{{ request.user.last_name|make_list|first }}
+            {% else %}
+                RC
+            {% endif %}
+        </div>
+        <div class="d-flex flex-column min-width-0">
+            <span class="user-name fw-semibold text-truncate small">
+                {{ request.user.first_name }} {{ request.user.last_name }}
+            </span>
+            <span class="user-role text-muted small" style="font-size: 0.75rem;">Receptionist</span>
+        </div>
+    </div>
 </aside>

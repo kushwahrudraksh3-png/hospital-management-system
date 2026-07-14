@@ -1,0 +1,289 @@
+{% extends "doctor/base_doctor.html" %}
+
+{% block title %}Patient Summary | Vatsalya Children Hospital{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{% url 'doctor:dashboard' %}">Home</a></li>
+        <li class="breadcrumb-item"><a href="#">Patients</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Patient Summary</li>
+    </ol>
+</nav>
+
+<!-- Page Header with Action Buttons -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h1 class="mb-1">Patient Summary</h1>
+        <p class="text-muted mb-0">Detailed clinical logs, prescription history, vitals, and billing records.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'doctor:queue' %}" class="btn btn-light"><i class="bi bi-arrow-left"></i> Back to Patient List</a>
+        <button class="btn btn-outline-primary" type="button"><i class="bi bi-printer"></i> Print Profile</button>
+        <button class="btn btn-primary" type="button"><i class="bi bi-pencil"></i> Edit Patient</button>
+    </div>
+</div>
+
+<!-- Patient Hero Card -->
+<div class="clinic-card mb-4">
+    <div class="card-body p-4">
+        <div class="row align-items-center">
+            <!-- Photo Column -->
+            <div class="col-md-auto text-center mb-3 mb-md-0">
+                <div class="patient-hero-avatar mx-auto">AS</div>
+            </div>
+            <!-- Information Details Column -->
+            <div class="col-md">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3 justify-content-center justify-content-md-start">
+                    <h2 class="mb-0">Aarav Sharma</h2>
+                    <span class="badge badge-soft-warning">Waiting</span>
+                </div>
+                <div class="row g-3 fs-sm-custom text-muted text-center text-md-start">
+                    <div class="col-sm-6 col-md-3">
+                        <strong>Patient ID:</strong> <span class="text-dark fw-medium">PT-2026-081</span>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <strong>Age / Gender:</strong> <span class="text-dark fw-medium">4 Years / Male</span>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <strong>DOB:</strong> <span class="text-dark fw-medium">12/04/2022</span>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <strong>Last Visit:</strong> <span class="text-dark fw-medium">13/07/2026</span>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <strong>Father's Name:</strong> <span class="text-dark fw-medium">Mr. Rajesh Sharma</span>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <strong>Mobile:</strong> <span class="text-dark fw-medium">9876543210</span>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <strong>Address:</strong> <span class="text-dark fw-medium">A.B. Road, Dhamnod, MP</span>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <strong>Registration Date:</strong> <span class="text-dark fw-medium">15/01/2026</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Health Summary Cards -->
+<div class="row g-3 mb-4">
+    <!-- Weight -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="metric-card h-100">
+            <div class="metric-header">
+                <div class="metric-icon icon-blue"><i class="bi bi-clipboard-data"></i></div>
+                <span class="badge badge-soft-primary">Vitals</span>
+            </div>
+            <div>
+                <div class="metric-label">Weight</div>
+                <div class="metric-value fs-3 mt-1">16 <span class="fs-6 fw-normal text-muted">kg</span></div>
+            </div>
+        </div>
+    </div>
+    <!-- Blood Pressure -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="metric-card h-100">
+            <div class="metric-header">
+                <div class="metric-icon icon-red"><i class="bi bi-heart-pulse"></i></div>
+                <span class="badge badge-soft-danger">Vitals</span>
+            </div>
+            <div>
+                <div class="metric-label">BP</div>
+                <div class="metric-value fs-3 mt-1">95/60 <span class="fs-6 fw-normal text-muted">mmHg</span></div>
+            </div>
+        </div>
+    </div>
+    <!-- Temperature -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="metric-card h-100">
+            <div class="metric-header">
+                <div class="metric-icon icon-orange"><i class="bi bi-thermometer-half"></i></div>
+                <span class="badge badge-soft-warning">Vitals</span>
+            </div>
+            <div>
+                <div class="metric-label">Temp</div>
+                <div class="metric-value fs-3 mt-1 text-danger">99.1 <span class="fs-6 fw-normal text-muted">°F</span></div>
+            </div>
+        </div>
+    </div>
+    <!-- SpO2 -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="metric-card h-100">
+            <div class="metric-header">
+                <div class="metric-icon icon-green"><i class="bi bi-activity"></i></div>
+                <span class="badge badge-soft-success">Vitals</span>
+            </div>
+            <div>
+                <div class="metric-label">SpO₂</div>
+                <div class="metric-value fs-3 mt-1">98 <span class="fs-6 fw-normal text-muted">%</span></div>
+            </div>
+        </div>
+    </div>
+    <!-- Heart Rate -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="metric-card h-100">
+            <div class="metric-header">
+                <div class="metric-icon icon-blue"><i class="bi bi-heart"></i></div>
+                <span class="badge badge-soft-primary">Vitals</span>
+            </div>
+            <div>
+                <div class="metric-label">Heart Rate</div>
+                <div class="metric-value fs-3 mt-1">98 <span class="fs-6 fw-normal text-muted">bpm</span></div>
+            </div>
+        </div>
+    </div>
+    <!-- Pulse Rate -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="metric-card h-100">
+            <div class="metric-header">
+                <div class="metric-icon icon-red"><i class="bi bi-heart-pulse-fill"></i></div>
+                <span class="badge badge-soft-danger">Vitals</span>
+            </div>
+            <div>
+                <div class="metric-label">Pulse Rate</div>
+                <div class="metric-value fs-3 mt-1">98 <span class="fs-6 fw-normal text-muted">bpm</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chief Complaint Section -->
+<div class="clinic-card">
+    <div class="card-header">
+        <div>
+            <h5 class="mb-1 fw-bold text-dark">Chief Complaint</h5>
+            <p class="text-muted mb-0 fs-xs">Primary complaint recorded during OPD registration.</p>
+        </div>
+    </div>
+    <div class="card-body">
+        <p class="fs-5 fw-semibold text-dark mb-0">Fever since 2 days with cough and cold.</p>
+    </div>
+</div>
+
+<!-- Consultation History Section -->
+<div class="clinic-card">
+    <div class="card-header bg-light py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <h5 class="mb-1 fw-bold text-dark">Consultation History</h5>
+            <p class="text-muted mb-0 fs-xs">Complete consultation history of the patient in chronological order.</p>
+        </div>
+        <button class="btn btn-outline-primary btn-sm" id="toggleEmptyStateBtn" type="button">
+            <i class="bi bi-shuffle"></i> Toggle Empty State
+        </button>
+    </div>
+    <div class="card-body p-0">
+        <!-- Active Table State -->
+        <div id="consultationTableContainer" class="table-responsive table-responsive-sticky">
+            <table class="table align-middle mb-0 fs-sm-custom">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">Sr. No.</th>
+                        <th>Visit Date</th>
+                        <th>OPD Number</th>
+                        <th>Visit Type</th>
+                        <th>Follow-up Date</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ps-3 fw-bold">1</td>
+                        <td class="fw-semibold">13/07/2026</td>
+                        <td class="fw-medium">#OPD-2026-1092</td>
+                        <td><span class="badge badge-soft-primary">Follow-up</span></td>
+                        <td>18/07/2026</td>
+                        <td class="text-end pe-3">
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="{% url 'doctor:previous_history' %}" class="btn btn-light btn-sm text-primary btn-icon" title="View Consultation"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'doctor:prescription_preview' %}" class="btn btn-light btn-sm text-success btn-icon" title="View Prescription"><i class="bi bi-prescription"></i></a>
+                                <button class="btn btn-light btn-sm text-muted btn-icon" title="View Lab Report" disabled><i class="bi bi-file-earmark-bar-graph"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="ps-3 fw-bold">2</td>
+                        <td class="fw-semibold">28/06/2026</td>
+                        <td class="fw-medium">#OPD-2026-0982</td>
+                        <td><span class="badge badge-soft-success">New Patient</span></td>
+                        <td>-</td>
+                        <td class="text-end pe-3">
+                            <div class="d-flex justify-content-end gap-1">
+                                <a href="{% url 'doctor:previous_history' %}" class="btn btn-light btn-sm text-primary btn-icon" title="View Consultation"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'doctor:prescription_preview' %}" class="btn btn-light btn-sm text-success btn-icon" title="View Prescription"><i class="bi bi-prescription"></i></a>
+                                <a href="{% url 'doctor:report_view' %}" class="btn btn-light btn-sm text-warning btn-icon" title="View Lab Report"><i class="bi bi-file-earmark-bar-graph"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="consultationEmptyState" class="d-none py-5 text-center">
+            <div class="mb-3">
+                <i class="bi bi-folder-x text-muted" style="font-size: 3.5rem;"></i>
+            </div>
+            <h5 class="text-muted fw-semibold mb-2">No consultation history found for this patient.</h5>
+            <p class="text-muted fs-sm-custom mb-4">You can create a new consultation record for this patient below.</p>
+            <a href="{% url 'doctor:prescription' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create New Consultation</a>
+        </div>
+    </div>
+</div>
+
+<!-- Handwriting Prescription Pad Section -->
+<div class="clinic-card mt-4">
+    <div class="card-header bg-light py-3 border-bottom">
+        <h5 class="mb-1 fw-bold text-dark">Handwriting Prescription Pad</h5>
+        <p class="text-muted mb-0 fs-xs">Write the final prescription using a stylus or touch-enabled device.</p>
+    </div>
+    <div class="card-body">
+        <!-- Toolbar -->
+        <div class="d-flex justify-content-start gap-2 mb-3 flex-wrap">
+            <button type="button" class="btn btn-outline-primary btn-sm active" id="canvasPenBtn" title="Pen">
+                <i class="bi bi-pencil"></i> Pen
+            </button>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="canvasEraserBtn" title="Eraser">
+                <i class="bi bi-eraser"></i> Eraser
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="canvasUndoBtn" title="Undo">
+                <i class="bi bi-arrow-counterclockwise"></i> Undo
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="canvasRedoBtn" title="Redo">
+                <i class="bi bi-arrow-clockwise"></i> Redo
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm ms-auto" id="canvasClearBtn" title="Clear Canvas">
+                <i class="bi bi-trash"></i> Clear Canvas
+            </button>
+        </div>
+
+        <!-- Drawing Canvas Wrapper (A4 portrait) -->
+        <div class="prescription-canvas-wrapper mb-3">
+            <canvas id="handwritingCanvas"></canvas>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row g-3 mt-4">
+            <div class="col-md-4">
+                <a href="{% url 'doctor:prescription_preview' %}" class="btn btn-outline-primary w-100 justify-content-center py-2">
+                    <i class="bi bi-eye"></i> View Prescription
+                </a>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-primary w-100 justify-content-center py-2" id="saveHandwrittenPrescriptionBtn">
+                    <i class="bi bi-save"></i> Save Prescription
+                </button>
+            </div>
+            <div class="col-md-4">
+                <a href="{% url 'doctor:report_list' %}" class="btn btn-success w-100 justify-content-center py-2">
+                    <i class="bi bi-arrow-right-circle"></i> Proceed to Lab
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

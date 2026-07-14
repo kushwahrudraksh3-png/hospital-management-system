@@ -1,0 +1,48 @@
+{% extends "doctor/base_doctor.html" %}
+
+{% block title %}Lab Investigations List | Vatsalya Children Hospital{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="mb-1">Lab Investigations / Reports</h1>
+    <p class="text-muted">Review patient laboratory results and request status.</p>
+</div>
+
+<div class="clinic-card">
+    <div class="card-header">Received Reports</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table clinic-table align-middle mb-0 fs-sm-custom">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Patient ID</th>
+                        <th>Patient Name</th>
+                        <th>Investigation Test</th>
+                        <th>Requested On</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="ps-3 fw-bold">PT-2026-081</td>
+                        <td class="fw-semibold">Aarav Sharma</td>
+                        <td>Complete Blood Count (CBC)</td>
+                        <td>28/06/2026</td>
+                        <td><span class="badge badge-soft-success">Released</span></td>
+                        <td class="text-end pe-3"><a href="{% url 'doctor:report_view' %}" class="btn btn-light btn-sm">View Report</a></td>
+                    </tr>
+                    <tr>
+                        <td class="ps-3 fw-bold">PT-2026-079</td>
+                        <td class="fw-semibold">Diya Joshi</td>
+                        <td>Widal Typhoid Test</td>
+                        <td>12/07/2026</td>
+                        <td><span class="badge badge-soft-warning">Pending</span></td>
+                        <td class="text-end pe-3"><button class="btn btn-light btn-sm" disabled>Awaiting Labs</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

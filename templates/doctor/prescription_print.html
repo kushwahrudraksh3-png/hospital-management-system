@@ -1,0 +1,213 @@
+{% extends "doctor/base_doctor.html" %}
+{% load static %}
+
+{% block title %}Print Prescription | Vatsalya Children Hospital{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Hide shell layout elements for direct print view */
+  .app-shell .sidebar, .app-shell .top-navbar {
+    display: none !important;
+  }
+  .main-area {
+    margin-left: 0 !important;
+  }
+  .page-content {
+    padding: 0 !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Replicated Prescription Pad -->
+<div class="prescription-pad">
+    <!-- Header -->
+    <div class="prescription-header">
+        <img src="{% static 'images/logo.png' %}" alt="Lotus logo" class="header-logo-left">
+        <div class="header-title-container">
+            <h1>वात्सल्य चिल्ड्रेन हॉस्पिटल</h1>
+        </div>
+        <img src="{% static 'images/caduceus.png' %}" alt="Medical caduceus" class="header-logo-right">
+    </div>
+
+    <!-- Registration Bar -->
+    <div class="reg-bar">
+        Reg. No. : NH-6886-MAR-2018
+    </div>
+
+    <!-- Doctor Details -->
+    <div class="doctor-info-section">
+        <div class="doc-details-left">
+            <div class="doc-name">डॉ. कल्पेश मेनेजर (पाटीदार)</div>
+            <div class="doc-degrees">M.B.B.S., M.D. (Pediatrics)</div>
+            <div>Reg. No. : MP-17921</div>
+            <div class="fw-semibold">बाल्य एवं नवजात शिशु रोग विशेषज्ञ</div>
+            <div>Mob. : 96300 37055</div>
+        </div>
+        <div class="doc-details-center">
+            <img src="{% static 'images/sleeping_baby.png' %}" alt="Baby cradle illustration">
+        </div>
+        <div class="doc-details-right">
+            <div class="prev-docs-title">पूर्व चिकित्सक :</div>
+            <ul class="prev-docs-list">
+                <li>इंदिरा गाँधी मेडिकल कॉलेज, नागपुर</li>
+                <li>गजरा राजा मेडिकल कॉलेज, ग्वालियर</li>
+                <li>गांधी मेडिकल कॉलेज, भोपाल</li>
+                <li>रेनबो चिल्ड्रेन हॉस्पिटल, भोपाल</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Patient Demographics Section -->
+    <div class="patient-demographics-section">
+        <div class="demographics-row-1">
+            <div class="field-group w-50-pct">
+                <span class="field-label">Name :</span>
+                <span class="field-value-dotted">Aarav Sharma</span>
+            </div>
+            <div class="field-group w-15-pct">
+                <span class="field-label">Age/Sex :</span>
+                <span class="field-value-dotted">4 Yrs / M</span>
+            </div>
+            <div class="field-group w-15-pct">
+                <span class="field-label">Weight :</span>
+                <span class="field-value-dotted">16 kg</span>
+            </div>
+            <div class="field-group w-15-pct">
+                <span class="field-label">Height :</span>
+                <span class="field-value-dotted">102 cm</span>
+            </div>
+        </div>
+        <div class="demographics-row-2">
+            <div class="field-group w-40-pct">
+                <span class="field-label">Complaints :</span>
+                <span class="field-value-dotted">Fever, coughing for 3 days</span>
+            </div>
+            <div class="field-group w-30-pct">
+                <span class="field-label">Add. :</span>
+                <span class="field-value-dotted">Dhamnod, Dhar, MP</span>
+            </div>
+            <div class="field-group w-25-pct">
+                <span class="field-label">Bottle Feed :</span>
+                <div class="bottle-feed-options ms-2">
+                    <span>Yes : <i class="bi bi-square"></i></span>
+                    <span>No : <i class="bi bi-check-square-fill text-primary"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prescription Body Grid Layout -->
+    <div class="prescription-body-grid">
+        <!-- Left Examinations Panel -->
+        <div class="body-left-panel">
+            <div class="exam-fields-list">
+                <div>
+                    <div class="exam-item-heading">Examinations :</div>
+                    <div class="prescription-text-entry">Pharynx congested, alert, active</div>
+                </div>
+                <div>
+                    <div class="exam-item-heading">R/S :</div>
+                    <div class="prescription-text-entry">Chest clear, no creps</div>
+                </div>
+                <div>
+                    <div class="exam-item-heading">CVS :</div>
+                    <div class="prescription-text-entry">S1 S2 Normal</div>
+                </div>
+                <div>
+                    <div class="exam-item-heading">P/A :</div>
+                    <div class="prescription-text-entry">Soft, non-tender</div>
+                </div>
+                <div>
+                    <div class="exam-item-heading">CNS :</div>
+                    <div class="prescription-text-entry">No focal deficits</div>
+                </div>
+                <div>
+                    <div class="exam-item-heading">Investigations :</div>
+                    <div class="prescription-text-entry">CBC, Widal test if fever persists</div>
+                </div>
+            </div>
+
+            <!-- Vitals sidebar -->
+            <div class="vitals-card-box">
+                <div class="vitals-box-title">Vitals Log</div>
+                <div class="vital-line-item">
+                    <span class="vital-line-label">HR/PR :</span>
+                    <span class="vital-line-value-underlined">98 bpm</span>
+                </div>
+                <div class="vital-line-item">
+                    <span class="vital-line-label">RR :</span>
+                    <span class="vital-line-value-underlined">22/min</span>
+                </div>
+                <div class="vital-line-item">
+                    <span class="vital-line-label">SpO2 :</span>
+                    <span class="vital-line-value-underlined">98%</span>
+                </div>
+                <div class="vital-line-item">
+                    <span class="vital-line-label">Temp :</span>
+                    <span class="vital-line-value-underlined">99.1 °F</span>
+                </div>
+                <div class="vital-line-item">
+                    <span class="vital-line-label">B.P. :</span>
+                    <span class="vital-line-value-underlined">95/60</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Prescribed Medicines Rx Panel -->
+        <div class="body-right-panel">
+            <div class="rx-symbol">Rx</div>
+            <div class="prescription-lines-canvas">
+                <div class="fw-bold text-primary mb-2 fs-90">Diagnosis: Acute Viral Bronchitis</div>
+                
+                <ol class="ps-3 fw-medium">
+                    <li class="mb-3">
+                        <strong>Syp. Paracetamol 250mg/5ml</strong> - 5 ml - Twice daily (BD) - 3 days <br>
+                        <span class="text-muted fs-xxs">[Instruction: Take after food]</span>
+                    </li>
+                    <li class="mb-3">
+                        <strong>Syp. Amoxicillin 125mg/5ml</strong> - 5 ml - Three times daily (TD) - 5 days <br>
+                        <span class="text-muted fs-xxs">[Instruction: Take after food]</span>
+                    </li>
+                </ol>
+
+                <div class="mt-4 fs-80 lh-1-6">
+                    <strong>Advice:</strong> Warm saline gargles twice daily. Keep hydrated. Avoid cold and carbonated drinks.
+                </div>
+                <div class="mt-2 fs-80">
+                    <strong>Next Follow-up:</strong> 18/07/2026
+                </div>
+            </div>
+
+            <!-- Signature -->
+            <div class="signature-container">
+                <div class="signature-line">Dr. Kalpesh Patidar</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="prescription-footer">
+        <div class="footer-slogan-row">
+            <div class="footer-slogan">Towards Better Child Health</div>
+        </div>
+        <div class="footer-timing-bar">
+            परामर्श समय : सुबह 10 से दोपहर 2 बजे तक एवं सायंकाल 5 से रात्रि 8 बजे तक (सोमवार अवकाश)
+        </div>
+        <div class="footer-address-bar">
+            <div class="swachh-logo-container">
+                <img src="{% static 'images/swachh_bharat.png' %}" alt="Swachh Bharat spectacles">
+                <span>एक कदम स्वच्छता की ओर</span>
+            </div>
+            <div>ए.बी. रोड, धामनोद, तह. धरमपुरी, जिला-धार (म.प्र.) 454 552, मो. 96300-37055</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add the auto-print-page class to body to trigger print styles and behaviors
+    document.body.classList.add('auto-print-page');
+</script>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "doctor/base_doctor.html" %}
+
+{% block title %}Prescription Entry | Vatsalya Children Hospital{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div>
+        <h1 class="mb-1">Prescription Details Entry</h1>
+        <p class="text-muted mb-0">Patient: Aarav Sharma | 4 Years | Wt: 16 kg</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'doctor:prescription_preview' %}" class="btn btn-outline-primary"><i class="bi bi-eye"></i> Preview Pad</a>
+        <a href="{% url 'doctor:prescription_print' %}" class="btn btn-primary"><i class="bi bi-printer"></i> Print Directly</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <!-- Diagnosis & Findings -->
+        <div class="clinic-card mb-4">
+            <div class="card-header">Diagnosis & Findings</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="diagnosisSelect" class="form-label fw-semibold">Provisional Diagnosis</label>
+                        <input class="form-control" id="diagnosisSelect" placeholder="e.g. Acute Viral Bronchitis">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="adviceField" class="form-label fw-semibold">General Advice & Dietary Instructions</label>
+                        <input class="form-control" id="adviceField" placeholder="e.g. Warm saline gargles, avoid cold drinks">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medicines Table -->
+        <div class="clinic-card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Prescribed Medicines</span>
+                <button type="button" class="btn btn-outline-primary btn-sm" data-add-medicine><i class="bi bi-plus-circle"></i> Add Medicine</button>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 fs-sm-custom">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Medicine Name / Formula</th>
+                                <th class="w-15">Strength</th>
+                                <th class="w-15">Dosage</th>
+                                <th class="w-20">Frequency</th>
+                                <th class="w-12">Duration</th>
+                                <th class="w-15">Instructions</th>
+                                <th class="text-end w-8"></th>
+                            </tr>
+                        </thead>
+                        <tbody data-prescription-body>
+                            <tr>
+                                <td>
+                                    <input class="form-control medicine-name" aria-label="Medicine Name" placeholder="e.g. Syp. Paracetamol">
+                                </td>
+                                <td>
+                                    <input class="form-control" aria-label="Strength" placeholder="e.g. 250mg/5ml">
+                                </td>
+                                <td>
+                                    <input class="form-control" aria-label="Dosage" placeholder="e.g. 5 ml">
+                                </td>
+                                <td>
+                                    <select class="form-select" aria-label="Frequency">
+                                        <option>Once daily (OD)</option>
+                                        <option selected>Twice daily (BD)</option>
+                                        <option>Three times daily (TD)</option>
+                                        <option>Four times daily (QD)</option>
+                                        <option>SOS (As required)</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input class="form-control" aria-label="Duration" placeholder="e.g. 3 days">
+                                </td>
+                                <td>
+                                    <select class="form-select instruction-select" aria-label="Instructions">
+                                        <option selected>After Food</option>
+                                        <option>Before Food</option>
+                                        <option>At Bedtime</option>
+                                        <option>With Milk</option>
+                                    </select>
+                                </td>
+                                <td class="text-end">
+                                    <button class="btn btn-light btn-sm text-danger" type="button" data-remove-medicine aria-label="Remove medicine">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Follow Up & Submission -->
+        <div class="clinic-card mb-4">
+            <div class="card-header">Follow Up & Notes</div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="followupDate" class="form-label fw-semibold">Next Follow-Up Date</label>
+                        <input type="date" class="form-control" id="followupDate">
+                    </div>
+                    <div class="col-md-8 mb-3">
+                        <label for="followupNotes" class="form-label fw-semibold">Follow-Up Advice / Special Notes</label>
+                        <input class="form-control" id="followupNotes" placeholder="e.g. Review if fever persists after 3 days">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2 mb-5">
+            <a href="{% url 'doctor:patient_summary' %}" class="btn btn-light"><i class="bi bi-arrow-left"></i> Back to Summary</a>
+            <a href="{% url 'doctor:prescription_preview' %}" class="btn btn-success"><i class="bi bi-file-earmark-check"></i> Generate & Preview Prescription</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

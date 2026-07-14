@@ -1,0 +1,66 @@
+{% extends "doctor/base_doctor.html" %}
+
+{% block title %}View Investigation Report | Vatsalya Children Hospital{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Investigation Report</h1>
+        <p class="text-muted">Aarav Sharma | CBC Blood Report</p>
+    </div>
+    <button class="btn btn-light" data-back-btn><i class="bi bi-arrow-left"></i> Back</button>
+</div>
+
+<div class="clinic-card">
+    <div class="card-header bg-light">Complete Blood Count (CBC)</div>
+    <div class="card-body">
+        <div class="row mb-3 fs-xs">
+            <div class="col-sm-6">
+                <strong>Requested On:</strong> 28/06/2026<br>
+                <strong>Sample Collected:</strong> 28/06/2026 11:30 AM
+            </div>
+            <div class="col-sm-6 text-sm-end">
+                <strong>Lab:</strong> Main Hospital Lab<br>
+                <strong>Released Date:</strong> 28/06/2026 04:00 PM
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle fs-sm-custom">
+                <thead class="table-light">
+                    <tr>
+                        <th>Test Parameter</th>
+                        <th>Result Value</th>
+                        <th>Reference Range</th>
+                        <th>Units</th>
+                        <th>Remark</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Hemoglobin (Hb)</td>
+                        <td class="fw-semibold">12.5</td>
+                        <td>11.0 - 14.5</td>
+                        <td>g/dL</td>
+                        <td><span class="badge badge-soft-success">Normal</span></td>
+                    </tr>
+                    <tr>
+                        <td>Total WBC Count</td>
+                        <td class="fw-semibold text-danger">11,200</td>
+                        <td>4,000 - 11,000</td>
+                        <td>/cumm</td>
+                        <td><span class="badge badge-soft-danger">High (Infection)</span></td>
+                    </tr>
+                    <tr>
+                        <td>Platelet Count</td>
+                        <td class="fw-semibold">2.4</td>
+                        <td>1.5 - 4.5</td>
+                        <td>Lakhs/cumm</td>
+                        <td><span class="badge badge-soft-success">Normal</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

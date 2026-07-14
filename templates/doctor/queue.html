@@ -1,0 +1,81 @@
+{% extends "doctor/base_doctor.html" %}
+
+{% block title %}Today's Patients | Vatsalya Children Hospital{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Today's Patients</h1>
+        <p class="text-muted mb-0">Monitor and call patients in order of registration.</p>
+    </div>
+</div>
+
+<div class="clinic-card">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter-tab="all">All Patients</button>
+            <button class="filter-tab" data-filter-tab="waiting">Waiting</button>
+            <button class="filter-tab" data-filter-tab="completed">Completed</button>
+        </div>
+        <div class="search-field">
+            <i class="bi bi-search"></i>
+            <input class="form-control form-control-sm" data-queue-search placeholder="Search by name or ID...">
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table clinic-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Queue No</th>
+                        <th>Patient ID</th>
+                        <th>Name</th>
+                        <th>Age/Sex</th>
+                        <th>Token Time</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-status="waiting">
+                        <td class="fw-bold">#15</td>
+                        <td class="patient-id">PT-2026-081</td>
+                        <td class="patient-name fw-semibold">Aarav Sharma</td>
+                        <td>4 Yrs / Male</td>
+                        <td>10:15 AM</td>
+                        <td><span class="badge badge-soft-warning">Waiting</span></td>
+                        <td class="text-end"><a href="{% url 'doctor:patient_summary' %}" class="btn btn-primary btn-sm">Examine</a></td>
+                    </tr>
+                    <tr data-status="waiting">
+                        <td class="fw-bold">#16</td>
+                        <td class="patient-id">PT-2026-085</td>
+                        <td class="patient-name fw-semibold">Ananya Iyer</td>
+                        <td>2 Yrs / Female</td>
+                        <td>10:30 AM</td>
+                        <td><span class="badge badge-soft-warning">Waiting</span></td>
+                        <td class="text-end"><a href="{% url 'doctor:patient_summary' %}" class="btn btn-outline-primary btn-sm">Examine</a></td>
+                    </tr>
+                    <tr data-status="waiting">
+                        <td class="fw-bold">#17</td>
+                        <td class="patient-id">PT-2026-088</td>
+                        <td class="patient-name fw-semibold">Vihaan Patel</td>
+                        <td>9 Mths / Male</td>
+                        <td>10:45 AM</td>
+                        <td><span class="badge badge-soft-warning">Waiting</span></td>
+                        <td class="text-end"><a href="{% url 'doctor:patient_summary' %}" class="btn btn-outline-primary btn-sm">Examine</a></td>
+                    </tr>
+                    <tr data-status="completed">
+                        <td class="fw-bold">#14</td>
+                        <td class="patient-id">PT-2026-079</td>
+                        <td class="patient-name fw-semibold">Diya Joshi</td>
+                        <td>7 Yrs / Female</td>
+                        <td>09:45 AM</td>
+                        <td><span class="badge badge-soft-success">Completed</span></td>
+                        <td class="text-end"><a href="{% url 'doctor:prescription_preview' %}" class="btn btn-light btn-sm">View Rx</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

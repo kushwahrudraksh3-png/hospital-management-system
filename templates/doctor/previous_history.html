@@ -1,0 +1,73 @@
+{% extends "doctor/base_doctor.html" %}
+
+{% block title %}Previous History | Vatsalya Children Hospital{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">Previous History</h1>
+        <p class="text-muted">Aarav Sharma | PT-2026-081</p>
+    </div>
+    <button class="btn btn-light" data-back-btn><i class="bi bi-arrow-left"></i> Back</button>
+</div>
+
+<!-- History cards detailing each visit -->
+<div class="clinic-card mb-4">
+    <div class="card-header bg-light d-flex justify-content-between">
+        <span class="fw-bold text-primary">Consultation on 13/07/2026</span>
+        <span class="text-muted">Doctor: Dr. Kalpesh Patidar</span>
+    </div>
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3"><strong>Vitals:</strong> Wt: 16 kg, Ht: 102 cm, Temp: 99.1 °F, HR: 98 bpm, RR: 22/min</div>
+            <div class="col-md-9">
+                <strong>Complaints:</strong> High fever and dry cough for 3 days. Loss of appetite.<br>
+                <strong>Examinations:</strong> Pharynx congested. Lungs: Bilateral clear, no wheeze.
+            </div>
+        </div>
+        <div class="border-top pt-2 mt-2">
+            <strong>Prescribed Medicines:</strong>
+            <div class="table-responsive mt-1">
+                <table class="table table-sm table-bordered mb-0 fs-80">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Medicine Name</th>
+                            <th>Strength</th>
+                            <th>Dosage</th>
+                            <th>Frequency</th>
+                            <th>Duration</th>
+                            <th>Instructions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Syp. Paracetamol</td>
+                            <td>250mg / 5ml</td>
+                            <td>5 ml</td>
+                            <td>Three times daily</td>
+                            <td>3 days</td>
+                            <td>After Food</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="clinic-card">
+    <div class="card-header bg-light d-flex justify-content-between">
+        <span class="fw-bold text-primary">Consultation on 28/06/2026</span>
+        <span class="text-muted">Doctor: Dr. Kalpesh Patidar</span>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3"><strong>Vitals:</strong> Wt: 15.8 kg, Ht: 101.5 cm, Temp: 98.4 °F</div>
+            <div class="col-md-9">
+                <strong>Complaints:</strong> Vaccination follow-up. Mild nasal congestion.<br>
+                <strong>Examinations:</strong> Active and alert. Vaccination card up to date.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

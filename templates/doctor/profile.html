@@ -1,0 +1,57 @@
+{% extends "doctor/base_doctor.html" %}
+
+{% block title %}Doctor Profile | Vatsalya Children Hospital{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="mb-1">Doctor Profile Settings</h1>
+    <p class="text-muted">Manage your personal information, signature assets, and timing schedules.</p>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="clinic-card mb-4">
+            <div class="card-header">Personal Information</div>
+            <form>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="profName" class="form-label fw-semibold">Full Name (Hindi)</label>
+                            <input class="form-control" id="profName" value="डॉ. कल्पेश मेनेजर (पाटीदार)">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="profDegrees" class="form-label fw-semibold">Degrees & Qualifications</label>
+                            <input class="form-control" id="profDegrees" value="M.B.B.S., M.D. (Pediatrics)">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="profReg" class="form-label fw-semibold">State Council Reg. Number</label>
+                            <input class="form-control" id="profReg" value="MP-17921">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="profPhone" class="form-label fw-semibold">Contact Mobile</label>
+                            <input class="form-control" id="profPhone" value="96300 37055">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" data-profile-save>Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Signature file upload -->
+        <div class="clinic-card mb-4">
+            <div class="card-header">Doctor Signature</div>
+            <div class="card-body text-center">
+                <div class="border rounded p-3 mb-3 bg-light sig-preview">
+                    [ Signature Image Preview ]
+                </div>
+                <input type="file" class="form-control form-control-sm mb-2" id="sigFile" aria-label="Upload signature file">
+                <p class="text-muted fs-xxs">Upload a transparent PNG signature to auto-append to prescriptions.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

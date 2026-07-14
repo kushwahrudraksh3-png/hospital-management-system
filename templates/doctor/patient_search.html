@@ -1,0 +1,76 @@
+{% extends "doctor/base_doctor.html" %}
+
+{% block title %}Patient Search | Vatsalya Children Hospital{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h1 class="mb-1">Patient Search</h1>
+    <p class="text-muted">Find existing patients to view their visit history, lab reports, and previous prescriptions.</p>
+</div>
+
+<div class="clinic-card mb-4">
+    <div class="card-body">
+        <form class="row g-3">
+            <div class="col-md-5">
+                <label for="searchName" class="form-label fw-semibold">Patient Name / ID</label>
+                <input class="form-control" id="searchName" placeholder="Enter patient name or ID (e.g. PT-2026-...)">
+            </div>
+            <div class="col-md-4">
+                <label for="patientType" class="form-label fw-semibold">Patient Type</label>
+                <select class="form-select" id="patientType">
+                    <option value="all" selected>All Patients</option>
+                    <option value="new">New Patient</option>
+                    <option value="followup">Follow-up Patient</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="button" class="btn btn-primary w-100 btn-padding-y-lg" data-search-btn>
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="clinic-card">
+    <div class="card-header">Search Results</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table clinic-table align-middle mb-0 fs-sm-custom">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Patient ID</th>
+                        <th>Name</th>
+                        <th>Parent / Guardian</th>
+                        <th>Contact</th>
+                        <th>Last Visit</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-patient-type="followup">
+                        <td class="ps-3 fw-bold">PT-2026-081</td>
+                        <td class="fw-semibold">Aarav Sharma</td>
+                        <td>Mr. Rajesh Sharma</td>
+                        <td>9876543210</td>
+                        <td>13/07/2026</td>
+                        <td class="text-end pe-3">
+                            <a href="{% url 'doctor:patient_summary' %}" class="btn btn-light btn-sm"><i class="bi bi-eye"></i> View File</a>
+                        </td>
+                    </tr>
+                    <tr data-patient-type="new">
+                        <td class="ps-3 fw-bold">PT-2026-064</td>
+                        <td class="fw-semibold">Karan Malhotra</td>
+                        <td>Mrs. Pooja Malhotra</td>
+                        <td>9123456789</td>
+                        <td>28/06/2026</td>
+                        <td class="text-end pe-3">
+                            <a href="{% url 'doctor:patient_summary' %}" class="btn btn-light btn-sm"><i class="bi bi-eye"></i> View File</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
