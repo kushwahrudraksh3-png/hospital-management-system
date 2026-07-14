@@ -22,8 +22,7 @@
     <div>
         <h1 class="page-title">Patients</h1>
         <p class="text-muted mb-0 mt-1">
-            Search, view and manage registered patient
-            records.
+            Search, view and manage registered patient records.
         </p>
     </div>
     <a
@@ -34,6 +33,7 @@
         Register New Patient
     </a>
 </div>
+
 <section class="mb-4" aria-label="Patient summary">
     <div class="row g-3">
         <div class="col-sm-6 col-xl-3">
@@ -42,7 +42,7 @@
                     <i class="bi bi-people"></i>
                 </div>
                 <p class="metric-label">Total Patients</p>
-                <div class="metric-value">2,846</div>
+                <div class="metric-value">{{ total_patients }}</div>
                 <span class="text-muted small">
                     Registered in clinic
                 </span>
@@ -54,9 +54,9 @@
                     <i class="bi bi-calendar-day"></i>
                 </div>
                 <p class="metric-label">Today's Patients</p>
-                <div class="metric-value">48</div>
+                <div class="metric-value">{{ today_patients_count }}</div>
                 <span class="text-muted small">
-                    8 registered today
+                    Active today
                 </span>
             </article>
         </div>
@@ -66,9 +66,9 @@
                     <i class="bi bi-person-plus"></i>
                 </div>
                 <p class="metric-label">New Patients</p>
-                <div class="metric-value">8</div>
+                <div class="metric-value">{{ today_new_count }}</div>
                 <span class="text-muted small">
-                    First clinic visits
+                    First clinic visits today
                 </span>
             </article>
         </div>
@@ -80,7 +80,7 @@
                 <p class="metric-label">
                     Follow-up Patients
                 </p>
-                <div class="metric-value">40</div>
+                <div class="metric-value">{{ today_followup_count }}</div>
                 <span class="text-muted small">
                     Returning visits today
                 </span>
@@ -88,68 +88,55 @@
         </div>
     </div>
 </section>
-<section class="clinic-card" data-patient-list>
+
+<section class="clinic-card">
     <div class="card-header">
-        <div
-            class="d-flex flex-wrap gap-3 justify-content-between align-items-center"
-        >
+        <form method="GET" action="{% url 'receptionist:patient_list' %}" class="d-flex flex-wrap gap-3 justify-content-between align-items-center w-100">
+            <input type="hidden" name="filter" value="{{ filter_type }}">
             <div class="search-field flex-grow-1">
                 <i class="bi bi-search"></i>
                 <input
+                    name="q"
                     class="form-control"
-                    data-patient-search
                     aria-label="Search patients"
                     placeholder="Search by patient name, mobile number or patient ID"
+                    value="{{ q|default:'' }}"
                 />
             </div>
             <div
                 class="filter-tabs"
                 aria-label="Patient filters"
             >
-                <button
-                    class="filter-tab active"
-                    data-patient-filter="all"
-                    type="button"
+                <a
+                    class="filter-tab {% if filter_type == 'all' or not filter_type %}active{% endif %}"
+                    href="{% url 'receptionist:patient_list' %}?filter=all{% if q %}&q={{ q }}{% endif %}"
                 >
                     All Patients
-                </button>
-                <button
-                    class="filter-tab"
-                    data-patient-filter="today"
-                    type="button"
+                </a>
+                <a
+                    class="filter-tab {% if filter_type == 'today' %}active{% endif %}"
+                    href="{% url 'receptionist:patient_list' %}?filter=today{% if q %}&q={{ q }}{% endif %}"
                 >
                     Today's Patients
-                </button>
-                <button
-                    class="filter-tab"
-                    data-patient-filter="new"
-                    type="button"
+                </a>
+                <a
+                    class="filter-tab {% if filter_type == 'new' %}active{% endif %}"
+                    href="{% url 'receptionist:patient_list' %}?filter=new{% if q %}&q={{ q }}{% endif %}"
                 >
                     New Patients
-                </button>
-                <button
-                    class="filter-tab"
-                    data-patient-filter="followup"
-                    type="button"
+                </a>
+                <a
+                    class="filter-tab {% if filter_type == 'followup' %}active{% endif %}"
+                    href="{% url 'receptionist:patient_list' %}?filter=followup{% if q %}&q={{ q }}{% endif %}"
                 >
                     Follow-up Patients
-                </button>
+                </a>
             </div>
-        </div>
+        </form>
     </div>
-    <div class="table-loading" data-patient-loading hidden>
-        <div
-            class="spinner-border spinner-border-sm mb-2"
-            role="status"
-        ></div>
-        <p class="text-muted small mb-0">
-            Updating patient list…
-        </p>
-    </div>
-    <div
-        class="table-responsive border-0 rounded-0"
-        data-patient-table
-    >
+
+    {% if page_obj %}
+    <div class="table-responsive border-0 rounded-0">
         <table class="table clinic-table">
             <thead>
                 <tr>
@@ -158,247 +145,198 @@
                     <th>Age</th>
                     <th>Gender</th>
                     <th>Mobile Number</th>
-                    <th>Last Visit</th>
+                    <th>Registration Date</th>
+                    <th>Latest OPD Visit Date</th>
                     <th>Status</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <tr
-                    data-patient-row
-                    data-patient-type="today new"
-                >
-                    <td class="fw-semibold">LC-10483</td>
+                {% for patient in page_obj %}
+                <tr>
+                    <td class="fw-semibold">{{ patient.uhid }}</td>
                     <td>
-                        <div class="fw-semibold">
-                            Ishaan Malhotra
-                        </div>
-                        <small class="text-muted">
-                            New registration
-                        </small>
+                        <div class="fw-semibold">{{ patient.full_name }}</div>
                     </td>
-                    <td>5 yrs</td>
-                    <td>Male</td>
-                    <td>98765 10234</td>
-                    <td>Today, 10:45 AM</td>
+                    <td>{{ patient.age }}</td>
+                    <td>{{ patient.gender }}</td>
+                    <td>{{ patient.mobile_number }}</td>
+                    <td>{{ patient.created_at|date:"d M Y" }}</td>
                     <td>
-                        <span
-                            class="badge badge-soft-primary"
-                        >
-                            New
-                        </span>
+                        {% if patient.latest_visit_date %}
+                            {{ patient.latest_visit_date|date:"d M Y" }}
+                        {% else %}
+                            No visits
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-soft-success">Active</span>
                     </td>
                     <td class="text-end">
-                        <a
-                            class="btn btn-light btn-sm"
-                            href="{% url 'receptionist:patient_summary' %}"
-                        >
-                            View
-                        </a>
-                    </td>
-                </tr>
-                <tr
-                    data-patient-row
-                    data-patient-type="today followup"
-                >
-                    <td class="fw-semibold">LC-10482</td>
-                    <td>
-                        <div class="fw-semibold">
-                            Aarav Sharma
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a class="btn btn-light btn-sm" href="{% url 'receptionist:patient_summary_detail' patient.id %}">View</a>
+                            <button
+                                type="button"
+                                class="btn btn-outline-primary btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#newOpdModal"
+                                data-patient-id="{{ patient.id }}"
+                                data-patient-name="{{ patient.full_name }}"
+                                data-patient-uhid="{{ patient.uhid }}"
+                            >
+                                New OPD
+                            </button>
                         </div>
-                        <small class="text-muted">
-                            Dr. Kalpesh Manager (Patidar)
-                        </small>
-                    </td>
-                    <td>4 yrs</td>
-                    <td>Male</td>
-                    <td>98765 43210</td>
-                    <td>Today, 10:20 AM</td>
-                    <td>
-                        <span
-                            class="badge badge-soft-success"
-                        >
-                            Active
-                        </span>
-                    </td>
-                    <td class="text-end">
-                        <a
-                            class="btn btn-light btn-sm"
-                            href="{% url 'receptionist:patient_summary' %}"
-                        >
-                            View
-                        </a>
                     </td>
                 </tr>
-                <tr
-                    data-patient-row
-                    data-patient-type="today followup"
-                >
-                    <td class="fw-semibold">LC-10481</td>
-                    <td>
-                        <div class="fw-semibold">
-                            Siya Patel
-                        </div>
-                        <small class="text-muted">
-                            Follow-up visit
-                        </small>
-                    </td>
-                    <td>2 yrs</td>
-                    <td>Female</td>
-                    <td>98231 56094</td>
-                    <td>Today, 10:05 AM</td>
-                    <td>
-                        <span
-                            class="badge badge-soft-success"
-                        >
-                            Active
-                        </span>
-                    </td>
-                    <td class="text-end">
-                        <a
-                            class="btn btn-light btn-sm"
-                            href="{% url 'receptionist:patient_summary' %}"
-                        >
-                            View
-                        </a>
-                    </td>
-                </tr>
-                <tr
-                    data-patient-row
-                    data-patient-type="followup"
-                >
-                    <td class="fw-semibold">LC-09894</td>
-                    <td>
-                        <div class="fw-semibold">
-                            Kabir Khan
-                        </div>
-                        <small class="text-muted">
-                            Dr. Kalpesh Manager (Patidar)
-                        </small>
-                    </td>
-                    <td>8 yrs</td>
-                    <td>Male</td>
-                    <td>99721 32457</td>
-                    <td>08 Jul 2026</td>
-                    <td>
-                        <span
-                            class="badge badge-soft-muted"
-                        >
-                            Inactive
-                        </span>
-                    </td>
-                    <td class="text-end">
-                        <a
-                            class="btn btn-light btn-sm"
-                            href="{% url 'receptionist:patient_summary' %}"
-                        >
-                            View
-                        </a>
-                    </td>
-                </tr>
-                <tr
-                    data-patient-row
-                    data-patient-type="new"
-                >
-                    <td class="fw-semibold">LC-10476</td>
-                    <td>
-                        <div class="fw-semibold">
-                            Meera Joshi
-                        </div>
-                        <small class="text-muted">
-                            New registration
-                        </small>
-                    </td>
-                    <td>10 mo</td>
-                    <td>Female</td>
-                    <td>98112 45066</td>
-                    <td>07 Jul 2026</td>
-                    <td>
-                        <span
-                            class="badge badge-soft-primary"
-                        >
-                            New
-                        </span>
-                    </td>
-                    <td class="text-end">
-                        <a
-                            class="btn btn-light btn-sm"
-                            href="{% url 'receptionist:patient_summary' %}"
-                        >
-                            View
-                        </a>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
-    <div class="empty-state" data-patient-empty hidden>
-        <div class="empty-state-icon">
-            <i class="bi bi-search"></i>
+    {% else %}
+    <div class="empty-state py-5 text-center">
+        <div class="empty-state-icon mb-3 fs-1 text-muted">
+            <i class="bi bi-people"></i>
         </div>
-        <h3>No patients found</h3>
-        <p>
-            Try a different name, mobile number, patient ID
-            or patient filter.
+        <h3 class="h5">No patients found</h3>
+        <p class="text-muted">
+            {% if q or filter_type != 'all' %}
+                Try a different name, mobile number, patient ID or patient filter.
+            {% else %}
+                No patients have been registered yet.
+            {% endif %}
         </p>
-        <button
-            class="btn btn-outline-primary"
-            data-patient-clear
-            type="button"
-        >
-            Clear search
-        </button>
+        {% if q or filter_type != 'all' %}
+            <a class="btn btn-outline-primary btn-sm mt-2" href="{% url 'receptionist:patient_list' %}">
+                Clear search
+            </a>
+        {% endif %}
     </div>
+    {% endif %}
+
+    {% if page_obj.has_other_pages %}
     <div
         class="card-body d-flex flex-wrap gap-3 justify-content-between align-items-center border-top"
     >
         <span class="text-muted small">
-            Showing 1–5 of 2,846 patients
+            Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} patients
         </span>
         <nav aria-label="Patient list pages">
-            <ul class="pagination">
-                <li class="page-item disabled">
-                    <a
-                        class="page-link"
-                        href="{% url 'receptionist:patient_list' %}"
-                    >
-                        Previous
-                    </a>
-                </li>
-                <li class="page-item active">
-                    <a
-                        class="page-link"
-                        href="{% url 'receptionist:patient_list' %}"
-                    >
-                        1
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a
-                        class="page-link"
-                        href="{% url 'receptionist:patient_list' %}"
-                    >
-                        2
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a
-                        class="page-link"
-                        href="{% url 'receptionist:patient_list' %}"
-                    >
-                        3
-                    </a>
-                </li>
-                <li class="page-item">
-                    <a
-                        class="page-link"
-                        href="{% url 'receptionist:patient_list' %}"
-                    >
-                        Next
-                    </a>
-                </li>
+            <ul class="pagination mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a
+                            class="page-link"
+                            href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                        >
+                            Previous
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a
+                                class="page-link"
+                                href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                            >
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a
+                            class="page-link"
+                            href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                        >
+                            Next
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                {% endif %}
             </ul>
         </nav>
     </div>
+    {% elif page_obj %}
+    <div
+        class="card-body d-flex flex-wrap gap-3 justify-content-between align-items-center border-top"
+    >
+        <span class="text-muted small">
+            Showing {{ page_obj.paginator.count }} patient{{ page_obj.paginator.count|pluralize }}
+        </span>
+    </div>
+    {% endif %}
 </section>
+
+<!-- New OPD Modal -->
+<div class="modal fade" id="newOpdModal" tabindex="-1" aria-labelledby="newOpdModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newOpdModalLabel">New OPD Visit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" id="newOpdForm" action="">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold mb-0">Patient Name</label>
+                        <input type="text" id="modalPatientName" class="form-control-plaintext fw-bold text-primary py-0" readonly value="">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold mb-0">UHID</label>
+                        <input type="text" id="modalPatientUHID" class="form-control-plaintext text-muted py-0" readonly value="">
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_payment_mode" class="form-label fw-semibold">Payment Mode <span class="text-danger">*</span></label>
+                        <select name="payment_mode" id="id_payment_mode" class="form-select" required>
+                            <option value="" disabled selected>Select Payment Mode</option>
+                            <option value="CASH">Cash</option>
+                            <option value="UPI">UPI</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create OPD Visit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var newOpdModal = document.getElementById('newOpdModal');
+        if (newOpdModal) {
+            newOpdModal.addEventListener('show.bs.modal', function(event) {
+                var button = event.relatedTarget;
+                var patientId = button.getAttribute('data-patient-id');
+                var patientName = button.getAttribute('data-patient-name');
+                var patientUhid = button.getAttribute('data-patient-uhid');
+                
+                var form = newOpdModal.querySelector('#newOpdForm');
+                form.action = "{% url 'receptionist:create_opd_visit' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', patientId);
+                
+                newOpdModal.querySelector('#modalPatientName').value = patientName;
+                newOpdModal.querySelector('#modalPatientUHID').value = patientUhid;
+            });
+        }
+    });
+</script>
 {% endblock %}

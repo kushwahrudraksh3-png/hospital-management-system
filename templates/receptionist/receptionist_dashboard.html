@@ -21,7 +21,7 @@
 >
     <div>
         <h1 class="page-title">
-            Good morning, Dr. Kalpesh Manager (Patidar)
+            {{ greeting_prefix }}, {{ request.user.first_name }} {{ request.user.last_name }}
         </h1>
         <p class="text-muted mb-0 mt-1">
             Here’s a clear view of your clinic for today.
@@ -32,7 +32,7 @@
     >
         <i class="bi bi-clock text-primary"></i>
         <span class="small fw-semibold" data-current-time>
-            10:32 AM
+            {{ current_time_str }}
         </span>
     </div>
 </div>
@@ -45,16 +45,16 @@
                         <i class="bi bi-people"></i>
                     </div>
                     <span
-                        class="badge badge-soft-success align-self-start"
+                        class="badge {% if patient_percent_change >= 0 %}badge-soft-success{% else %}badge-soft-danger{% endif %} align-self-start"
                     >
-                        <i class="bi bi-arrow-up-short"></i>
-                        12%
+                        <i class="bi {% if patient_percent_change >= 0 %}bi-arrow-up-short{% else %}bi-arrow-down-short{% endif %}"></i>
+                        {{ patient_change_abs }}%
                     </span>
                 </div>
                 <p class="metric-label">Today's Patients</p>
-                <div class="metric-value">48</div>
+                <div class="metric-value">{{ today_patients_count }}</div>
                 <span class="text-muted small">
-                    8 new registrations
+                    {{ today_new_registrations }} new registration{{ today_new_registrations|pluralize }}
                 </span>
             </article>
         </div>
@@ -67,16 +67,16 @@
                         ></i>
                     </div>
                     <span
-                        class="badge badge-soft-success align-self-start"
+                        class="badge {% if opd_percent_change >= 0 %}badge-soft-success{% else %}badge-soft-danger{% endif %} align-self-start"
                     >
-                        <i class="bi bi-arrow-up-short"></i>
-                        8%
+                        <i class="bi {% if opd_percent_change >= 0 %}bi-arrow-up-short{% else %}bi-arrow-down-short{% endif %}"></i>
+                        {{ opd_change_abs }}%
                     </span>
                 </div>
                 <p class="metric-label">Today's OPD</p>
-                <div class="metric-value">36</div>
+                <div class="metric-value">{{ today_opd_count }}</div>
                 <span class="text-muted small">
-                    12 awaiting consultation
+                    {{ waiting_opd_count }} awaiting consultation
                 </span>
             </article>
         </div>
@@ -89,17 +89,17 @@
                         ></i>
                     </div>
                     <span
-                        class="badge badge-soft-warning align-self-start"
+                        class="badge badge-soft-success align-self-start"
                     >
-                        Action needed
+                        All caught up
                     </span>
                 </div>
                 <p class="metric-label">
                     Pending Lab Reports
                 </p>
-                <div class="metric-value">7</div>
+                <div class="metric-value">{{ pending_lab_reports }}</div>
                 <span class="text-muted small">
-                    2 reports due this hour
+                    No reports due
                 </span>
             </article>
         </div>
@@ -198,10 +198,11 @@
                 class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center"
             >
                 <span>Recent Patients</span>
-                <div class="d-flex align-items-center gap-2">
+                <form class="d-flex align-items-center gap-2" method="get" action="{% url 'receptionist:patient_list' %}">
                     <div class="search-field">
                         <i class="bi bi-search"></i>
                         <input
+                            name="q"
                             class="form-control form-control-sm"
                             aria-label="Search recent patients"
                             placeholder="Search patients"
@@ -209,12 +210,12 @@
                     </div>
                     <button
                         class="btn btn-primary btn-sm"
-                        type="button"
+                        type="submit"
                     >
                         <i class="bi bi-search"></i>
                         Search
                     </button>
-                </div>
+                </form>
             </div>
             <div
                 class="table-responsive border-0 rounded-0"
@@ -233,136 +234,49 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% for visit in recent_visits %}
                         <tr>
                             <td class="fw-semibold">
-                                LC-10482
+                                {{ visit.patient.uhid }}
                             </td>
                             <td>
                                 <div class="fw-semibold">
-                                    Aarav Sharma
+                                    {{ visit.patient.full_name }}
                                 </div>
                                 <small class="text-muted">
-                                    Dr. Kalpesh Manager
-                                    (Patidar)
+                                    {{ visit.visit_type }}
                                 </small>
                             </td>
-                            <td>4 yrs</td>
-                            <td>Male</td>
-                            <td>98765 43210</td>
-                            <td>10:20 AM</td>
+                            <td>{{ visit.patient.age }}</td>
+                            <td>{{ visit.patient.get_gender_display }}</td>
+                            <td>{{ visit.patient.mobile_number }}</td>
+                            <td>{{ visit.visit_time|time:"h:i A" }}</td>
                             <td>
-                                <span
-                                    class="badge badge-soft-primary"
-                                >
-                                    In consultation
+                                <span class="badge 
+                                    {% if visit.status == 'In Consultation' %}badge-soft-primary
+                                    {% elif visit.status == 'Completed' %}badge-soft-success
+                                    {% elif visit.status == 'Waiting' %}badge-soft-warning
+                                    {% elif visit.status == 'Cancelled' %}badge-soft-danger
+                                    {% else %}badge-soft-muted{% endif %}">
+                                    {{ visit.status }}
                                 </span>
                             </td>
                             <td class="text-end">
                                 <a
                                     class="btn btn-light btn-sm"
-                                    href="{% url 'receptionist:patient_profile' %}"
+                                    href="{% url 'receptionist:patient_summary_detail' visit.patient.id %}"
                                 >
                                     View
                                 </a>
                             </td>
                         </tr>
+                        {% empty %}
                         <tr>
-                            <td class="fw-semibold">
-                                LC-10481
-                            </td>
-                            <td>
-                                <div class="fw-semibold">
-                                    Siya Patel
-                                </div>
-                                <small class="text-muted">
-                                    Follow-up visit
-                                </small>
-                            </td>
-                            <td>2 yrs</td>
-                            <td>Female</td>
-                            <td>98231 56094</td>
-                            <td>10:05 AM</td>
-                            <td>
-                                <span
-                                    class="badge badge-soft-success"
-                                >
-                                    Completed
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <a
-                                    class="btn btn-light btn-sm"
-                                    href="{% url 'receptionist:patient_profile' %}"
-                                >
-                                    View
-                                </a>
+                            <td colspan="8" class="text-center text-muted py-4">
+                                No recent patients found.
                             </td>
                         </tr>
-                        <tr>
-                            <td class="fw-semibold">
-                                LC-10480
-                            </td>
-                            <td>
-                                <div class="fw-semibold">
-                                    Vivaan Gupta
-                                </div>
-                                <small class="text-muted">
-                                    Dr. Kalpesh Manager
-                                    (Patidar)
-                                </small>
-                            </td>
-                            <td>7 yrs</td>
-                            <td>Male</td>
-                            <td>99102 78543</td>
-                            <td>09:48 AM</td>
-                            <td>
-                                <span
-                                    class="badge badge-soft-warning"
-                                >
-                                    Waiting
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <a
-                                    class="btn btn-light btn-sm"
-                                    href="{% url 'receptionist:patient_profile' %}"
-                                >
-                                    View
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="fw-semibold">
-                                LC-10479
-                            </td>
-                            <td>
-                                <div class="fw-semibold">
-                                    Anaya Verma
-                                </div>
-                                <small class="text-muted">
-                                    New registration
-                                </small>
-                            </td>
-                            <td>10 mo</td>
-                            <td>Female</td>
-                            <td>97654 32108</td>
-                            <td>09:30 AM</td>
-                            <td>
-                                <span
-                                    class="badge badge-soft-muted"
-                                >
-                                    Registered
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <a
-                                    class="btn btn-light btn-sm"
-                                    href="{% url 'receptionist:patient_profile' %}"
-                                >
-                                    View
-                                </a>
-                            </td>
-                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>

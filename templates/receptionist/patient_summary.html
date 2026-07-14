@@ -37,59 +37,59 @@
                     <i class="bi bi-person-fill"></i>
                 </div>
                 <div class="flex-grow-1">
-                    <span class="patient-info-label">Patient ID: LC-10483</span>
+                    <span class="patient-info-label">Patient ID: {{ patient.uhid }}</span>
                     <h2 class="patient-hero-name">
-                        Ishaan Malhotra
-                        <span class="badge badge-soft-primary ms-1 align-middle">New</span>
+                        {{ patient.full_name }}
+                        {% if latest_visit and latest_visit.visit_type == "New Visit" %}
+                            <span class="badge badge-soft-primary ms-1 align-middle">New</span>
+                        {% else %}
+                            <span class="badge badge-soft-success ms-1 align-middle">Active</span>
+                        {% endif %}
                     </h2>
                     <div class="patient-hero-meta">
-                        <span>5 yrs</span>
-                        <span>Male</span>
+                        <span>{{ patient.age }}</span>
+                        <span>{{ patient.gender }}</span>
                     </div>
                 </div>
             </div>
             <div class="patient-info-grid border-top pt-4 mt-4">
                 <div class="patient-info-item">
                     <span class="patient-info-label">Father / Guardian Name</span>
-                    <span class="patient-info-value">Rajesh Malhotra</span>
+                    <span class="patient-info-value">{{ patient.father_name|default:"Not Available" }}</span>
                 </div>
                 <div class="patient-info-item">
                     <span class="patient-info-label">Mobile Number</span>
-                    <span class="patient-info-value">+91 98765 10234</span>
-                </div>
-                <div class="patient-info-item">
-                    <span class="patient-info-label">Blood Group</span>
-                    <span class="patient-info-value">O+</span>
+                    <span class="patient-info-value">+91 {{ patient.mobile_number }}</span>
                 </div>
                 <div class="patient-info-item">
                     <span class="patient-info-label">Address</span>
-                    <span class="patient-info-value">Vijay Nagar, Indore</span>
+                    <span class="patient-info-value">{{ patient.address }}</span>
                 </div>
                 <div class="patient-info-item">
                     <span class="patient-info-label">Registration Date</span>
-                    <span class="patient-info-value">10 Jul 2026</span>
+                    <span class="patient-info-value">{{ patient.created_at|date:"d M Y" }}</span>
                 </div>
                 <div class="patient-info-item">
                     <span class="patient-info-label">Last Visit Date</span>
-                    <span class="patient-info-value">10 Jul 2026</span>
+                    <span class="patient-info-value">{% if latest_visit %}{{ latest_visit.visit_date|date:"d M Y" }}{% else %}No visits{% endif %}</span>
                 </div>
             </div>
-            <div class="d-flex flex-wrap gap-2 justify-content-end border-top pt-4 mt-4">
+            <div class="d-flex flex-wrap gap-2 justify-content-end border-top pt-4 mt-4 pb-4 px-4">
                 <a class="btn btn-outline-primary" href="{% url 'receptionist:patient_profile' %}">
                     <i class="bi bi-person-vcard me-1"></i>
                     View Full Profile
                 </a>
-                <a class="btn btn-outline-primary" href="{% url 'receptionist:vitals_entry' %}">
+                <a class="btn btn-outline-primary" href="{% url 'receptionist:vitals_entry_detail' patient.id %}">
                     <i class="bi bi-heart-pulse me-1"></i>
                     Enter Vitals
                 </a>
-                <a class="btn btn-outline-primary" href="{% url 'receptionist:edit_profile' %}">
+                <a class="btn btn-outline-primary" href="{% url 'receptionist:edit_latest_vitals' patient.id %}">
+                    <i class="bi bi-pencil-square me-1"></i>
+                    Edit Latest Vitals
+                </a>
+                <a class="btn btn-outline-primary" href="{% url 'receptionist:edit_profile_detail' patient.id %}">
                     <i class="bi bi-pencil me-1"></i>
                     Edit Profile
-                </a>
-                <a class="btn btn-primary" href="{% url 'receptionist:patient_registration' %}">
-                    <i class="bi bi-plus-circle me-1"></i>
-                    New OPD
                 </a>
             </div>
         </article>

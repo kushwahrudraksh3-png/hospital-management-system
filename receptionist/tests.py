@@ -198,7 +198,8 @@ class FormsTest(TestCase):
             'visit_date': '2026-07-14',
             'visit_time': '10:30',
             'visit_type': OPDVisit.VisitTypeChoices.NEW_VISIT,
-            'status': OPDVisit.StatusChoices.WAITING
+            'status': OPDVisit.StatusChoices.WAITING,
+            'payment_mode': OPDVisit.PaymentModeChoices.CASH
         }
         form = OPDVisitForm(data=form_data)
         self.assertTrue(form.is_valid())
@@ -251,7 +252,8 @@ class PatientRegistrationViewTest(TestCase):
             'mobile_number': '9876543219',
             'address': 'Street 1, City',
             'visit_type': OPDVisit.VisitTypeChoices.NEW_VISIT,
-            'status': OPDVisit.StatusChoices.WAITING
+            'status': OPDVisit.StatusChoices.WAITING,
+            'payment_mode': OPDVisit.PaymentModeChoices.CASH
         }
         response = self.client.post(self.url, data=post_data)
         
@@ -260,13 +262,15 @@ class PatientRegistrationViewTest(TestCase):
         self.assertIsNotNone(patient)
         self.assertEqual(patient.full_name, 'New Patient')
         
-        # Verify redirect to opd receipt page
-        self.assertRedirects(response, reverse('receptionist:opd_receipt', kwargs={'patient_id': patient.id}))
-        
+        # Verify that visit has correct payment mode
         visit = OPDVisit.objects.filter(patient=patient).first()
         self.assertIsNotNone(visit)
         self.assertEqual(visit.visit_type, OPDVisit.VisitTypeChoices.NEW_VISIT)
+        self.assertEqual(visit.payment_mode, OPDVisit.PaymentModeChoices.CASH)
         self.assertEqual(visit.created_by, self.user)
+
+        # Verify redirect to opd receipt page with query param
+        self.assertRedirects(response, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': patient.id})}?visit_id={visit.id}")
 
     def test_post_registration_reuse_patient(self):
         # Create an existing patient first
@@ -285,21 +289,22 @@ class PatientRegistrationViewTest(TestCase):
             'mobile_number': '9876543219',
             'address': 'Old Address',
             'visit_type': OPDVisit.VisitTypeChoices.FOLLOW_UP,
-            'status': OPDVisit.StatusChoices.WAITING
+            'status': OPDVisit.StatusChoices.WAITING,
+            'payment_mode': OPDVisit.PaymentModeChoices.UPI
         }
         response = self.client.post(self.url, data=post_data)
-        
-        # Verify redirect to opd receipt page
-        self.assertRedirects(response, reverse('receptionist:opd_receipt', kwargs={'patient_id': existing_patient.id}))
-        
-        # Verify that no duplicate patient was created
-        patients_count = Patient.objects.filter(mobile_number='9876543219').count()
-        self.assertEqual(patients_count, 1)
         
         # Verify visit was created for this patient
         visit = OPDVisit.objects.filter(patient=existing_patient).first()
         self.assertIsNotNone(visit)
         self.assertEqual(visit.visit_type, OPDVisit.VisitTypeChoices.FOLLOW_UP)
+        
+        # Verify redirect to opd receipt page with query param
+        self.assertRedirects(response, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': existing_patient.id})}?visit_id={visit.id}")
+        
+        # Verify that no duplicate patient was created
+        patients_count = Patient.objects.filter(mobile_number='9876543219').count()
+        self.assertEqual(patients_count, 1)
 
 
 class ReceiptViewTest(TestCase):
@@ -342,4 +347,489 @@ class ReceiptViewTest(TestCase):
         self.assertEqual(response.context['patient'], self.patient)
         self.assertEqual(response.context['visit'], self.visit)
         self.assertEqual(response.context['consultation_fee'], 200)
+
+
+class PatientListViewTest(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="receptionist_test@vatsalyashree.com",
+            username="receptionist_test",
+            password="password123",
+            role="RECEPTIONIST"
+        )
+        self.url = reverse('receptionist:patient_list')
+
+        # Create multiple patients for pagination and search tests
+        self.patients = []
+        for i in range(25):
+            p = Patient.objects.create(
+                full_name=f"Patient {i}",
+                date_of_birth=date(1990 + (i % 10), 1, 1),
+                gender=Patient.GenderChoices.MALE if i % 2 == 0 else Patient.GenderChoices.FEMALE,
+                mobile_number=f"98765432{i:02d}",
+                address="Test Address"
+            )
+            self.patients.append(p)
+            
+            # create visits for some of them
+            if i < 5:
+                OPDVisit.objects.create(
+                    patient=p,
+                    visit_date=date.today(),
+                    visit_time="10:00",
+                    visit_type=OPDVisit.VisitTypeChoices.NEW_VISIT,
+                    status=OPDVisit.StatusChoices.WAITING,
+                    created_by=self.user,
+                    updated_by=self.user
+                )
+
+    def test_patient_list_view_requires_login(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 302)
+
+    def test_patient_list_view_success_and_pagination(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "receptionist/patient_list.html")
+        
+        # Verify pagination limit (20 per page)
+        page_obj = response.context['page_obj']
+        self.assertEqual(len(page_obj.object_list), 20)
+        self.assertEqual(response.context['total_patients'], 25)
+        self.assertEqual(response.context['today_patients_count'], 5)
+
+    def test_patient_list_view_search_by_name(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(self.url, {'q': 'Patient 12'})
+        self.assertEqual(response.status_code, 200)
+        page_obj = response.context['page_obj']
+        self.assertEqual(len(page_obj.object_list), 1)
+        self.assertEqual(page_obj.object_list[0].full_name, 'Patient 12')
+
+    def test_patient_list_view_search_by_mobile(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(self.url, {'q': '9876543204'})
+        self.assertEqual(response.status_code, 200)
+        page_obj = response.context['page_obj']
+        self.assertEqual(len(page_obj.object_list), 1)
+        self.assertEqual(page_obj.object_list[0].mobile_number, '9876543204')
+
+    def test_patient_list_view_search_by_uhid(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        uhid = self.patients[0].uhid
+        response = self.client.get(self.url, {'q': uhid})
+        self.assertEqual(response.status_code, 200)
+        page_obj = response.context['page_obj']
+        self.assertEqual(len(page_obj.object_list), 1)
+        self.assertEqual(page_obj.object_list[0].uhid, uhid)
+
+    def test_patient_list_view_filter_today(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(self.url, {'filter': 'today'})
+        self.assertEqual(response.status_code, 200)
+        page_obj = response.context['page_obj']
+        self.assertEqual(len(page_obj.object_list), 5)
+
+
+class CreateOPDVisitViewTest(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="receptionist_test@vatsalyashree.com",
+            username="receptionist_test",
+            password="password123",
+            role="RECEPTIONIST"
+        )
+        self.patient = Patient.objects.create(
+            full_name="Existing Patient Test",
+            date_of_birth=date(1995, 5, 5),
+            gender=Patient.GenderChoices.FEMALE,
+            mobile_number="9876543222",
+            address="Gwalior"
+        )
+        self.url = reverse('receptionist:create_opd_visit', kwargs={'patient_id': self.patient.id})
+
+    def test_create_opd_visit_requires_login(self):
+        response = self.client.post(self.url, {'payment_mode': 'CASH'})
+        self.assertEqual(response.status_code, 302)
+
+    def test_create_opd_visit_success(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        
+        # Verify initial visit count
+        self.assertEqual(OPDVisit.objects.filter(patient=self.patient).count(), 0)
+        
+        response = self.client.post(self.url, {'payment_mode': 'UPI'})
+        
+        # Verify visit was created
+        visits = OPDVisit.objects.filter(patient=self.patient)
+        self.assertEqual(visits.count(), 1)
+        visit = visits.first()
+        self.assertEqual(visit.payment_mode, OPDVisit.PaymentModeChoices.UPI)
+        self.assertEqual(visit.visit_type, OPDVisit.VisitTypeChoices.FOLLOW_UP)
+        self.assertEqual(visit.status, OPDVisit.StatusChoices.WAITING)
+        self.assertEqual(visit.created_by, self.user)
+        
+        # Verify Patient record was NOT duplicated
+        self.assertEqual(Patient.objects.filter(mobile_number="9876543222").count(), 1)
+        
+        # Verify redirect
+        self.assertRedirects(response, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': self.patient.id})}?visit_id={visit.id}")
+
+    def test_create_opd_visit_invalid_payment_mode(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.post(self.url, {'payment_mode': 'INVALID'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(OPDVisit.objects.filter(patient=self.patient).count(), 0)
+
+
+class PatientSummaryViewTest(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="receptionist_test@vatsalyashree.com",
+            username="receptionist_test",
+            password="password123",
+            role="RECEPTIONIST"
+        )
+        self.patient = Patient.objects.create(
+            full_name="Patient One",
+            date_of_birth=date(1990, 1, 1),
+            gender=Patient.GenderChoices.MALE,
+            mobile_number="9876543201",
+            address="Test Address One"
+        )
+        self.patient2 = Patient.objects.create(
+            full_name="Patient Two",
+            date_of_birth=date(1992, 2, 2),
+            gender=Patient.GenderChoices.FEMALE,
+            mobile_number="9876543202",
+            address="Test Address Two"
+        )
+
+    def test_patient_summary_requires_login(self):
+        response = self.client.get(reverse('receptionist:patient_summary'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_patient_summary_without_id_fallback(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(reverse('receptionist:patient_summary'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['patient'].id, self.patient2.id)
+
+    def test_patient_summary_with_id(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(reverse('receptionist:patient_summary_detail', kwargs={'patient_id': self.patient.id}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['patient'].id, self.patient.id)
+
+    def test_patient_summary_with_invalid_id(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        import uuid
+        response = self.client.get(reverse('receptionist:patient_summary_detail', kwargs={'patient_id': uuid.uuid4()}))
+        self.assertEqual(response.status_code, 404)
+
+
+class EditProfileViewTest(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="receptionist_test@vatsalyashree.com",
+            username="receptionist_test",
+            password="password123",
+            role="RECEPTIONIST"
+        )
+        self.patient = Patient.objects.create(
+            full_name="Patient One",
+            date_of_birth=date(1990, 1, 1),
+            gender=Patient.GenderChoices.MALE,
+            mobile_number="9876543201",
+            address="Test Address One"
+        )
+
+    def test_edit_profile_requires_login(self):
+        response = self.client.get(reverse('receptionist:edit_profile'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_edit_profile_get_with_id(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(reverse('receptionist:edit_profile_detail', kwargs={'patient_id': self.patient.id}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['patient'].id, self.patient.id)
+
+    def test_edit_profile_post_success(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.post(
+            reverse('receptionist:edit_profile_detail', kwargs={'patient_id': self.patient.id}),
+            {
+                'full_name': 'Patient One Updated',
+                'date_of_birth': '1990-01-01',
+                'gender': Patient.GenderChoices.MALE,
+                'mobile_number': '9876543205',
+                'address': 'New Address',
+                'father_name': 'New Father'
+            }
+        )
+        self.assertRedirects(response, reverse('receptionist:patient_summary_detail', kwargs={'patient_id': self.patient.id}))
+        self.patient.refresh_from_db()
+        self.assertEqual(self.patient.full_name, 'Patient One Updated')
+        self.assertEqual(self.patient.mobile_number, '9876543205')
+        self.assertEqual(self.patient.address, 'New Address')
+        self.assertEqual(self.patient.father_name, 'New Father')
+
+    def test_edit_profile_post_invalid_mobile(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.post(
+            reverse('receptionist:edit_profile_detail', kwargs={'patient_id': self.patient.id}),
+            {
+                'full_name': 'Patient One Updated',
+                'date_of_birth': '1990-01-01',
+                'gender': Patient.GenderChoices.MALE,
+                'mobile_number': '123',
+                'address': 'New Address'
+            }
+        )
+        self.assertEqual(response.status_code, 200)
+        self.patient.refresh_from_db()
+        self.assertEqual(self.patient.full_name, 'Patient One')
+
+
+class VitalsEntryViewTest(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="receptionist_test@vatsalyashree.com",
+            username="receptionist_test",
+            password="password123",
+            role="RECEPTIONIST"
+        )
+        self.patient = Patient.objects.create(
+            full_name="Vitals Patient",
+            date_of_birth=date(1995, 5, 5),
+            gender=Patient.GenderChoices.FEMALE,
+            mobile_number="9876543209",
+            address="Vitals Address"
+        )
+        self.visit = OPDVisit.objects.create(
+            patient=self.patient,
+            visit_date=date.today(),
+            visit_time="10:00:00",
+            visit_type=OPDVisit.VisitTypeChoices.NEW_VISIT,
+            status=OPDVisit.StatusChoices.WAITING,
+            payment_mode=OPDVisit.PaymentModeChoices.CASH
+        )
+
+    def test_vitals_entry_requires_login(self):
+        response = self.client.get(reverse('receptionist:vitals_entry'))
+        self.assertEqual(response.status_code, 302)
+
+    def test_vitals_entry_get_with_id(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(reverse('receptionist:vitals_entry_detail', kwargs={'patient_id': self.patient.id}))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['patient'].id, self.patient.id)
+        self.assertContains(response, "Vitals Patient")
+        self.assertContains(response, "Vitals Address")
+        self.assertContains(response, "9876543209")
+        self.assertContains(response, 'name="blood_group"')
+
+    def test_vitals_entry_post_success(self):
+        from receptionist.models import Vitals
+        from decimal import Decimal
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.post(
+            reverse('receptionist:vitals_entry_detail', kwargs={'patient_id': self.patient.id}),
+            {
+                'chief_complaint': 'Fever and cold',
+                'weight': '15.5',
+                'temperature': '38.5',
+                'heart_rate': '100',
+                'pulse_rate': '98',
+                'blood_pressure': '100/70',
+                'spo2': '99',
+                'blood_group': 'B+'
+            }
+        )
+        self.assertRedirects(response, reverse('receptionist:dashboard'))
+        self.patient.refresh_from_db()
+        self.assertEqual(self.patient.blood_group, 'B+')
+        
+        self.visit.refresh_from_db()
+        self.assertEqual(self.visit.status, 'Ready for Doctor')
+        
+        vitals = Vitals.objects.filter(patient=self.patient).first()
+        self.assertIsNotNone(vitals)
+        self.assertEqual(vitals.chief_complaint, 'Fever and cold')
+        self.assertEqual(vitals.weight, Decimal('15.5'))
+        self.assertEqual(vitals.temperature, Decimal('38.5'))
+        self.assertEqual(vitals.heart_rate, 100)
+        self.assertEqual(vitals.pulse_rate, 98)
+        self.assertEqual(vitals.blood_pressure, '100/70')
+        self.assertEqual(vitals.spo2, 99)
+
+    def test_edit_latest_vitals_no_vitals(self):
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(reverse('receptionist:edit_latest_vitals', kwargs={'patient_id': self.patient.id}))
+        self.assertRedirects(response, reverse('receptionist:patient_summary_detail', kwargs={'patient_id': self.patient.id}))
+
+    def test_edit_latest_vitals_get_success(self):
+        from receptionist.models import Vitals
+        Vitals.objects.create(
+            patient=self.patient,
+            visit=self.visit,
+            chief_complaint='Old complaint',
+            weight='12.5',
+            temperature='36.5',
+            heart_rate=80,
+            pulse_rate=78,
+            blood_pressure='120/80',
+            spo2=98,
+            blood_group='A+'
+        )
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.get(reverse('receptionist:edit_latest_vitals', kwargs={'patient_id': self.patient.id}))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Edit Latest Vitals')
+        self.assertContains(response, 'Old complaint')
+        self.assertContains(response, '12.5')
+        self.assertContains(response, '120/80')
+
+    def test_edit_latest_vitals_post_success(self):
+        from receptionist.models import Vitals
+        from decimal import Decimal
+        vitals = Vitals.objects.create(
+            patient=self.patient,
+            visit=self.visit,
+            chief_complaint='Old complaint',
+            weight='12.5',
+            temperature='36.5',
+            heart_rate=80,
+            pulse_rate=78,
+            blood_pressure='120/80',
+            spo2=98,
+            blood_group='A+'
+        )
+        self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
+        response = self.client.post(
+            reverse('receptionist:edit_latest_vitals', kwargs={'patient_id': self.patient.id}),
+            {
+                'chief_complaint': 'New updated complaint',
+                'weight': '14.2',
+                'temperature': '37.1',
+                'heart_rate': '92',
+                'pulse_rate': '90',
+                'blood_pressure': '110/70',
+                'spo2': '99',
+                'blood_group': 'O+'
+            }
+        )
+        self.assertRedirects(response, reverse('receptionist:patient_summary_detail', kwargs={'patient_id': self.patient.id}))
+        vitals.refresh_from_db()
+        self.assertEqual(vitals.chief_complaint, 'New updated complaint')
+        self.assertEqual(vitals.weight, Decimal('14.2'))
+        self.assertEqual(vitals.temperature, Decimal('37.1'))
+        self.assertEqual(vitals.blood_group, 'O+')
+        
+        self.patient.refresh_from_db()
+        self.assertEqual(self.patient.blood_group, 'O+')
+        
+        self.visit.refresh_from_db()
+        self.assertEqual(self.visit.status, 'Ready for Doctor')
+
+
+class DashboardTests(TestCase):
+    def setUp(self):
+        from accounts.models import User
+        from receptionist.models import Patient, OPDVisit
+        from django.utils import timezone
+        
+        self.user = User.objects.create_user(
+            email="receptionist_dash@vatsalyashree.com",
+            username="receptionist_dash",
+            password="password123",
+            first_name="Dr. Kalpesh",
+            last_name="Patidar",
+            role=User.Role.RECEPTIONIST
+        )
+        self.patient = Patient.objects.create(
+            full_name="Aarav Sharma",
+            date_of_birth="2020-01-01",
+            gender="Male",
+            mobile_number="9876543210",
+            created_by=self.user,
+            updated_by=self.user
+        )
+        self.visit = OPDVisit.objects.create(
+            patient=self.patient,
+            visit_date=timezone.localdate(),
+            visit_time=timezone.localtime().time(),
+            visit_type="New Visit",
+            status="Waiting",
+            created_by=self.user,
+            updated_by=self.user
+        )
+
+    def test_dashboard_view_anonymous(self):
+        response = self.client.get(reverse('receptionist:dashboard'))
+        self.assertRedirects(response, f"{reverse('accounts:login')}?next={reverse('receptionist:dashboard')}")
+
+    def test_dashboard_view_success_empty(self):
+        from receptionist.models import Patient, OPDVisit
+        OPDVisit.objects.all().delete()
+        Patient.objects.all().delete()
+        
+        self.client.login(email="receptionist_dash@vatsalyashree.com", password="password123")
+        response = self.client.get(reverse('receptionist:dashboard'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['today_patients_count'], 0)
+        self.assertEqual(response.context['today_new_registrations'], 0)
+        self.assertEqual(response.context['today_opd_count'], 0)
+        self.assertContains(response, 'No recent patients found.')
+
+    def test_dashboard_view_success_with_data(self):
+        from receptionist.models import Patient, OPDVisit
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Create a patient and visit for yesterday to test percentage changes
+        yesterday_patient = Patient.objects.create(
+            full_name="Siya Patel",
+            date_of_birth="2022-01-01",
+            gender="Female",
+            mobile_number="9823156094",
+            created_by=self.user,
+            updated_by=self.user
+        )
+        OPDVisit.objects.create(
+            patient=yesterday_patient,
+            visit_date=timezone.localdate() - timedelta(days=1),
+            visit_time=timezone.localtime().time(),
+            visit_type="New Visit",
+            status="Completed",
+            created_by=self.user,
+            updated_by=self.user
+        )
+        
+        self.client.login(email="receptionist_dash@vatsalyashree.com", password="password123")
+        response = self.client.get(reverse('receptionist:dashboard'))
+        self.assertEqual(response.status_code, 200)
+        
+        # Today there is 1 patient visit (self.patient) and 1 yesterday. Percent change should be 0.
+        self.assertEqual(response.context['today_patients_count'], 1)
+        self.assertEqual(response.context['today_opd_count'], 1)
+        self.assertEqual(response.context['patient_percent_change'], 0)
+        self.assertEqual(response.context['opd_percent_change'], 0)
+        
+        # Verify the patient info is in the rendered table
+        self.assertContains(response, 'Aarav Sharma')
+        self.assertContains(response, 'Waiting')
+        self.assertContains(response, '9876543210')
+
 

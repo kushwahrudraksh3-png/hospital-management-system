@@ -101,6 +101,7 @@ class OPDVisitForm(forms.ModelForm):
             "visit_time",
             "visit_type",
             "status",
+            "payment_mode",
         ]
         widgets = {
             "patient": forms.Select(
@@ -135,6 +136,12 @@ class OPDVisitForm(forms.ModelForm):
                     "required": True,
                 }
             ),
+            "payment_mode": forms.Select(
+                attrs={
+                    "class": "form-select",
+                    "required": True,
+                }
+            ),
         }
 
     def clean_visit_date(self):
@@ -144,3 +151,14 @@ class OPDVisitForm(forms.ModelForm):
             # We allow today and future, or standard range. Let's raise validation if it is way in the past.
             pass
         return visit_date
+
+
+class VitalsForm(forms.Form):
+    chief_complaint = forms.CharField(required=True)
+    weight = forms.DecimalField(max_digits=5, decimal_places=1, required=True)
+    temperature = forms.DecimalField(max_digits=4, decimal_places=1, required=True)
+    heart_rate = forms.IntegerField(required=True)
+    pulse_rate = forms.IntegerField(required=True)
+    blood_pressure = forms.CharField(max_length=20, required=True)
+    spo2 = forms.IntegerField(required=True)
+    blood_group = forms.ChoiceField(choices=Patient.BLOOD_GROUP_CHOICES, required=True)

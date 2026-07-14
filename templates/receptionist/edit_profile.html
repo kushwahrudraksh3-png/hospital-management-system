@@ -33,9 +33,9 @@
         Reception Desk
     </span>
 </div>
-<form method="post" action="{% url 'edit_patient_profile' patient.pk %}" data-static-form>
+<form method="post" action="{% url 'receptionist:edit_profile_detail' patient.id %}" data-static-form>
     {% csrf_token %}
-    <input type="hidden" name="patient_id" value="{{ patient.pk|default:'LC-10483' }}" />
+    <input type="hidden" name="patient_id" value="{{ patient.id }}" />
     <article class="clinic-card mb-4">
         <div class="card-header">
             <h2 class="form-section-title">
@@ -230,7 +230,7 @@
             </div>
         </div>
         <div class="form-actions">
-            <a class="btn btn-light" href="{% url 'receptionist:patient_summary' %}">
+            <a class="btn btn-light" href="{% url 'receptionist:patient_summary_detail' patient.id %}">
                 <i class="bi bi-x-lg"></i>
                 Cancel
             </a>

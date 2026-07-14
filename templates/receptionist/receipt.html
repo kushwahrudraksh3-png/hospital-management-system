@@ -3,21 +3,277 @@
 
 {% block extra_css %}
 <style>
+    /* Container styling for on-screen */
+    .receipt-paper {
+        width: 148mm;
+        max-width: 148mm;
+        height: 210mm;
+        min-height: 210mm;
+        margin: 20px auto;
+        padding: 10mm;
+        background: #ffffff !important;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        font-family: 'Inter', sans-serif;
+        color: #111827;
+    }
+
+    .receipt-top-section {
+        font-size: 11px;
+        color: #4b5563;
+        padding-bottom: 6px;
+        border-bottom: 1px dashed #cbd5e1;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .receipt-header-grid {
+        display: grid;
+        grid-template-columns: 75px 1fr 85px;
+        align-items: center;
+        gap: 12px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    .receipt-logo-container {
+        display: flex;
+        justify-content: flex-start;
+    }
+
     .receipt-logo {
-        width: 90px;
-        height: auto;
+        max-height: 52px;
+        width: auto;
         object-fit: contain;
     }
-    .receipt-signature-container {
-        page-break-inside: avoid;
+
+    .receipt-clinic-info {
+        text-align: center;
     }
-    .receipt-signature-line {
-        width: 200px;
+
+    .receipt-clinic-name {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0;
+        color: #2563eb;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .receipt-meta {
+        font-size: 10px;
+        color: #4b5563;
+        line-height: 1.35;
+        margin: 3px 0 0 0;
+    }
+
+    .receipt-badge-container {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .receipt-badge {
+        background-color: #d1fae5;
+        color: #065f46;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 4px 8px;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .receipt-divider {
+        border: 0;
+        border-top: 1px solid #cbd5e1;
+        margin: 8px 0;
+        width: 100%;
+    }
+
+    .patient-details-box {
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        padding: 8px 10px;
+        background-color: #f9fafb;
+        margin-bottom: 10px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .details-heading {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #374151;
+        margin: 0 0 6px 0;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 3px;
+        letter-spacing: 0.3px;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px 12px;
+    }
+
+    .details-item {
+        display: flex;
+        font-size: 10.5px;
+        line-height: 1.3;
+    }
+
+    .details-item.full-width {
+        grid-column: span 2;
+    }
+
+    .details-label {
+        color: #6b7280;
+        font-weight: 500;
+        width: 100px;
+        flex-shrink: 0;
+    }
+
+    .details-value {
+        color: #111827;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .payment-section-box {
+        margin-bottom: 12px;
+        width: 100%;
+    }
+
+    .receipt-payment-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10.5px;
+    }
+
+    .receipt-payment-table th {
+        background-color: #f3f4f6;
+        color: #374151;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 9.5px;
+        letter-spacing: 0.3px;
+        padding: 5px 8px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .receipt-payment-table td {
+        padding: 6px 8px;
+        border: 1px solid #e5e7eb;
+        color: #111827;
+    }
+
+    .receipt-payment-table tr.total-row td {
+        background-color: #f9fafb;
+        border-top: 1.5px solid #2563eb;
+        font-weight: 700;
+    }
+
+    .receipt-footer-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-top: auto;
+        padding-top: 10px;
+        width: 100%;
+    }
+
+    .receipt-footer-notes {
+        font-size: 9px;
+        color: #6b7280;
+        max-width: 60%;
+        line-height: 1.35;
+    }
+
+    .receipt-signature-block {
+        text-align: center;
+        font-size: 9.5px;
+        color: #374151;
+    }
+
+    .signature-line {
+        color: #9ca3af;
+        margin-bottom: 4px;
+    }
+
+    .signature-label {
+        font-weight: 600;
+    }
+
+    /* Printing CSS Optimization */
+    @media print {
+        @page {
+            size: A5 portrait;
+            margin: 10mm;
+        }
+        
+        html, body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Hide layouts not required in print */
+        .sidebar,
+        .top-navbar,
+        .receipt-actions,
+        .breadcrumb,
+        .page-heading-screen,
+        nav[aria-label="breadcrumb"],
+        .btn,
+        .mobile-toggle,
+        header,
+        footer {
+            display: none !important;
+        }
+
+        .app-shell {
+            min-height: 0 !important;
+        }
+
+        .main-area {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+        }
+
+        .page-content {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .receipt-paper {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            justify-content: space-between;
+        }
     }
 </style>
 {% endblock %}
 
-{% block title %}OPD Receipt | Vatsalya Shree Hospital{% endblock %}
+{% block title %}OPD Receipt | {{ hospital.hospital_name }}{% endblock %}
 
 {% block content %}
 <nav aria-label="breadcrumb">
@@ -54,70 +310,74 @@
 
 <!-- Receipt Document -->
 <div class="receipt-paper">
-    <div class="text-start mb-3">
-        <small class="text-muted">{{ current_datetime|date:"d-m-Y h:i A" }}</small>
+    <!-- Top Section -->
+    <div class="receipt-top-section">
+        <span>Date & Time: <strong>{{ current_datetime|date:"d-m-Y h:i A" }}</strong></span>
+        <span>OPD No: <strong>{{ visit.opd_number }}</strong></span>
     </div>
-    <div class="row align-items-center mb-4">
-        <div class="col-8 text-start d-flex align-items-center gap-3">
-            <img src="{{ hospital.hospital_logo.url }}" alt="Hospital Logo" class="receipt-logo">
-            <div>
-                <h2 class="receipt-clinic-name text-primary fw-bold">{{ hospital.hospital_name }}</h2>
-                <p class="receipt-meta mb-0 mt-1">
-                    <i class="bi bi-geo-alt-fill me-1"></i> {{ hospital.address }}
-                    <br>
-                    <i class="bi bi-telephone-fill me-1"></i> {{ hospital.phone_number }} | <i class="bi bi-envelope-fill me-1"></i> {{ hospital.email }}
-                </p>
+
+    <!-- Header Grid -->
+    <div class="receipt-header-grid">
+        <div class="receipt-logo-container">
+            {% if hospital.hospital_logo %}
+                <img src="{{ hospital.hospital_logo.url }}" alt="Hospital Logo" class="receipt-logo">
+            {% endif %}
+        </div>
+        <div class="receipt-clinic-info">
+            <h1 class="receipt-clinic-name">{{ hospital.hospital_name }}</h1>
+            <p class="receipt-meta">
+                <i class="bi bi-geo-alt-fill me-1"></i> {{ hospital.address }}<br>
+                <i class="bi bi-telephone-fill me-1"></i> {{ hospital.phone_number }} &nbsp;|&nbsp; <i class="bi bi-envelope-fill me-1"></i> {{ hospital.email }}
+            </p>
+        </div>
+        <div class="receipt-badge-container">
+            <span class="receipt-badge">OPD Receipt</span>
+        </div>
+    </div>
+
+    <hr class="receipt-divider">
+
+    <!-- Patient Details -->
+    <div class="patient-details-box">
+        <h3 class="details-heading">Patient Details</h3>
+        <div class="details-grid">
+            <div class="details-item">
+                <span class="details-label">Patient Name:</span>
+                <span class="details-value">{{ patient.full_name }}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">UHID (Patient ID):</span>
+                <span class="details-value">{{ patient.uhid }}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Age / Gender:</span>
+                <span class="details-value">{{ patient.age }} / {{ patient.gender }}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Visit Date:</span>
+                <span class="details-value">{{ visit.visit_date|date:"d-m-Y" }} at {{ visit.visit_time|time:"h:i A" }}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Father's Name:</span>
+                <span class="details-value">{{ patient.father_name|default:"N/A" }}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Mobile Number:</span>
+                <span class="details-value">+91 {{ patient.mobile_number }}</span>
+            </div>
+            <div class="details-item full-width">
+                <span class="details-label">Address:</span>
+                <span class="details-value">{{ patient.address }}</span>
             </div>
         </div>
-        <div class="col-4 text-end">
-            <span class="badge badge-soft-success py-2 px-3 fs-6 fw-bold">OPD RECEIPT</span>
-        </div>
     </div>
 
-    <hr class="receipt-rule">
-
-    <div class="receipt-details mb-4">
-        <div>
-            <span class="data-label">OPD Number</span>
-            <span class="data-value fw-semibold">{{ visit.opd_number }}</span>
-        </div>
-        <div>
-            <span class="data-label">Date & Time</span>
-            <span class="data-value">{{ visit.visit_date|date:"d-m-Y" }} at {{ visit.visit_time|time:"h:i A" }}</span>
-        </div>
-        <div>
-            <span class="data-label">Patient Name</span>
-            <span class="data-value fw-bold">{{ patient.full_name }}</span>
-        </div>
-        <div>
-            <span class="data-label">UHID (Patient ID)</span>
-            <span class="data-value">{{ patient.uhid }}</span>
-        </div>
-        <div>
-            <span class="data-label">Age & Gender</span>
-            <span class="data-value">{{ patient.age }} / {{ patient.gender }}</span>
-        </div>
-        <div>
-            <span class="data-label">Father's Name</span>
-            <span class="data-value">{{ patient.father_name|default:"N/A" }}</span>
-        </div>
-        <div>
-            <span class="data-label">Mobile Number</span>
-            <span class="data-value">+91 {{ patient.mobile_number }}</span>
-        </div>
-        <div>
-            <span class="data-label">Address</span>
-            <span class="data-value">{{ patient.address }}</span>
-        </div>
-    </div>
-
-    <hr class="receipt-rule">
-
-    <div class="table-responsive border-0 mt-3">
-        <table class="table clinic-table w-100">
+    <!-- Payment Section -->
+    <div class="payment-section-box">
+        <table class="receipt-payment-table">
             <thead>
                 <tr>
-                    <th class="text-start">Description</th>
+                    <th class="text-start">Service Description</th>
                     <th class="text-end">Amount (₹)</th>
                 </tr>
             </thead>
@@ -126,24 +386,27 @@
                     <td class="text-start fw-semibold">OPD Consultation Fee ({{ visit.visit_type }})</td>
                     <td class="text-end fw-semibold">₹{{ hospital.consultation_fee }}</td>
                 </tr>
+                <tr>
+                    <td class="text-start fw-semibold">Payment Mode</td>
+                    <td class="text-end fw-bold text-success">{{ visit.payment_mode }}</td>
+                </tr>
+                <tr class="total-row">
+                    <td class="text-start fw-bold text-uppercase">Total Paid Amount</td>
+                    <td class="text-end fw-bold text-primary">₹{{ hospital.consultation_fee }}</td>
+                </tr>
             </tbody>
         </table>
     </div>
 
-    <div class="receipt-total d-flex justify-content-between align-items-center mt-3 py-3">
-        <span class="fw-bold text-uppercase">Total Amount Paid</span>
-        <span class="fs-4 fw-bold text-primary">₹{{ hospital.consultation_fee }}</span>
-    </div>
-
-    <div class="d-flex flex-column align-items-end mt-5 pt-3 pe-4 receipt-signature-container">
-        <div class="receipt-signature-line text-center">
-            <span class="d-block fw-semibold text-muted">__________________</span>
-            <span class="d-block mt-2 fw-semibold">Receptionist Signature</span>
+    <!-- Bottom Section -->
+    <div class="receipt-footer-section">
+        <div class="receipt-footer-notes">
+            <p class="mb-0">Thank you for visiting. Please keep this receipt safe.</p>
         </div>
-    </div>
-
-    <div class="receipt-footer mt-5">
-        <p class="mb-1">Thank you for visiting. Please keep this receipt safe.</p>
+        <div class="receipt-signature-block">
+            <div class="signature-line">__________________________</div>
+            <div class="signature-label">Receptionist Signature</div>
+        </div>
     </div>
 </div>
 {% endblock %}

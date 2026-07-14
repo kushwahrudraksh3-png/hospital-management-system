@@ -1,6 +1,6 @@
 {% extends "receptionist/base.html" %}
 
-{% block title %}Vitals Entry | Vatsalya Shree Hospital{% endblock %}
+{% block title %}{% if is_edit %}Edit Latest Vitals{% else %}Vitals Entry{% endif %} | Vatsalya Shree Hospital{% endblock %}
 
 {% block content %}
 <nav aria-label="breadcrumb">
@@ -15,7 +15,7 @@
             class="breadcrumb-item active"
             aria-current="page"
         >
-            Record Vitals
+            {% if is_edit %}Edit Latest Vitals{% else %}Record Vitals{% endif %}
         </li>
     </ol>
 </nav>
@@ -23,15 +23,18 @@
     class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4"
 >
     <div>
-        <h1 class="page-title">Record Vitals</h1>
+        <h1 class="page-title">{% if is_edit %}Edit Latest Vitals{% else %}Record Vitals{% endif %}</h1>
         <p class="text-muted mb-0 mt-1">
-            Capture the patient’s vital signs before doctor
-            examination.
+            {% if is_edit %}
+                Update the patient’s latest vital signs.
+            {% else %}
+                Capture the patient’s vital signs before doctor examination.
+            {% endif %}
         </p>
     </div>
     <span class="badge badge-soft-primary py-2 px-3">
         <i class="bi bi-clipboard2-pulse me-1"></i>
-        OPD-024
+        {% if latest_visit %}{{ latest_visit.opd_number }}{% else %}No active OPD{% endif %}
     </span>
 </div>
 <article
@@ -47,44 +50,43 @@
                 Patient Summary
             </span>
             <h2 class="patient-hero-name">
-                Ishaan Malhotra
-                <span
-                    class="badge badge-soft-primary ms-1 align-middle"
-                >
-                    New
-                </span>
+                {{ patient.full_name }}
+                {% if latest_visit and latest_visit.visit_type == "New Visit" %}
+                    <span class="badge badge-soft-primary ms-1 align-middle">New</span>
+                {% else %}
+                    <span class="badge badge-soft-success ms-1 align-middle">Active</span>
+                {% endif %}
             </h2>
             <div class="patient-hero-meta">
-                <span>Patient ID: LC-10483</span>
-                <span>5 yrs</span>
-                <span>Male</span>
+                <span>Patient ID: {{ patient.uhid }}</span>
+                <span>{{ patient.age }}</span>
+                <span>{{ patient.gender }}</span>
             </div>
         </div>
         <div class="text-end d-none d-md-block">
             <span class="data-label">Visit Date</span>
-            <span class="data-value">10 Jul 2026</span>
+            <span class="data-value">{% if latest_visit %}{{ latest_visit.visit_date|date:"d M Y" }}{% else %}No visits{% endif %}</span>
         </div>
     </div>
     <div class="patient-info-grid">
         <div class="patient-info-item">
-            <span class="patient-info-label">
-                Mobile Number
-            </span>
-            <span class="patient-info-value">
-                +91 98765 10234
-            </span>
+            <span class="patient-info-label">Mobile Number</span>
+            <span class="patient-info-value">+91 {{ patient.mobile_number }}</span>
         </div>
         <div class="patient-info-item">
-            <span class="patient-info-label">
-                OPD Number
-            </span>
-            <span class="patient-info-value">OPD-024</span>
+            <span class="patient-info-label">Address</span>
+            <span class="patient-info-value">{{ patient.address }}</span>
+        </div>
+        <div class="patient-info-item">
+            <span class="patient-info-label">OPD Number</span>
+            <span class="patient-info-value">{% if latest_visit %}{{ latest_visit.opd_number }}{% else %}No active OPD{% endif %}</span>
         </div>
     </div>
 </article>
 <div class="row g-4">
-    <section class="col-xl-8">
-        <form class="clinic-card" data-static-form>
+    <section class="col-xl-12">
+        <form class="clinic-card" method="post" action="">
+            {% csrf_token %}
             <div
                 class="card-header d-flex justify-content-between align-items-center"
             >
@@ -112,11 +114,29 @@
                         </label>
                         <textarea
                             id="chiefComplaint"
+                            name="chief_complaint"
                             class="form-control"
                             rows="3"
                             placeholder="Enter patient's main complaint"
                             required
-                        ></textarea>
+                        >{% if vitals %}{{ vitals.chief_complaint }}{% endif %}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="bloodGroup">
+                            Blood Group
+                            <span class="required-mark">*</span>
+                        </label>
+                        <select id="bloodGroup" name="blood_group" class="form-select" required>
+                            <option value="Unknown" {% if patient.blood_group == "Unknown" %}selected{% endif %}>Unknown</option>
+                            <option value="A+" {% if patient.blood_group == "A+" %}selected{% endif %}>A+</option>
+                            <option value="A-" {% if patient.blood_group == "A-" %}selected{% endif %}>A-</option>
+                            <option value="B+" {% if patient.blood_group == "B+" %}selected{% endif %}>B+</option>
+                            <option value="B-" {% if patient.blood_group == "B-" %}selected{% endif %}>B-</option>
+                            <option value="AB+" {% if patient.blood_group == "AB+" %}selected{% endif %}>AB+</option>
+                            <option value="AB-" {% if patient.blood_group == "AB-" %}selected{% endif %}>AB-</option>
+                            <option value="O+" {% if patient.blood_group == "O+" %}selected{% endif %}>O+</option>
+                            <option value="O-" {% if patient.blood_group == "O-" %}selected{% endif %}>O-</option>
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label
@@ -131,10 +151,11 @@
                         <div class="input-group">
                             <input
                                 id="weight"
+                                name="weight"
                                 class="form-control"
                                 type="number"
                                 step="0.1"
-                                value="16.8"
+                                value="{% if vitals %}{{ vitals.weight }}{% else %}16.8{% endif %}"
                                 required
                                 autofocus
                             />
@@ -156,10 +177,11 @@
                         <div class="input-group">
                             <input
                                 id="temperature"
+                                name="temperature"
                                 class="form-control"
                                 type="number"
                                 step="0.1"
-                                value="37.4"
+                                value="{% if vitals %}{{ vitals.temperature }}{% else %}37.4{% endif %}"
                                 required
                             />
                             <span class="input-group-text">
@@ -180,9 +202,10 @@
                         <div class="input-group">
                             <input
                                 id="heartRate"
+                                name="heart_rate"
                                 class="form-control"
                                 type="number"
-                                value="104"
+                                value="{% if vitals %}{{ vitals.heart_rate }}{% else %}104{% endif %}"
                                 required
                             />
                             <span class="input-group-text">
@@ -203,9 +226,10 @@
                         <div class="input-group">
                             <input
                                 id="pulseRate"
+                                name="pulse_rate"
                                 class="form-control"
                                 type="number"
-                                value="102"
+                                value="{% if vitals %}{{ vitals.pulse_rate }}{% else %}102{% endif %}"
                                 required
                             />
                             <span class="input-group-text">
@@ -226,8 +250,9 @@
                         <div class="input-group">
                             <input
                                 id="bloodPressure"
+                                name="blood_pressure"
                                 class="form-control"
-                                value="96/62"
+                                value="{% if vitals %}{{ vitals.blood_pressure }}{% else %}96/62{% endif %}"
                                 placeholder="e.g. 96/62"
                                 required
                             />
@@ -249,9 +274,10 @@
                         <div class="input-group">
                             <input
                                 id="spo2"
+                                name="spo2"
                                 class="form-control"
                                 type="number"
-                                value="98"
+                                value="{% if vitals %}{{ vitals.spo2 }}{% else %}98{% endif %}"
                                 required
                             />
                             <span class="input-group-text">
@@ -264,7 +290,7 @@
             <div class="form-actions">
                 <a
                     class="btn btn-light"
-                    href="{% url 'receptionist:opd_registration' %}"
+                    href="{% url 'receptionist:patient_summary_detail' patient.id %}"
                 >
                     <i class="bi bi-x-lg"></i>
                     Cancel
@@ -283,7 +309,7 @@
                     type="submit"
                 >
                     <i class="bi bi-check2-circle"></i>
-                    Save Vitals
+                    {% if is_edit %}Update Vitals{% else %}Save Vitals{% endif %}
                 </button>
 
 
@@ -291,98 +317,5 @@
             </div>
         </form>
     </section>
-    <aside class="col-xl-4">
-        <article class="clinic-card mb-4">
-            <div
-                class="card-header d-flex justify-content-between align-items-center"
-            >
-                <span>
-                    <i
-                        class="bi bi-clock-history text-primary me-2"
-                    ></i>
-                    Previous Vitals
-                </span>
-                <span class="text-muted fw-normal small">
-                    04 Apr 2026
-                </span>
-            </div>
-            <div class="card-body">
-                <div class="row g-2">
-                    <div class="col-6">
-                        <div class="vital-tile">
-                            <span class="data-label">
-                                Weight
-                            </span>
-                            <span class="value">
-                                16.5
-                                <span class="unit">kg</span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="vital-tile">
-                            <span class="data-label">
-                                Temperature
-                            </span>
-                            <span class="value">
-                                36.8
-                                <span class="unit">°C</span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="vital-tile">
-                            <span class="data-label">
-                                Heart Rate
-                            </span>
-                            <span class="value">
-                                98
-                                <span class="unit">
-                                    bpm
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="vital-tile">
-                            <span class="data-label">
-                                Pulse Rate
-                            </span>
-                            <span class="value">
-                                96
-                                <span class="unit">
-                                    bpm
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="vital-tile">
-                            <span class="data-label">
-                                Blood Pressure
-                            </span>
-                            <span class="value">
-                                94/60
-                                <span class="unit">
-                                    mmHg
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="vital-tile">
-                            <span class="data-label">
-                                SpO₂
-                            </span>
-                            <span class="value">
-                                99
-                                <span class="unit">%</span>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </article>
-    </aside>
 </div>
 {% endblock %}

@@ -51,6 +51,23 @@ class Patient(models.Model):
     )
     address = models.TextField()
 
+    BLOOD_GROUP_CHOICES = [
+        ("A+", "A+"),
+        ("A-", "A-"),
+        ("B+", "B+"),
+        ("B-", "B-"),
+        ("AB+", "AB+"),
+        ("AB-", "AB-"),
+        ("O+", "O+"),
+        ("O-", "O-"),
+        ("Unknown", "Unknown"),
+    ]
+    blood_group = models.CharField(
+        max_length=10,
+        choices=BLOOD_GROUP_CHOICES,
+        default="Unknown"
+    )
+
     # System Fields
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -146,6 +163,7 @@ class OPDVisit(models.Model):
 
     class StatusChoices(models.TextChoices):
         WAITING = "Waiting", "Waiting"
+        READY_FOR_DOCTOR = "Ready for Doctor", "Ready for Doctor"
         IN_CONSULTATION = "In Consultation", "In Consultation"
         COMPLETED = "Completed", "Completed"
         CANCELLED = "Cancelled", "Cancelled"
@@ -178,6 +196,16 @@ class OPDVisit(models.Model):
         max_length=20,
         choices=StatusChoices.choices,
         default=StatusChoices.WAITING
+    )
+
+    class PaymentModeChoices(models.TextChoices):
+        CASH = "Cash", "Cash"
+        UPI = "UPI", "UPI"
+
+    payment_mode = models.CharField(
+        max_length=10,
+        choices=PaymentModeChoices.choices,
+        default=PaymentModeChoices.CASH
     )
 
     # System Fields
@@ -248,4 +276,46 @@ class HospitalSettings(models.Model):
 
     def __str__(self):
         return self.hospital_name
+
+
+class Vitals(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    patient = models.ForeignKey(
+        Patient,
+        on_delete=models.CASCADE,
+        related_name="vitals_records"
+    )
+    visit = models.OneToOneField(
+        OPDVisit,
+        on_delete=models.CASCADE,
+        related_name="vitals"
+    )
+    chief_complaint = models.TextField()
+    weight = models.DecimalField(max_digits=5, decimal_places=2)
+    temperature = models.DecimalField(max_digits=4, decimal_places=1)
+    heart_rate = models.IntegerField()
+    pulse_rate = models.IntegerField()
+    blood_pressure = models.CharField(max_length=20)
+    spo2 = models.IntegerField()
+    blood_group = models.CharField(
+        max_length=10,
+        choices=Patient.BLOOD_GROUP_CHOICES,
+        default="Unknown"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="vitals_created"
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Vitals"
+        verbose_name_plural = "Vitals"
+
+    def __str__(self):
+        return f"Vitals for {self.patient.full_name} on {self.created_at.date()}"
 

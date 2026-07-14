@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Patient, OPDVisit, HospitalSettings
+from .models import Patient, OPDVisit, HospitalSettings, Vitals
 
 
 @admin.register(Patient)
@@ -95,4 +95,40 @@ class HospitalSettingsAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+
+
+@admin.register(Vitals)
+class VitalsAdmin(admin.ModelAdmin):
+    list_display = (
+        "patient",
+        "visit",
+        "chief_complaint",
+        "weight",
+        "temperature",
+        "heart_rate",
+        "pulse_rate",
+        "blood_pressure",
+        "spo2",
+        "blood_group",
+        "created_at",
+    )
+    search_fields = (
+        "patient__full_name",
+        "patient__uhid",
+        "visit__opd_number",
+        "chief_complaint",
+    )
+    list_filter = (
+        "blood_group",
+        "created_at",
+    )
+    readonly_fields = (
+        "created_at",
+        "created_by",
+    )
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
 

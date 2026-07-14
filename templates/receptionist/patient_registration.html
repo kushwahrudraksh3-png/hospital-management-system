@@ -233,7 +233,7 @@
         </div>
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label
                         class="form-label"
                         for="visitDate"
@@ -258,7 +258,7 @@
                         </div>
                     {% endif %}
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label
                         class="form-label"
                         for="visitTime"
@@ -283,7 +283,7 @@
                         </div>
                     {% endif %}
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label
                         class="form-label"
                         for="visitType"
@@ -307,6 +307,38 @@
                     {% if visit_form.visit_type.errors %}
                         <div class="text-danger small mt-1">
                             {% for error in visit_form.visit_type.errors %}
+                                <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-3">
+                    <label
+                        class="form-label"
+                        for="paymentMode"
+                    >
+                        Payment Mode
+                        <span class="required-mark">*</span>
+                    </label>
+                    <select
+                        id="paymentMode"
+                        name="payment_mode"
+                        class="form-select"
+                        required
+                    >
+                        <option value="" {% if not visit_form.payment_mode.value %}selected{% endif %} disabled>
+                            Select payment mode
+                        </option>
+                        <option value="Cash" {% if visit_form.payment_mode.value == 'Cash' %}selected{% endif %}>
+                            Cash
+                        </option>
+                        <option value="UPI" {% if visit_form.payment_mode.value == 'UPI' %}selected{% endif %}>
+                            UPI
+                        </option>
+                    </select>
+                    {% if visit_form.payment_mode.errors %}
+                        <div class="text-danger small mt-1">
+                            {% for error in visit_form.payment_mode.errors %}
                                 <div><i class="bi bi-exclamation-circle-fill"></i> {{ error }}</div>
                             {% endfor %}
                         </div>
