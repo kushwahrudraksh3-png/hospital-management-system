@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
-from .models import Patient, OPDVisit
+from .models import Patient, OPDVisit, HospitalSettings
 
 User = get_user_model()
 
@@ -281,6 +281,14 @@ class PatientRegistrationViewTest(TestCase):
             mobile_number="9876543219",
             address="Old Address"
         )
+        # Create a prior paid visit to trigger follow-up logic
+        OPDVisit.objects.create(
+            patient=existing_patient,
+            visit_date=date.today(),
+            visit_time="10:00:00",
+            visit_type=OPDVisit.VisitTypeChoices.NEW_VISIT,
+            status=OPDVisit.StatusChoices.COMPLETED
+        )
         self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
         post_data = {
             'full_name': 'Existing Patient',
@@ -295,12 +303,12 @@ class PatientRegistrationViewTest(TestCase):
         response = self.client.post(self.url, data=post_data)
         
         # Verify visit was created for this patient
-        visit = OPDVisit.objects.filter(patient=existing_patient).first()
+        visit = OPDVisit.objects.filter(patient=existing_patient, visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP).first()
         self.assertIsNotNone(visit)
         self.assertEqual(visit.visit_type, OPDVisit.VisitTypeChoices.FOLLOW_UP)
         
-        # Verify redirect to opd receipt page with query param
-        self.assertRedirects(response, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': existing_patient.id})}?visit_id={visit.id}")
+        # Verify redirect to vitals entry page
+        self.assertRedirects(response, f"{reverse('receptionist:vitals_entry_detail', kwargs={'patient_id': existing_patient.id})}?visit_id={visit.id}")
         
         # Verify that no duplicate patient was created
         patients_count = Patient.objects.filter(mobile_number='9876543219').count()
@@ -460,13 +468,19 @@ class CreateOPDVisitViewTest(TestCase):
     def test_create_opd_visit_success(self):
         self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
         
-        # Verify initial visit count
-        self.assertEqual(OPDVisit.objects.filter(patient=self.patient).count(), 0)
+        # Create a prior paid visit first to trigger follow-up logic
+        OPDVisit.objects.create(
+            patient=self.patient,
+            visit_date=date.today(),
+            visit_time="10:00:00",
+            visit_type=OPDVisit.VisitTypeChoices.NEW_VISIT,
+            status=OPDVisit.StatusChoices.COMPLETED
+        )
         
         response = self.client.post(self.url, {'payment_mode': 'UPI'})
         
         # Verify visit was created
-        visits = OPDVisit.objects.filter(patient=self.patient)
+        visits = OPDVisit.objects.filter(patient=self.patient, visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP)
         self.assertEqual(visits.count(), 1)
         visit = visits.first()
         self.assertEqual(visit.payment_mode, OPDVisit.PaymentModeChoices.UPI)
@@ -478,7 +492,7 @@ class CreateOPDVisitViewTest(TestCase):
         self.assertEqual(Patient.objects.filter(mobile_number="9876543222").count(), 1)
         
         # Verify redirect
-        self.assertRedirects(response, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': self.patient.id})}?visit_id={visit.id}")
+        self.assertRedirects(response, reverse('receptionist:vitals_entry_detail', kwargs={'patient_id': self.patient.id}))
 
     def test_create_opd_visit_invalid_payment_mode(self):
         self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
@@ -831,5 +845,76 @@ class DashboardTests(TestCase):
         self.assertContains(response, 'Aarav Sharma')
         self.assertContains(response, 'Waiting')
         self.assertContains(response, '9876543210')
+
+
+class OPDValidityBusinessRulesTest(TestCase):
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            email="receptionist_rule@vatsalyashree.com",
+            username="receptionist_rule",
+            password="password123",
+            role="RECEPTIONIST"
+        )
+        self.patient = Patient.objects.create(
+            full_name="Rule Patient",
+            date_of_birth=date(2000, 1, 1),
+            gender=Patient.GenderChoices.MALE,
+            mobile_number="9999999999",
+            address="Test Address"
+        )
+        self.hospital = HospitalSettings.objects.create(
+            hospital_name="Vatsalya Shree Hospital",
+            address="Guna",
+            phone_number="123",
+            email="test@test.com",
+            consultation_fee=350.00,
+            opd_validity_days=10,
+            free_followups_allowed=1
+        )
+        self.client.login(email="receptionist_rule@vatsalyashree.com", password="password123")
+
+    def test_opd_validity_cycle(self):
+        from datetime import timedelta
+        # 1. First Visit: No previous visits, so it must be a New Paid OPD
+        url = reverse('receptionist:create_opd_visit', kwargs={'patient_id': self.patient.id})
+        response1 = self.client.post(url, {'payment_mode': 'CASH'})
+        visit1 = OPDVisit.objects.filter(patient=self.patient).order_by('-created_at').first()
+        self.assertEqual(visit1.visit_type, OPDVisit.VisitTypeChoices.NEW_VISIT)
+        self.assertRedirects(response1, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': self.patient.id})}?visit_id={visit1.id}")
+
+        # 2. Second Visit: Within 10 days, should be a Free Follow-up
+        response2 = self.client.post(url, {'payment_mode': 'UPI'})
+        visit2 = OPDVisit.objects.filter(patient=self.patient).order_by('-created_at').first()
+        self.assertEqual(visit2.visit_type, OPDVisit.VisitTypeChoices.FOLLOW_UP)
+        self.assertRedirects(response2, reverse('receptionist:vitals_entry_detail', kwargs={'patient_id': self.patient.id}))
+
+        # 3. Third Visit: Still within 10 days, but free follow-up is already used. So it must be a New Paid OPD cycle
+        response3 = self.client.post(url, {'payment_mode': 'CASH'})
+        visit3 = OPDVisit.objects.filter(patient=self.patient).order_by('-created_at').first()
+        self.assertEqual(visit3.visit_type, OPDVisit.VisitTypeChoices.NEW_VISIT)
+        self.assertRedirects(response3, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': self.patient.id})}?visit_id={visit3.id}")
+
+    def test_opd_validity_expiration(self):
+        # Create a paid visit that is older than 10 days (e.g. 11 days ago)
+        from datetime import timedelta
+        old_date = date.today() - timedelta(days=11)
+        OPDVisit.objects.create(
+            patient=self.patient,
+            visit_date=old_date,
+            visit_time="10:00:00",
+            visit_type=OPDVisit.VisitTypeChoices.NEW_VISIT,
+            status=OPDVisit.StatusChoices.COMPLETED,
+            created_by=self.user,
+            updated_by=self.user
+        )
+
+        # Since the last paid visit has expired, the next visit must be a New Paid OPD
+        url = reverse('receptionist:create_opd_visit', kwargs={'patient_id': self.patient.id})
+        response = self.client.post(url, {'payment_mode': 'UPI'})
+        visit = OPDVisit.objects.filter(patient=self.patient).order_by('-created_at').first()
+        self.assertEqual(visit.visit_type, OPDVisit.VisitTypeChoices.NEW_VISIT)
+        self.assertRedirects(response, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': self.patient.id})}?visit_id={visit.id}")
 
 

@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
 from .forms import PatientRegistrationForm, OPDVisitForm
-from .models import Patient, OPDVisit
+from .models import Patient, OPDVisit, HospitalSettings
 
 
 def receptionist_required(view_func):
@@ -26,52 +26,62 @@ def receptionist_required(view_func):
 @receptionist_required
 def dashboard(request):
     from django.utils import timezone
-    from datetime import timedelta
+    from datetime import timedelta, datetime
     from .models import Patient, OPDVisit
     
     today = timezone.localdate()
-    yesterday = today - timedelta(days=1)
     
-    # 1. Today's Patient Metric: Count of unique patients with a visit today
-    today_visits = OPDVisit.objects.filter(visit_date=today)
-    today_patients_count = today_visits.values('patient').distinct().count()
+    # Parse and validate selected date
+    date_str = request.GET.get('date')
+    selected_date = today
+    if date_str:
+        try:
+            selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+            
+    previous_day = selected_date - timedelta(days=1)
     
-    # Subtext: Today's new patient registrations
-    today_new_registrations = Patient.objects.filter(created_at__date=today).count()
+    # 1. Patient Metric: Count of unique patients with a visit on selected date
+    selected_visits = OPDVisit.objects.filter(visit_date=selected_date)
+    patients_count = selected_visits.values('patient').distinct().count()
     
-    # Yesterday's unique patients count for percentage calculation
-    yesterday_visits = OPDVisit.objects.filter(visit_date=yesterday)
-    yesterday_patients_count = yesterday_visits.values('patient').distinct().count()
+    # Subtext: Selected date's new patient registrations
+    new_registrations = Patient.objects.filter(created_at__date=selected_date).count()
+    
+    # Previous day's unique patients count for percentage calculation
+    previous_visits = OPDVisit.objects.filter(visit_date=previous_day)
+    previous_patients_count = previous_visits.values('patient').distinct().count()
     
     # Percentage change for patients
-    if yesterday_patients_count > 0:
-        patient_percent_change = int(((today_patients_count - yesterday_patients_count) / yesterday_patients_count) * 100)
+    if previous_patients_count > 0:
+        patient_percent_change = int(((patients_count - previous_patients_count) / previous_patients_count) * 100)
     else:
         patient_percent_change = 0
     patient_change_abs = abs(patient_percent_change)
     
-    # 2. Today's OPD Metric: Count of total OPD visits today
-    today_opd_count = today_visits.count()
+    # 2. OPD Metric: Count of total OPD visits on selected date
+    opd_count = selected_visits.count()
     
-    # Subtext: Number of patients currently waiting
-    waiting_opd_count = today_visits.filter(status=OPDVisit.StatusChoices.WAITING).count()
+    # Subtext: Number of patients currently waiting on selected date
+    waiting_opd_count = selected_visits.filter(status=OPDVisit.StatusChoices.WAITING).count()
     
-    # Yesterday's total OPD visits count for percentage calculation
-    yesterday_opd_count = yesterday_visits.count()
+    # Previous day's total OPD visits count for percentage calculation
+    previous_opd_count = previous_visits.count()
     
     # Percentage change for OPD visits
-    if yesterday_opd_count > 0:
-        opd_percent_change = int(((today_opd_count - yesterday_opd_count) / yesterday_opd_count) * 100)
+    if previous_opd_count > 0:
+        opd_percent_change = int(((opd_count - previous_opd_count) / previous_opd_count) * 100)
     else:
         opd_percent_change = 0
     opd_change_abs = abs(opd_percent_change)
     
-    # 3. Pending Lab Reports (no model implemented yet, so defaulted to 0 dynamically)
-    pending_lab_reports = 0
+    # 3. Pending Lab Reports
+    pending_lab_reports = selected_visits.filter(status=OPDVisit.StatusChoices.PENDING_LAB).count()
     lab_reports_due_hour = 0
     
-    # 4. Recent Patients table: Retrieve recent OPD visits today or overall
-    recent_visits = OPDVisit.objects.select_related('patient').order_by('-visit_date', '-visit_time')[:10]
+    # 4. Recent Patients table: Retrieve recent OPD visits on selected date
+    recent_visits = OPDVisit.objects.filter(visit_date=selected_date).select_related('patient').order_by('-visit_time')[:10]
     
     # Determine appropriate greeting based on time of day
     current_hour = timezone.localtime().hour
@@ -85,11 +95,11 @@ def dashboard(request):
     context = {
         'active_nav': 'dashboard',
         'greeting_prefix': greeting_prefix,
-        'today_patients_count': today_patients_count,
-        'today_new_registrations': today_new_registrations,
+        'today_patients_count': patients_count,
+        'today_new_registrations': new_registrations,
         'patient_percent_change': patient_percent_change,
         'patient_change_abs': patient_change_abs,
-        'today_opd_count': today_opd_count,
+        'today_opd_count': opd_count,
         'waiting_opd_count': waiting_opd_count,
         'opd_percent_change': opd_percent_change,
         'opd_change_abs': opd_change_abs,
@@ -97,8 +107,43 @@ def dashboard(request):
         'lab_reports_due_hour': lab_reports_due_hour,
         'recent_visits': recent_visits,
         'current_time_str': timezone.localtime().strftime("%I:%M %p"),
+        'selected_date': selected_date,
+        'today': today,
     }
     return render(request, "receptionist/receptionist_dashboard.html", context)
+
+
+def determine_visit_type(patient, hospital):
+    from django.utils import timezone
+    from receptionist.models import OPDVisit
+    
+    today = timezone.localdate()
+    
+    # Step 1: Find the patient's latest PAID OPD (visit_type = "New Visit")
+    latest_paid_opd = OPDVisit.objects.filter(
+        patient=patient,
+        visit_type=OPDVisit.VisitTypeChoices.NEW_VISIT
+    ).order_by('-visit_date', '-visit_time').first()
+    
+    if latest_paid_opd:
+        validity_days = hospital.opd_validity_days
+        days_passed = (today - latest_paid_opd.visit_date).days
+        
+        if 0 <= days_passed < validity_days:
+            # Active validity window
+            # Check how many follow-ups have been used since that latest paid OPD visit_date
+            followups_count = OPDVisit.objects.filter(
+                patient=patient,
+                visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP,
+                visit_date__gte=latest_paid_opd.visit_date
+            ).count()
+            
+            if followups_count < hospital.free_followups_allowed:
+                # Allowed to have a free follow-up
+                return OPDVisit.VisitTypeChoices.FOLLOW_UP
+    
+    # Otherwise, it's a new paid OPD cycle
+    return OPDVisit.VisitTypeChoices.NEW_VISIT
 
 
 @receptionist_required
@@ -114,6 +159,7 @@ def patient_registration(request):
         visit_form.fields['visit_date'].required = False
         visit_form.fields['visit_time'].required = False
         visit_form.fields['status'].required = False
+        visit_form.fields['visit_type'].required = False
         
         patient_valid = patient_form.is_valid()
         visit_valid = visit_form.is_valid()
@@ -150,15 +196,29 @@ def patient_registration(request):
                     visit.visit_date = timezone.localdate()
                     visit.visit_time = timezone.localtime().time().replace(second=0, microsecond=0)
                     
+                    hospital = HospitalSettings.objects.first()
+                    if not hospital:
+                        hospital = HospitalSettings.objects.create(
+                            hospital_name="Vatsalya Shree Hospital",
+                            address="Near Shrinath Talkies, Main Road, Guna (M.P.)",
+                            phone_number="+91 7542 250000",
+                            email="contact@vatsalyashree.com",
+                            consultation_fee=350.00
+                        )
+                    visit.visit_type = determine_visit_type(patient, hospital)
+                    
                     visit.created_by = request.user
                     visit.updated_by = request.user
                     visit.save()
                     print(f"[DEBUG] OPD Visit saved with ID: {visit.id}, OPD Number: {visit.opd_number}")
                     
                 messages.success(request, "Patient and OPD registration completed successfully!")
-                print(f"[DEBUG] Database transaction committed successfully. Redirecting to receipt page for patient {patient.id}.")
+                print(f"[DEBUG] Database transaction committed successfully. Redirecting...")
                 from django.urls import reverse
-                return redirect(f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': patient.id})}?visit_id={visit.id}")
+                if visit.visit_type == OPDVisit.VisitTypeChoices.NEW_VISIT:
+                    return redirect(f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': patient.id})}?visit_id={visit.id}")
+                else:
+                    return redirect(f"{reverse('receptionist:vitals_entry_detail', kwargs={'patient_id': patient.id})}?visit_id={visit.id}")
                 
             except Exception as e:
                 print(f"[DEBUG] Exception caught during database save: {str(e)}")
@@ -313,11 +373,14 @@ def vitals_entry(request, patient_id=None):
                         'patient': patient,
                         'chief_complaint': form.cleaned_data['chief_complaint'],
                         'weight': form.cleaned_data['weight'],
+                        'height': form.cleaned_data.get('height') or None,
                         'temperature': form.cleaned_data['temperature'],
                         'heart_rate': form.cleaned_data['heart_rate'],
-                        'pulse_rate': form.cleaned_data['pulse_rate'],
+                        'pulse_rate': form.cleaned_data.get('pulse_rate') or None,
                         'blood_pressure': form.cleaned_data['blood_pressure'],
                         'spo2': form.cleaned_data['spo2'],
+                        'respiratory_rate': form.cleaned_data.get('respiratory_rate') or None,
+                        'bottle_feed': form.cleaned_data.get('bottle_feed') or None,
                         'blood_group': form.cleaned_data['blood_group'],
                         'created_by': request.user
                     }
@@ -365,11 +428,14 @@ def edit_latest_vitals(request, patient_id):
         if form.is_valid():
             vitals.chief_complaint = form.cleaned_data['chief_complaint']
             vitals.weight = form.cleaned_data['weight']
+            vitals.height = form.cleaned_data.get('height') or None
             vitals.temperature = form.cleaned_data['temperature']
             vitals.heart_rate = form.cleaned_data['heart_rate']
-            vitals.pulse_rate = form.cleaned_data['pulse_rate']
+            vitals.pulse_rate = form.cleaned_data.get('pulse_rate') or None
             vitals.blood_pressure = form.cleaned_data['blood_pressure']
             vitals.spo2 = form.cleaned_data['spo2']
+            vitals.respiratory_rate = form.cleaned_data.get('respiratory_rate') or None
+            vitals.bottle_feed = form.cleaned_data.get('bottle_feed') or None
             vitals.blood_group = form.cleaned_data['blood_group']
             vitals.save()
             
@@ -479,6 +545,11 @@ def opd_receipt(request, patient_id):
             visit = OPDVisit.objects.filter(patient=patient).order_by('-visit_date', '-visit_time').first()
     else:
         visit = OPDVisit.objects.filter(patient=patient).order_by('-visit_date', '-visit_time').first()
+        
+    if visit and visit.visit_type == OPDVisit.VisitTypeChoices.FOLLOW_UP:
+        from django.contrib import messages
+        messages.error(request, "Receipts cannot be generated for Free Follow-up visits.")
+        return redirect('receptionist:patient_list')
     
     hospital = HospitalSettings.objects.first()
     if not hospital:
@@ -510,7 +581,7 @@ def create_opd_visit(request, patient_id):
         from django.urls import reverse
         from django.contrib import messages
         from django.utils import timezone
-        from .models import Patient, OPDVisit
+        from .models import Patient, OPDVisit, HospitalSettings
         
         patient = get_object_or_404(Patient, id=patient_id)
         payment_mode = request.POST.get('payment_mode')
@@ -519,13 +590,25 @@ def create_opd_visit(request, patient_id):
             messages.error(request, "Invalid or missing Payment Mode.")
             return redirect('receptionist:patient_list')
             
+        hospital = HospitalSettings.objects.first()
+        if not hospital:
+            hospital = HospitalSettings.objects.create(
+                hospital_name="Vatsalya Shree Hospital",
+                address="Near Shrinath Talkies, Main Road, Guna (M.P.)",
+                phone_number="+91 7542 250000",
+                email="contact@vatsalyashree.com",
+                consultation_fee=350.00
+            )
+            
+        visit_type = determine_visit_type(patient, hospital)
+        
         with transaction.atomic():
             # Create a new OPD visit
             visit = OPDVisit(
                 patient=patient,
                 visit_date=timezone.localdate(),
                 visit_time=timezone.localtime().time().replace(second=0, microsecond=0),
-                visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP,
+                visit_type=visit_type,
                 status=OPDVisit.StatusChoices.WAITING,
                 payment_mode=payment_mode,
                 created_by=request.user,
@@ -534,6 +617,9 @@ def create_opd_visit(request, patient_id):
             visit.save()
         
         messages.success(request, f"New OPD visit created successfully for {patient.full_name}!")
-        return redirect(f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': patient.id})}?visit_id={visit.id}")
+        if visit.visit_type == OPDVisit.VisitTypeChoices.NEW_VISIT:
+            return redirect(f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': patient.id})}?visit_id={visit.id}")
+        else:
+            return redirect(reverse('receptionist:vitals_entry_detail', kwargs={'patient_id': patient.id}))
         
     return redirect('receptionist:patient_list')

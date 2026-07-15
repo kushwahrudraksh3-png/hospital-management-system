@@ -10,21 +10,21 @@
 
 <div class="clinic-card mb-4">
     <div class="card-body">
-        <form class="row g-3">
+        <form class="row g-3" method="GET" action="{% url 'doctor:patient_search' %}">
             <div class="col-md-5">
                 <label for="searchName" class="form-label fw-semibold">Patient Name / ID</label>
-                <input class="form-control" id="searchName" placeholder="Enter patient name or ID (e.g. PT-2026-...)">
+                <input class="form-control" id="searchName" name="q" value="{{ query|default:'' }}" placeholder="Enter patient name or ID (e.g. PT-2026-...)">
             </div>
             <div class="col-md-4">
                 <label for="patientType" class="form-label fw-semibold">Patient Type</label>
-                <select class="form-select" id="patientType">
-                    <option value="all" selected>All Patients</option>
-                    <option value="new">New Patient</option>
-                    <option value="followup">Follow-up Patient</option>
+                <select class="form-select" id="patientType" name="patient_type" onchange="this.form.submit()">
+                    <option value="all" {% if patient_type == 'all' %}selected{% endif %}>All Patients</option>
+                    <option value="new" {% if patient_type == 'new' %}selected{% endif %}>New Patient</option>
+                    <option value="followup" {% if patient_type == 'followup' %}selected{% endif %}>Follow-up Patient</option>
                 </select>
             </div>
             <div class="col-md-3 d-flex align-items-end">
-                <button type="button" class="btn btn-primary w-100 btn-padding-y-lg" data-search-btn>
+                <button type="submit" class="btn btn-primary w-100 btn-padding-y-lg">
                     <i class="bi bi-search"></i> Search
                 </button>
             </div>
@@ -48,26 +48,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr data-patient-type="followup">
-                        <td class="ps-3 fw-bold">PT-2026-081</td>
-                        <td class="fw-semibold">Aarav Sharma</td>
-                        <td>Mr. Rajesh Sharma</td>
-                        <td>9876543210</td>
-                        <td>13/07/2026</td>
+                    {% for patient in patients %}
+                    <tr data-patient-type="{% if patient.latest_visit_type == 'New Visit' %}new{% elif patient.latest_visit_type == 'Follow-up' %}followup{% else %}all{% endif %}">
+                        <td class="ps-3 fw-bold">{{ patient.uhid }}</td>
+                        <td class="fw-semibold">{{ patient.full_name }}</td>
+                        <td>{{ patient.father_name|default:"-" }}</td>
+                        <td>{{ patient.mobile_number }}</td>
+                        <td>{% if patient.last_visit_date %}{{ patient.last_visit_date|date:"d/m/Y" }}{% else %}-{% endif %}</td>
                         <td class="text-end pe-3">
-                            <a href="{% url 'doctor:patient_summary' %}" class="btn btn-light btn-sm"><i class="bi bi-eye"></i> View File</a>
+                            <a href="{% url 'doctor:patient_summary' %}?patient_id={{ patient.id }}" class="btn btn-light btn-sm"><i class="bi bi-eye"></i> View File</a>
                         </td>
                     </tr>
-                    <tr data-patient-type="new">
-                        <td class="ps-3 fw-bold">PT-2026-064</td>
-                        <td class="fw-semibold">Karan Malhotra</td>
-                        <td>Mrs. Pooja Malhotra</td>
-                        <td>9123456789</td>
-                        <td>28/06/2026</td>
-                        <td class="text-end pe-3">
-                            <a href="{% url 'doctor:patient_summary' %}" class="btn btn-light btn-sm"><i class="bi bi-eye"></i> View File</a>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            No patients found matching your search.
                         </td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

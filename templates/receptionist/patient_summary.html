@@ -91,6 +91,12 @@
                     <i class="bi bi-pencil me-1"></i>
                     Edit Profile
                 </a>
+                {% if latest_visit and latest_visit.vitals and latest_visit.handwritten_prescription %}
+                <a class="btn btn-success" href="{% url 'doctor:prescription_print' %}?visit_id={{ latest_visit.id }}&patient_id={{ patient.id }}&from=receptionist" target="_blank">
+                    <i class="bi bi-printer me-1"></i>
+                    Print Prescription
+                </a>
+                {% endif %}
             </div>
         </article>
     </div>

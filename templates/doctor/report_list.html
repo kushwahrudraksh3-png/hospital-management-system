@@ -17,29 +17,27 @@
                     <tr>
                         <th class="ps-3">Patient ID</th>
                         <th>Patient Name</th>
-                        <th>Investigation Test</th>
                         <th>Requested On</th>
                         <th>Status</th>
                         <th class="text-end pe-3">Action</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for req in lab_requests %}
                     <tr>
-                        <td class="ps-3 fw-bold">PT-2026-081</td>
-                        <td class="fw-semibold">Aarav Sharma</td>
-                        <td>Complete Blood Count (CBC)</td>
-                        <td>28/06/2026</td>
-                        <td><span class="badge badge-soft-success">Released</span></td>
-                        <td class="text-end pe-3"><a href="{% url 'doctor:report_view' %}" class="btn btn-light btn-sm">View Report</a></td>
-                    </tr>
-                    <tr>
-                        <td class="ps-3 fw-bold">PT-2026-079</td>
-                        <td class="fw-semibold">Diya Joshi</td>
-                        <td>Widal Typhoid Test</td>
-                        <td>12/07/2026</td>
+                        <td class="ps-3 fw-bold">{{ req.patient.uhid }}</td>
+                        <td class="fw-semibold">{{ req.patient.full_name }}</td>
+                        <td>{{ req.visit_date|date:"d/m/Y" }}</td>
                         <td><span class="badge badge-soft-warning">Pending</span></td>
                         <td class="text-end pe-3"><button class="btn btn-light btn-sm" disabled>Awaiting Labs</button></td>
                     </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            No active laboratory requests found.
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

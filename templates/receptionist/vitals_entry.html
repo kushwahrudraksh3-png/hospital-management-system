@@ -155,7 +155,7 @@
                                 class="form-control"
                                 type="number"
                                 step="0.1"
-                                value="{% if vitals %}{{ vitals.weight }}{% else %}16.8{% endif %}"
+                                value="{% if vitals %}{{ vitals.weight }}{% endif %}"
                                 required
                                 autofocus
                             />
@@ -181,7 +181,7 @@
                                 class="form-control"
                                 type="number"
                                 step="0.1"
-                                value="{% if vitals %}{{ vitals.temperature }}{% else %}37.4{% endif %}"
+                                value="{% if vitals %}{{ vitals.temperature }}{% endif %}"
                                 required
                             />
                             <span class="input-group-text">
@@ -205,7 +205,7 @@
                                 name="heart_rate"
                                 class="form-control"
                                 type="number"
-                                value="{% if vitals %}{{ vitals.heart_rate }}{% else %}104{% endif %}"
+                                value="{% if vitals %}{{ vitals.heart_rate }}{% endif %}"
                                 required
                             />
                             <span class="input-group-text">
@@ -216,24 +216,23 @@
                     <div class="col-md-6">
                         <label
                             class="form-label"
-                            for="pulseRate"
+                            for="height"
                         >
-                            Pulse Rate
-                            <span class="required-mark">
-                                *
-                            </span>
+                            Height (cm)
                         </label>
                         <div class="input-group">
                             <input
-                                id="pulseRate"
-                                name="pulse_rate"
+                                id="height"
+                                name="height"
                                 class="form-control"
                                 type="number"
-                                value="{% if vitals %}{{ vitals.pulse_rate }}{% else %}102{% endif %}"
-                                required
+                                step="0.1"
+                                min="0"
+                                value="{% if vitals and vitals.height %}{{ vitals.height }}{% endif %}"
+                                placeholder="e.g. 98.5"
                             />
                             <span class="input-group-text">
-                                bpm
+                                cm
                             </span>
                         </div>
                     </div>
@@ -252,7 +251,7 @@
                                 id="bloodPressure"
                                 name="blood_pressure"
                                 class="form-control"
-                                value="{% if vitals %}{{ vitals.blood_pressure }}{% else %}96/62{% endif %}"
+                                value="{% if vitals %}{{ vitals.blood_pressure }}{% endif %}"
                                 placeholder="e.g. 96/62"
                                 required
                             />
@@ -277,13 +276,40 @@
                                 name="spo2"
                                 class="form-control"
                                 type="number"
-                                value="{% if vitals %}{{ vitals.spo2 }}{% else %}98{% endif %}"
+                                value="{% if vitals %}{{ vitals.spo2 }}{% endif %}"
                                 required
                             />
                             <span class="input-group-text">
                                 %
                             </span>
                         </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="respiratoryRate">
+                            RR (Respiratory Rate)
+                        </label>
+                        <div class="input-group">
+                            <input
+                                id="respiratoryRate"
+                                name="respiratory_rate"
+                                class="form-control"
+                                type="number"
+                                min="0"
+                                value="{% if vitals and vitals.respiratory_rate %}{{ vitals.respiratory_rate }}{% endif %}"
+                                placeholder="e.g. 22"
+                            />
+                            <span class="input-group-text">breaths/min</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="bottleFeed">
+                            Bottle Feed
+                        </label>
+                        <select id="bottleFeed" name="bottle_feed" class="form-select">
+                            <option value="">Select Bottle Feed</option>
+                            <option value="Yes" {% if vitals and vitals.bottle_feed == "Yes" %}selected{% endif %}>Yes</option>
+                            <option value="No" {% if vitals and vitals.bottle_feed == "No" %}selected{% endif %}>No</option>
+                        </select>
                     </div>
                 </div>
             </div>

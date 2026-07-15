@@ -24,16 +24,22 @@
             {{ greeting_prefix }}, {{ request.user.first_name }} {{ request.user.last_name }}
         </h1>
         <p class="text-muted mb-0 mt-1">
-            Here’s a clear view of your clinic for today.
+            Here’s a clear view of your clinic for {% if selected_date == today %}today{% else %}{{ selected_date|date:"F d, Y" }}{% endif %}.
         </p>
     </div>
-    <div
-        class="d-flex align-items-center gap-2 px-3 py-2 u-bg-surface u-border u-rounded"
-    >
-        <i class="bi bi-clock text-primary"></i>
-        <span class="small fw-semibold" data-current-time>
-            {{ current_time_str }}
-        </span>
+    <div class="d-flex flex-wrap align-items-center gap-3">
+        <div
+            class="d-flex align-items-center gap-2 px-3 py-2 u-bg-surface u-border u-rounded"
+        >
+            <i class="bi bi-clock text-primary"></i>
+            <span class="small fw-semibold" data-current-time>
+                {{ current_time_str }}
+            </span>
+        </div>
+        <form method="GET" action="{% url 'receptionist:dashboard' %}" class="d-flex align-items-center gap-2">
+            <input type="date" name="date" class="form-control form-control-sm" value="{{ selected_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" style="width: 140px;">
+            <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
+        </form>
     </div>
 </div>
 <section class="mb-4" aria-label="Today's summary">
@@ -51,10 +57,10 @@
                         {{ patient_change_abs }}%
                     </span>
                 </div>
-                <p class="metric-label">Today's Patients</p>
+                <p class="metric-label">{% if selected_date == today %}Today's{% else %}Selected Date's{% endif %} Patients</p>
                 <div class="metric-value">{{ today_patients_count }}</div>
                 <span class="text-muted small">
-                    {{ today_new_registrations }} new registration{{ today_new_registrations|pluralize }}
+                    {{ today_new_registrations }} new registration{{ today_new_registrations|pluralize }}{% if selected_date != today %} on this date{% endif %}
                 </span>
             </article>
         </div>
@@ -73,10 +79,10 @@
                         {{ opd_change_abs }}%
                     </span>
                 </div>
-                <p class="metric-label">Today's OPD</p>
+                <p class="metric-label">{% if selected_date == today %}Today's{% else %}Selected Date's{% endif %} OPD</p>
                 <div class="metric-value">{{ today_opd_count }}</div>
                 <span class="text-muted small">
-                    {{ waiting_opd_count }} awaiting consultation
+                    {{ waiting_opd_count }} awaiting consultation{% if selected_date != today %} on this date{% endif %}
                 </span>
             </article>
         </div>
@@ -89,9 +95,9 @@
                         ></i>
                     </div>
                     <span
-                        class="badge badge-soft-success align-self-start"
+                        class="badge {% if pending_lab_reports > 0 %}badge-soft-warning{% else %}badge-soft-success{% endif %} align-self-start"
                     >
-                        All caught up
+                        {% if pending_lab_reports > 0 %}Action required{% else %}All caught up{% endif %}
                     </span>
                 </div>
                 <p class="metric-label">
@@ -99,7 +105,7 @@
                 </p>
                 <div class="metric-value">{{ pending_lab_reports }}</div>
                 <span class="text-muted small">
-                    No reports due
+                    {% if pending_lab_reports > 0 %}{{ pending_lab_reports }} report{{ pending_lab_reports|pluralize }} pending{% else %}No reports due{% endif %}
                 </span>
             </article>
         </div>
@@ -197,7 +203,7 @@
             <div
                 class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center"
             >
-                <span>Recent Patients</span>
+                <span>{% if selected_date == today %}Recent Patients{% else %}Patients on Selected Date{% endif %}</span>
                 <form class="d-flex align-items-center gap-2" method="get" action="{% url 'receptionist:patient_list' %}">
                     <div class="search-field">
                         <i class="bi bi-search"></i>
@@ -257,6 +263,7 @@
                                     {% elif visit.status == 'Completed' %}badge-soft-success
                                     {% elif visit.status == 'Waiting' %}badge-soft-warning
                                     {% elif visit.status == 'Cancelled' %}badge-soft-danger
+                                    {% elif visit.status == 'Pending Lab' %}badge-soft-info
                                     {% else %}badge-soft-muted{% endif %}">
                                     {{ visit.status }}
                                 </span>

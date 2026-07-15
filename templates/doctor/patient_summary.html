@@ -1,4 +1,5 @@
 {% extends "doctor/base_doctor.html" %}
+{% load static %}
 
 {% block title %}Patient Summary | Vatsalya Children Hospital{% endblock %}
 
@@ -20,8 +21,6 @@
     </div>
     <div class="d-flex gap-2">
         <a href="{% url 'doctor:queue' %}" class="btn btn-light"><i class="bi bi-arrow-left"></i> Back to Patient List</a>
-        <button class="btn btn-outline-primary" type="button"><i class="bi bi-printer"></i> Print Profile</button>
-        <button class="btn btn-primary" type="button"><i class="bi bi-pencil"></i> Edit Patient</button>
     </div>
 </div>
 
@@ -31,38 +30,41 @@
         <div class="row align-items-center">
             <!-- Photo Column -->
             <div class="col-md-auto text-center mb-3 mb-md-0">
-                <div class="patient-hero-avatar mx-auto">AS</div>
+                <div class="patient-hero-avatar mx-auto">{{ avatar_initials }}</div>
             </div>
             <!-- Information Details Column -->
             <div class="col-md">
                 <div class="d-flex flex-wrap align-items-center gap-2 mb-3 justify-content-center justify-content-md-start">
-                    <h2 class="mb-0">Aarav Sharma</h2>
+                    <h2 class="mb-0">{{ patient.full_name }}</h2>
+                    {% if visit.status == 'Completed' %}
+                    <span class="badge badge-soft-success">Completed</span>
+                    {% elif visit.status == 'Pending Lab' %}
+                    <span class="badge badge-soft-warning">Pending</span>
+                    {% else %}
                     <span class="badge badge-soft-warning">Waiting</span>
+                    {% endif %}
                 </div>
                 <div class="row g-3 fs-sm-custom text-muted text-center text-md-start">
                     <div class="col-sm-6 col-md-3">
-                        <strong>Patient ID:</strong> <span class="text-dark fw-medium">PT-2026-081</span>
+                        <strong>Patient ID:</strong> <span class="text-dark fw-medium">{{ patient.uhid }}</span>
                     </div>
                     <div class="col-sm-6 col-md-3">
-                        <strong>Age / Gender:</strong> <span class="text-dark fw-medium">4 Years / Male</span>
+                        <strong>Age / Gender:</strong> <span class="text-dark fw-medium">{{ patient.age }} / {{ patient.get_gender_display }}</span>
                     </div>
                     <div class="col-sm-6 col-md-3">
-                        <strong>DOB:</strong> <span class="text-dark fw-medium">12/04/2022</span>
+                        <strong>DOB:</strong> <span class="text-dark fw-medium">{{ patient.date_of_birth|date:"d/m/Y" }}</span>
                     </div>
                     <div class="col-sm-6 col-md-3">
-                        <strong>Last Visit:</strong> <span class="text-dark fw-medium">13/07/2026</span>
+                        <strong>Father's Name:</strong> <span class="text-dark fw-medium">{{ patient.father_name|default:"-" }}</span>
                     </div>
                     <div class="col-sm-6 col-md-3">
-                        <strong>Father's Name:</strong> <span class="text-dark fw-medium">Mr. Rajesh Sharma</span>
+                        <strong>Mobile:</strong> <span class="text-dark fw-medium">{{ patient.mobile_number }}</span>
                     </div>
                     <div class="col-sm-6 col-md-3">
-                        <strong>Mobile:</strong> <span class="text-dark fw-medium">9876543210</span>
+                        <strong>Address:</strong> <span class="text-dark fw-medium">{{ patient.address }}</span>
                     </div>
                     <div class="col-sm-6 col-md-3">
-                        <strong>Address:</strong> <span class="text-dark fw-medium">A.B. Road, Dhamnod, MP</span>
-                    </div>
-                    <div class="col-sm-6 col-md-3">
-                        <strong>Registration Date:</strong> <span class="text-dark fw-medium">15/01/2026</span>
+                        <strong>Registration Date:</strong> <span class="text-dark fw-medium">{{ patient.created_at|date:"d/m/Y" }}</span>
                     </div>
                 </div>
             </div>
@@ -71,9 +73,9 @@
 </div>
 
 <!-- Quick Health Summary Cards -->
-<div class="row g-3 mb-4">
+<div class="d-flex flex-wrap gap-3 mb-4">
     <!-- Weight -->
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="flex-fill" style="min-width: 130px; max-width: 250px;">
         <div class="metric-card h-100">
             <div class="metric-header">
                 <div class="metric-icon icon-blue"><i class="bi bi-clipboard-data"></i></div>
@@ -81,12 +83,12 @@
             </div>
             <div>
                 <div class="metric-label">Weight</div>
-                <div class="metric-value fs-3 mt-1">16 <span class="fs-6 fw-normal text-muted">kg</span></div>
+                <div class="metric-value fs-3 mt-1">{{ vitals.weight|default:"-" }} <span class="fs-6 fw-normal text-muted">kg</span></div>
             </div>
         </div>
     </div>
     <!-- Blood Pressure -->
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="flex-fill" style="min-width: 130px; max-width: 250px;">
         <div class="metric-card h-100">
             <div class="metric-header">
                 <div class="metric-icon icon-red"><i class="bi bi-heart-pulse"></i></div>
@@ -94,12 +96,12 @@
             </div>
             <div>
                 <div class="metric-label">BP</div>
-                <div class="metric-value fs-3 mt-1">95/60 <span class="fs-6 fw-normal text-muted">mmHg</span></div>
+                <div class="metric-value fs-3 mt-1">{{ vitals.blood_pressure|default:"-" }} <span class="fs-6 fw-normal text-muted">mmHg</span></div>
             </div>
         </div>
     </div>
     <!-- Temperature -->
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="flex-fill" style="min-width: 130px; max-width: 250px;">
         <div class="metric-card h-100">
             <div class="metric-header">
                 <div class="metric-icon icon-orange"><i class="bi bi-thermometer-half"></i></div>
@@ -107,12 +109,12 @@
             </div>
             <div>
                 <div class="metric-label">Temp</div>
-                <div class="metric-value fs-3 mt-1 text-danger">99.1 <span class="fs-6 fw-normal text-muted">°F</span></div>
+                <div class="metric-value fs-3 mt-1 text-danger">{{ vitals.temperature|default:"-" }} <span class="fs-6 fw-normal text-muted">°F</span></div>
             </div>
         </div>
     </div>
     <!-- SpO2 -->
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="flex-fill" style="min-width: 130px; max-width: 250px;">
         <div class="metric-card h-100">
             <div class="metric-header">
                 <div class="metric-icon icon-green"><i class="bi bi-activity"></i></div>
@@ -120,12 +122,12 @@
             </div>
             <div>
                 <div class="metric-label">SpO₂</div>
-                <div class="metric-value fs-3 mt-1">98 <span class="fs-6 fw-normal text-muted">%</span></div>
+                <div class="metric-value fs-3 mt-1">{{ vitals.spo2|default:"-" }} <span class="fs-6 fw-normal text-muted">%</span></div>
             </div>
         </div>
     </div>
     <!-- Heart Rate -->
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="flex-fill" style="min-width: 130px; max-width: 250px;">
         <div class="metric-card h-100">
             <div class="metric-header">
                 <div class="metric-icon icon-blue"><i class="bi bi-heart"></i></div>
@@ -133,12 +135,12 @@
             </div>
             <div>
                 <div class="metric-label">Heart Rate</div>
-                <div class="metric-value fs-3 mt-1">98 <span class="fs-6 fw-normal text-muted">bpm</span></div>
+                <div class="metric-value fs-3 mt-1">{{ vitals.heart_rate|default:"-" }} <span class="fs-6 fw-normal text-muted">bpm</span></div>
             </div>
         </div>
     </div>
     <!-- Pulse Rate -->
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="flex-fill" style="min-width: 130px; max-width: 250px;">
         <div class="metric-card h-100">
             <div class="metric-header">
                 <div class="metric-icon icon-red"><i class="bi bi-heart-pulse-fill"></i></div>
@@ -146,7 +148,20 @@
             </div>
             <div>
                 <div class="metric-label">Pulse Rate</div>
-                <div class="metric-value fs-3 mt-1">98 <span class="fs-6 fw-normal text-muted">bpm</span></div>
+                <div class="metric-value fs-3 mt-1">{{ vitals.pulse_rate|default:"-" }} <span class="fs-6 fw-normal text-muted">bpm</span></div>
+            </div>
+        </div>
+    </div>
+    <!-- Blood Group -->
+    <div class="flex-fill" style="min-width: 130px; max-width: 250px;">
+        <div class="metric-card h-100">
+            <div class="metric-header">
+                <div class="metric-icon icon-red"><i class="bi bi-droplet-fill"></i></div>
+                <span class="badge badge-soft-danger">Vitals</span>
+            </div>
+            <div>
+                <div class="metric-label">Blood Group</div>
+                <div class="metric-value fs-3 mt-1">{{ vitals.blood_group|default:"-" }}</div>
             </div>
         </div>
     </div>
@@ -161,7 +176,7 @@
         </div>
     </div>
     <div class="card-body">
-        <p class="fs-5 fw-semibold text-dark mb-0">Fever since 2 days with cough and cold.</p>
+        <p class="fs-5 fw-semibold text-dark mb-0">{{ vitals.chief_complaint|default:"No complaint details recorded." }}</p>
     </div>
 </div>
 
@@ -172,9 +187,6 @@
             <h5 class="mb-1 fw-bold text-dark">Consultation History</h5>
             <p class="text-muted mb-0 fs-xs">Complete consultation history of the patient in chronological order.</p>
         </div>
-        <button class="btn btn-outline-primary btn-sm" id="toggleEmptyStateBtn" type="button">
-            <i class="bi bi-shuffle"></i> Toggle Empty State
-        </button>
     </div>
     <div class="card-body p-0">
         <!-- Active Table State -->
@@ -191,34 +203,32 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for c in consultations %}
                     <tr>
-                        <td class="ps-3 fw-bold">1</td>
-                        <td class="fw-semibold">13/07/2026</td>
-                        <td class="fw-medium">#OPD-2026-1092</td>
-                        <td><span class="badge badge-soft-primary">Follow-up</span></td>
-                        <td>18/07/2026</td>
+                        <td class="ps-3 fw-bold">{{ forloop.counter }}</td>
+                        <td class="fw-semibold">{{ c.visit_date|date:"d/m/Y" }}</td>
+                        <td class="fw-medium">#{{ c.opd_number }}</td>
+                        <td>
+                            {% if c.visit_type == 'New Visit' %}
+                            <span class="badge badge-soft-success">New Patient</span>
+                            {% else %}
+                            <span class="badge badge-soft-primary">Follow-up</span>
+                            {% endif %}
+                        </td>
+                        <td>-</td>
                         <td class="text-end pe-3">
                             <div class="d-flex justify-content-end gap-1">
-                                <a href="{% url 'doctor:previous_history' %}" class="btn btn-light btn-sm text-primary btn-icon" title="View Consultation"><i class="bi bi-eye"></i></a>
-                                <a href="{% url 'doctor:prescription_preview' %}" class="btn btn-light btn-sm text-success btn-icon" title="View Prescription"><i class="bi bi-prescription"></i></a>
+                                <a href="{% url 'doctor:previous_history' %}?visit_id={{ c.id }}&patient_id={{ patient.id }}" class="btn btn-light btn-sm text-primary btn-icon" title="View Consultation"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ c.id }}&patient_id={{ patient.id }}" class="btn btn-light btn-sm text-success btn-icon" title="View Prescription"><i class="bi bi-prescription"></i></a>
                                 <button class="btn btn-light btn-sm text-muted btn-icon" title="View Lab Report" disabled><i class="bi bi-file-earmark-bar-graph"></i></button>
                             </div>
                         </td>
                     </tr>
+                    {% empty %}
                     <tr>
-                        <td class="ps-3 fw-bold">2</td>
-                        <td class="fw-semibold">28/06/2026</td>
-                        <td class="fw-medium">#OPD-2026-0982</td>
-                        <td><span class="badge badge-soft-success">New Patient</span></td>
-                        <td>-</td>
-                        <td class="text-end pe-3">
-                            <div class="d-flex justify-content-end gap-1">
-                                <a href="{% url 'doctor:previous_history' %}" class="btn btn-light btn-sm text-primary btn-icon" title="View Consultation"><i class="bi bi-eye"></i></a>
-                                <a href="{% url 'doctor:prescription_preview' %}" class="btn btn-light btn-sm text-success btn-icon" title="View Prescription"><i class="bi bi-prescription"></i></a>
-                                <a href="{% url 'doctor:report_view' %}" class="btn btn-light btn-sm text-warning btn-icon" title="View Lab Report"><i class="bi bi-file-earmark-bar-graph"></i></a>
-                            </div>
-                        </td>
+                        <td colspan="6" class="text-center text-muted py-4">No consultation history found for this patient.</td>
                     </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
@@ -230,7 +240,7 @@
             </div>
             <h5 class="text-muted fw-semibold mb-2">No consultation history found for this patient.</h5>
             <p class="text-muted fs-sm-custom mb-4">You can create a new consultation record for this patient below.</p>
-            <a href="{% url 'doctor:prescription' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create New Consultation</a>
+            <a href="{% url 'doctor:prescription' %}?visit_id={{ visit.id }}&patient_id={{ patient.id }}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create New Consultation</a>
         </div>
     </div>
 </div>
@@ -263,27 +273,152 @@
 
         <!-- Drawing Canvas Wrapper (A4 portrait) -->
         <div class="prescription-canvas-wrapper mb-3">
+            <!-- Finalized Prescription Pad Template Background -->
+            <div class="prescription-pad">
+                <!-- Header -->
+                <div class="prescription-header">
+                    <img src="{% static 'images/vatsalya_logo.png' %}" alt="Vatsalya Hospital logo" class="header-logo-left">
+                    <div class="header-title-container">
+                        <h1>वात्सल्य श्री हॉस्पिटल</h1>
+                    </div>
+                    <img src="{% static 'images/caduceus.png' %}" alt="Medical caduceus" class="header-logo-right">
+                </div>
+
+                <!-- Registration Bar -->
+                <div class="reg-bar">
+                    Reg. No. : NH-6886-MAR-2018
+                </div>
+
+                <!-- Doctor Details -->
+                <div class="doctor-info-section">
+                    <div class="doc-details-left">
+                        <div class="doc-name">डॉ. कल्पेश मैनेजर (पाटीदार)</div>
+                        <div class="doc-degrees">M.B.B.S., M.D. (Pediatrics)</div>
+                        <div>Reg. No. : MP-17921</div>
+                        <div class="fw-semibold">Pediatrician</div>
+                        <div>Mob. : {{ request.user.phone_number|default:"-" }}</div>
+                    </div>
+                    <div class="doc-details-center">
+                        <img src="{% static 'images/sleeping_baby.png' %}" alt="Baby cradle illustration">
+                    </div>
+                    <div class="doc-details-right">
+                        <div class="prev-docs-title">पूर्व चिकित्सक :</div>
+                        <ul class="prev-docs-list">
+                            <li>इंदिरा गाँधी मेडिकल कॉलेज, नागपुर</li>
+                            <li>गजरा राजा मेडिकल कॉलेज, ग्वालियर</li>
+                            <li>गांधी मेडिकल कॉलेज, भोपाल</li>
+                            <li>रेनबो चिल्ड्रेन हॉस्पिटल, भोपाल</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Patient Demographics Section -->
+                <div class="patient-demographics-section">
+                    <div class="demographics-row-1">
+                        <div class="field-group">
+                            <span class="field-label">Name :</span>
+                            <span class="field-value-dotted">{{ patient.full_name }}</span>
+                        </div>
+                        <div class="field-group">
+                            <span class="field-label">Age / Sex :</span>
+                            <span class="field-value-dotted">{{ patient.age|cut:" 0 Months" }} / {{ patient.get_gender_display }}</span>
+                        </div>
+                    </div>
+                    <div class="demographics-row-2">
+                        <div class="field-group">
+                            <span class="field-label">Weight :</span>
+                            <span class="field-value-dotted">{{ vitals.weight|default:"-" }} kg</span>
+                        </div>
+                        <div class="field-group">
+                            <span class="field-label">Height :</span>
+                            <span class="field-value-dotted">{{ vitals.height|default:"-" }} cm</span>
+                        </div>
+                        <div class="field-group">
+                            <span class="field-label">Address :</span>
+                            <span class="field-value-dotted">{{ patient.address|default:"-" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Complaint + Bottle Feed full-width row -->
+                <div class="complaint-bottle-row">
+                    <div class="complaint-col-left">
+                        <span class="exam-item-heading">Complaints :</span>
+                        <span class="prescription-text-entry">{{ vitals.chief_complaint|default:"-" }}</span>
+                    </div>
+                    <div class="complaint-col-right">
+                        <span class="exam-item-heading">Bottle Feed :</span>
+                        <span class="prescription-text-entry" id="bottle-feed-value">{{ vitals.bottle_feed|default:"-" }}</span>
+                    </div>
+                </div>
+
+                <!-- Prescription Body Grid Layout -->
+                <div class="prescription-body-grid">
+                    <!-- Left Examinations Panel -->
+                    <div class="body-left-panel">
+                        <div class="exam-fields-list">
+                            <div><div class="exam-item-heading">Examinations :</div><div class="writing-space"></div></div>
+                            <div><div class="exam-item-heading">R/S :</div><div class="writing-space"></div></div>
+                            <div><div class="exam-item-heading">CVS :</div><div class="writing-space"></div></div>
+                            <div><div class="exam-item-heading">P/A :</div><div class="writing-space"></div></div>
+                            <div><div class="exam-item-heading">CNS :</div><div class="writing-space"></div></div>
+                            <div><div class="exam-item-heading">Investigations :</div><div class="writing-space"></div></div>
+                        </div>
+                        <!-- Vitals -->
+                        <div class="vitals-card-box">
+                            <div class="vitals-box-title">Vitals Log</div>
+                            <div class="vital-line-item"><span class="vital-line-label">HR :</span><span class="vital-line-value-underlined">{{ vitals.heart_rate|default:"-" }} bpm</span></div>
+                            <div class="vital-line-item"><span class="vital-line-label">RR :</span><span class="vital-line-value-underlined">{% if vitals.respiratory_rate %}{{ vitals.respiratory_rate }} breaths/min{% else %}-{% endif %}</span></div>
+                            <div class="vital-line-item"><span class="vital-line-label">SpO2 :</span><span class="vital-line-value-underlined">{{ vitals.spo2|default:"-" }}%</span></div>
+                            <div class="vital-line-item"><span class="vital-line-label">Temp :</span><span class="vital-line-value-underlined">{{ vitals.temperature|default:"-" }} °F</span></div>
+                            <div class="vital-line-item"><span class="vital-line-label">B.P. :</span><span class="vital-line-value-underlined">{{ vitals.blood_pressure|default:"-" }}</span></div>
+                        </div>
+                    </div>
+                    <!-- Right Rx Panel -->
+                    <div class="body-right-panel">
+                        <div class="signature-container">
+                            <div class="signature-line">Dr. Kalpesh Manager (Patidar)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="prescription-footer">
+                    <div class="footer-slogan-row"><div class="footer-slogan">Towards Better Child Health</div></div>
+                    <div class="footer-timing-bar">परामर्श समय : सुबह 10 से दोपहर 2 बजे तक एवं सायंकाल 5 से रात्रि 8 बजे तक (सोमवार अवकाश)</div>
+                    <div class="footer-address-bar">
+                        <div class="swachh-logo-container"><img src="{% static 'images/swachh_bharat.png' %}" alt="Swachh Bharat spectacles"><span>एक कदम स्वच्छता की ओर</span></div>
+                        <div>ओल्ड ए.बी. रोड, गुलझारा (धामनोद), तहसील धरमपुरी, जिला धार (म.प्र.) – 454552, मो: 9630037055</div>
+                    </div>
+                </div>
+            </div>
             <canvas id="handwritingCanvas"></canvas>
         </div>
 
         <!-- Action Buttons -->
         <div class="row g-3 mt-4">
             <div class="col-md-4">
-                <a href="{% url 'doctor:prescription_preview' %}" class="btn btn-outline-primary w-100 justify-content-center py-2">
+                <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ patient.id }}" class="btn btn-outline-primary w-100 justify-content-center py-2">
                     <i class="bi bi-eye"></i> View Prescription
                 </a>
             </div>
             <div class="col-md-4">
-                <button type="button" class="btn btn-primary w-100 justify-content-center py-2" id="saveHandwrittenPrescriptionBtn">
+                <button type="button" class="btn btn-primary w-100 justify-content-center py-2" id="saveHandwrittenPrescriptionBtn"
+                        data-visit-id="{{ visit.id }}"
+                        data-patient-id="{{ patient.id }}">
                     <i class="bi bi-save"></i> Save Prescription
                 </button>
             </div>
             <div class="col-md-4">
-                <a href="{% url 'doctor:report_list' %}" class="btn btn-success w-100 justify-content-center py-2">
+                <a href="{% url 'doctor:report_list' %}?visit_id={{ visit.id }}&patient_id={{ patient.id }}" class="btn btn-success w-100 justify-content-center py-2">
                     <i class="bi bi-arrow-right-circle"></i> Proceed to Lab
                 </a>
             </div>
         </div>
     </div>
 </div>
+
+<script id="saved-strokes-data" type="application/json">
+    {{ saved_strokes_json|safe }}
+</script>
 {% endblock %}

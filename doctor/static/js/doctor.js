@@ -60,9 +60,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tableRows.forEach(row => {
             const patientId = row.cells[0] ? row.cells[0].textContent.toLowerCase().trim() : '';
             const patientName = row.cells[1] ? row.cells[1].textContent.toLowerCase().trim() : '';
+            const fatherName = row.cells[2] ? row.cells[2].textContent.toLowerCase().trim() : '';
+            const contact = row.cells[3] ? row.cells[3].textContent.toLowerCase().trim() : '';
             const patientType = row.dataset.patientType || 'all';
 
-            const matchesQuery = patientName.includes(query) || patientId.includes(query);
+            const matchesQuery = patientName.includes(query) || 
+                                 patientId.includes(query) || 
+                                 fatherName.includes(query) || 
+                                 contact.includes(query);
             const matchesType = (selectedType === 'all') || (patientType === selectedType);
 
             if (matchesQuery && matchesType) {
@@ -122,6 +127,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         row.style.display = '';
                     } else {
                         row.style.display = 'none';
+                    }
+                    
+                    // Toggle buttons and badges for lab-request patients based on active tab
+                    if (status === 'lab-request') {
+                        const viewRxBtn = row.querySelector('.btn-view-rx-lab');
+                        const examineBtn = row.querySelector('.btn-examine-lab');
+                        const normalLabBadge = row.querySelector('.badge-normal-lab');
+                        const requestedLabBadge = row.querySelector('.badge-requested-lab');
+                        
+                        if (viewRxBtn && examineBtn) {
+                            if (filter === 'lab-request') {
+                                viewRxBtn.style.display = 'inline-block';
+                                examineBtn.style.display = 'none';
+                            } else {
+                                viewRxBtn.style.display = 'none';
+                                examineBtn.style.display = 'inline-block';
+                            }
+                        }
+                        
+                        if (normalLabBadge && requestedLabBadge) {
+                            if (filter === 'lab-request') {
+                                normalLabBadge.style.display = 'none';
+                                requestedLabBadge.style.display = 'inline-block';
+                            } else {
+                                normalLabBadge.style.display = 'inline-block';
+                                requestedLabBadge.style.display = 'none';
+                            }
+                        }
                     }
                 });
             });
@@ -236,51 +269,81 @@ document.addEventListener('DOMContentLoaded', () => {
     let lastX = 0;
     let lastY = 0;
 
-    // Undo/Redo Stacks
-    let undoStack = [];
-    let redoStack = [];
+    let strokes = [];
+    let redoStrokes = [];
+    let currentStroke = null;
 
-    const saveState = () => {
-        if (undoStack.length >= 20) {
-            undoStack.shift();
+    // Load initial strokes if any
+    const savedStrokesEl = document.getElementById('saved-strokes-data');
+    if (savedStrokesEl) {
+        try {
+            strokes = JSON.parse(savedStrokesEl.textContent) || [];
+        } catch (e) {
+            console.error('Failed to parse saved strokes:', e);
         }
-        undoStack.push(canvas.toDataURL());
-        redoStack = []; // Clear redo stack on new action
+    }
+
+    const redrawCanvasFromStrokes = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Scale stroke thickness dynamically relative to canvas width
+        const scaleFactor = canvas.width / 800; // base scale width
+        
+        strokes.forEach(stroke => {
+            if (!stroke.points || stroke.points.length === 0) return;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = stroke.isEraser ? 'rgba(0,0,0,1)' : '#1e3a8a';
+            ctx.globalCompositeOperation = stroke.isEraser ? 'destination-out' : 'source-over';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.lineWidth = (stroke.isEraser ? 15 : 2.5) * scaleFactor;
+            
+            const firstPt = stroke.points[0];
+            ctx.moveTo(firstPt.x * canvas.width, firstPt.y * canvas.height);
+            
+            for (let i = 1; i < stroke.points.length; i++) {
+                const pt = stroke.points[i];
+                ctx.lineTo(pt.x * canvas.width, pt.y * canvas.height);
+            }
+            ctx.stroke();
+        });
     };
 
     // Resize canvas
     const resizeCanvas = () => {
-        const rect = canvas.parentElement.getBoundingClientRect();
-        // Set canvas backing store width and height keeping A4 aspect ratio (1 / 1.414)
+        const parent = canvas.parentElement;
+        const rect = parent.getBoundingClientRect();
+
+        // Fixed A4 aspect ratio: 210mm x 297mm = 1 : 1.414
+        const targetHeight = rect.width * 1.414;
+        parent.style.height = `${targetHeight}px`;
+
         canvas.width = rect.width;
-        canvas.height = rect.width * 1.414;
+        canvas.height = targetHeight;
+
+        // Scale background pad to fit wrapper width
+        const pad = parent.querySelector('.prescription-pad');
+        if (pad) {
+            const scale = rect.width / 793.7; // 210mm ≈ 793.7px at 96dpi
+            pad.style.transform = `scale(${scale})`;
+            pad.style.transformOrigin = 'top left';
+        }
 
         // Reset context properties after resize
-        ctx.strokeStyle = isEraser ? '#ffffff' : '#1e3a8a';
+        ctx.strokeStyle = isEraser ? 'rgba(0,0,0,1)' : '#1e3a8a';
+        ctx.globalCompositeOperation = isEraser ? 'destination-out' : 'source-over';
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
-        ctx.lineWidth = isEraser ? 15 : 2.5;
+        ctx.lineWidth = (isEraser ? 15 : 2.5) * (canvas.width / 800);
 
-        // If there's an image on the stack, restore it
-        if (undoStack.length > 0) {
-            const img = new Image();
-            img.onload = () => {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            };
-            img.src = undoStack[undoStack.length - 1];
-        } else {
-            // Draw a white background on initial load
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
+        // Restore strokes
+        redrawCanvasFromStrokes();
     };
 
     // Initial resize
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-
-    // Save initial blank state
-    saveState();
 
     // Drawing Logic
     const getCoordinates = (e) => {
@@ -299,26 +362,49 @@ document.addEventListener('DOMContentLoaded', () => {
         const coords = getCoordinates(e);
         lastX = coords.x;
         lastY = coords.y;
+
+        // Initialize a new scale-independent stroke
+        currentStroke = {
+            isEraser: isEraser,
+            points: [{
+                x: coords.x / canvas.width,
+                y: coords.y / canvas.height
+            }]
+        };
     };
 
     const draw = (e) => {
-        if (!isDrawing) return;
+        if (!isDrawing || !currentStroke) return;
         e.preventDefault(); // Prevent scrolling on touch devices
         const coords = getCoordinates(e);
 
         ctx.beginPath();
         ctx.moveTo(lastX, lastY);
         ctx.lineTo(coords.x, coords.y);
+        
+        ctx.strokeStyle = isEraser ? 'rgba(0,0,0,1)' : '#1e3a8a';
+        ctx.globalCompositeOperation = isEraser ? 'destination-out' : 'source-over';
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = (isEraser ? 15 : 2.5) * (canvas.width / 800);
         ctx.stroke();
 
         lastX = coords.x;
         lastY = coords.y;
+
+        // Append normalized points
+        currentStroke.points.push({
+            x: coords.x / canvas.width,
+            y: coords.y / canvas.height
+        });
     };
 
     const stopDrawing = () => {
-        if (isDrawing) {
+        if (isDrawing && currentStroke) {
             isDrawing = false;
-            saveState();
+            strokes.push(currentStroke);
+            currentStroke = null;
+            redoStrokes = []; // Clear redo stack on new action
         }
     };
 
@@ -344,15 +430,17 @@ document.addEventListener('DOMContentLoaded', () => {
         penBtn.addEventListener('click', () => {
             isEraser = false;
             ctx.strokeStyle = '#1e3a8a';
-            ctx.lineWidth = 2.5;
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.lineWidth = 2.5 * (canvas.width / 800);
             penBtn.classList.add('active');
             eraserBtn.classList.remove('active');
         });
 
         eraserBtn.addEventListener('click', () => {
             isEraser = true;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 15;
+            ctx.strokeStyle = 'rgba(0,0,0,1)';
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = 15 * (canvas.width / 800);
             eraserBtn.classList.add('active');
             penBtn.classList.remove('active');
         });
@@ -360,52 +448,109 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (undoBtn) {
         undoBtn.addEventListener('click', () => {
-            if (undoStack.length > 1) {
-                const currentState = undoStack.pop();
-                redoStack.push(currentState);
-                const prevState = undoStack[undoStack.length - 1];
-
-                const img = new Image();
-                img.onload = () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                };
-                img.src = prevState;
+            if (strokes.length > 0) {
+                const popped = strokes.pop();
+                redoStrokes.push(popped);
+                redrawCanvasFromStrokes();
             }
         });
     }
 
     if (redoBtn) {
         redoBtn.addEventListener('click', () => {
-            if (redoStack.length > 0) {
-                const nextState = redoStack.pop();
-                undoStack.push(nextState);
-
-                const img = new Image();
-                img.onload = () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                };
-                img.src = nextState;
+            if (redoStrokes.length > 0) {
+                const popped = redoStrokes.pop();
+                strokes.push(popped);
+                redrawCanvasFromStrokes();
             }
         });
     }
 
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            saveState();
+            strokes = [];
+            redoStrokes = [];
+            redrawCanvasFromStrokes();
         });
     }
 
     // Save Action Button
     const saveActionBtn = document.getElementById('saveHandwrittenPrescriptionBtn');
     if (saveActionBtn) {
-        saveActionBtn.addEventListener('click', () => {
-            const dataUrl = canvas.toDataURL('image/png');
-            alert('Handwritten Prescription Saved!');
-            console.log(dataUrl);
+        saveActionBtn.addEventListener('click', async () => {
+            const visitId = saveActionBtn.dataset.visitId;
+            const patientId = saveActionBtn.dataset.patientId;
+
+            if (!visitId || !patientId) {
+                alert('Error: Missing visit or patient information.');
+                return;
+            }
+
+            // Check html2canvas is loaded
+            if (typeof html2canvas === 'undefined') {
+                alert('Error: Page capture library not loaded. Please refresh and try again.');
+                return;
+            }
+
+            // Disable button and show loading state
+            const originalHTML = saveActionBtn.innerHTML;
+            saveActionBtn.disabled = true;
+            saveActionBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Capturing...';
+
+            try {
+                const wrapper = canvas.parentElement;
+
+                // Capture the entire prescription wrapper (background + handwriting)
+                const compositeCanvas = await html2canvas(wrapper, {
+                    scale: 2,                // High-resolution output (2x)
+                    useCORS: true,           // Allow cross-origin images (logos)
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                });
+
+                const dataUrl = compositeCanvas.toDataURL('image/png');
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                saveActionBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+
+                const response = await fetch('/doctor/save-prescription/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({
+                        visit_id: visitId,
+                        patient_id: patientId,
+                        image_data: dataUrl,
+                        canvas_data: strokes,
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    saveActionBtn.innerHTML = '<i class="bi bi-check-circle"></i> Saved!';
+                    saveActionBtn.classList.remove('btn-primary');
+                    saveActionBtn.classList.add('btn-success');
+                    setTimeout(() => {
+                        saveActionBtn.innerHTML = originalHTML;
+                        saveActionBtn.classList.remove('btn-success');
+                        saveActionBtn.classList.add('btn-primary');
+                        saveActionBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    alert('Error: ' + (result.message || 'Failed to save prescription.'));
+                    saveActionBtn.innerHTML = originalHTML;
+                    saveActionBtn.disabled = false;
+                }
+            } catch (err) {
+                console.error('Prescription save error:', err);
+                alert('Error capturing prescription. Please try again.');
+                saveActionBtn.innerHTML = originalHTML;
+                saveActionBtn.disabled = false;
+            }
         });
     }
 });
@@ -464,25 +609,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// ============================================
-// Patient Summary
-// ============================================
-document.addEventListener('DOMContentLoaded', () => {
-    const toggleBtn = document.getElementById('toggleEmptyStateBtn');
-    const tableContainer = document.getElementById('consultationTableContainer');
-    const emptyState = document.getElementById('consultationEmptyState');
-    if (toggleBtn && tableContainer && emptyState) {
-        toggleBtn.addEventListener('click', () => {
-            if (tableContainer.classList.contains('d-none')) {
-                tableContainer.classList.remove('d-none');
-                emptyState.classList.add('d-none');
-                toggleBtn.innerHTML = '<i class="bi bi-shuffle"></i> Toggle Empty State';
-            } else {
-                tableContainer.classList.add('d-none');
-                emptyState.classList.remove('d-none');
-                toggleBtn.innerHTML = '<i class="bi bi-shuffle"></i> Toggle Table';
-            }
-        });
-    }
-});
 

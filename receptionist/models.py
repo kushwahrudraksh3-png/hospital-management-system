@@ -165,6 +165,7 @@ class OPDVisit(models.Model):
         WAITING = "Waiting", "Waiting"
         READY_FOR_DOCTOR = "Ready for Doctor", "Ready for Doctor"
         IN_CONSULTATION = "In Consultation", "In Consultation"
+        PENDING_LAB = "Pending Lab", "Pending Lab"
         COMPLETED = "Completed", "Completed"
         CANCELLED = "Cancelled", "Cancelled"
 
@@ -267,6 +268,8 @@ class HospitalSettings(models.Model):
         max_digits=10,
         decimal_places=2
     )
+    opd_validity_days = models.IntegerField(default=10)
+    free_followups_allowed = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -292,11 +295,26 @@ class Vitals(models.Model):
     )
     chief_complaint = models.TextField()
     weight = models.DecimalField(max_digits=5, decimal_places=2)
+    height = models.DecimalField(
+        max_digits=5, decimal_places=1,
+        null=True, blank=True,
+        help_text="Height in centimetres"
+    )
     temperature = models.DecimalField(max_digits=4, decimal_places=1)
     heart_rate = models.IntegerField()
-    pulse_rate = models.IntegerField()
+    pulse_rate = models.IntegerField(null=True, blank=True)
     blood_pressure = models.CharField(max_length=20)
     spo2 = models.IntegerField()
+    respiratory_rate = models.IntegerField(
+        null=True, blank=True,
+        help_text="Respiratory rate in breaths per minute"
+    )
+    bottle_feed = models.CharField(
+        max_length=3,
+        choices=[("Yes", "Yes"), ("No", "No")],
+        null=True, blank=True,
+        help_text="Whether the patient is on bottle feed"
+    )
     blood_group = models.CharField(
         max_length=10,
         choices=Patient.BLOOD_GROUP_CHOICES,

@@ -15,6 +15,7 @@
         <div class="filter-tabs">
             <button class="filter-tab active" data-filter-tab="all">All Patients</button>
             <button class="filter-tab" data-filter-tab="waiting">Waiting</button>
+            <button class="filter-tab" data-filter-tab="lab-request">Lab Request</button>
             <button class="filter-tab" data-filter-tab="completed">Completed</button>
         </div>
         <div class="search-field">
@@ -24,7 +25,7 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table clinic-table align-middle mb-0">
+            <table class="table clinic-table queue-table align-middle mb-0">
                 <thead>
                     <tr>
                         <th>Queue No</th>
@@ -37,42 +38,50 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr data-status="waiting">
-                        <td class="fw-bold">#15</td>
-                        <td class="patient-id">PT-2026-081</td>
-                        <td class="patient-name fw-semibold">Aarav Sharma</td>
-                        <td>4 Yrs / Male</td>
-                        <td>10:15 AM</td>
-                        <td><span class="badge badge-soft-warning">Waiting</span></td>
-                        <td class="text-end"><a href="{% url 'doctor:patient_summary' %}" class="btn btn-primary btn-sm">Examine</a></td>
+                    {% for visit in today_visits %}
+                    <tr data-status="{% if visit.status == 'Pending Lab' %}lab-request{% elif visit.status == 'Completed' %}completed{% else %}waiting{% endif %}">
+                        <td class="fw-bold">#{{ visit.token_number|default:forloop.counter }}</td>
+                        <td class="patient-id">{{ visit.patient.uhid }}</td>
+                        <td class="patient-name fw-semibold">{{ visit.patient.full_name }}</td>
+                        <td>{{ visit.patient.age }} / {{ visit.patient.get_gender_display }}</td>
+                        <td>{{ visit.visit_time|time:"h:i A" }}</td>
+                        <td>
+                            {% if visit.status == 'Pending Lab' %}
+                            <span class="badge badge-soft-warning badge-normal-lab">Pending</span>
+                            <span class="badge badge-soft-warning badge-requested-lab" style="display: none;">Pending</span>
+                            {% elif visit.status == 'Completed' %}
+                            <span class="badge badge-soft-success">Completed</span>
+                            {% else %}
+                            <span class="badge badge-soft-warning">Waiting</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            {% if visit.status == 'Completed' %}
+                            <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn btn-light btn-sm">View Rx</a>
+                            {% elif visit.status == 'Pending Lab' %}
+                                {% if visit.handwritten_prescription %}
+                                <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn btn-light btn-sm btn-view-rx-lab" style="display: none;">View Rx</a>
+                                <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn btn-light btn-sm btn-examine-lab">View Rx</a>
+                                {% else %}
+                                <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn btn-light btn-sm btn-view-rx-lab" style="display: none;">View Rx</a>
+                                <a href="{% url 'doctor:patient_summary' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn {% if forloop.first %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm btn-examine-lab">Examine</a>
+                                {% endif %}
+                            {% else %}
+                                {% if visit.handwritten_prescription %}
+                                <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn btn-light btn-sm">View Rx</a>
+                                {% else %}
+                                <a href="{% url 'doctor:patient_summary' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn {% if forloop.first %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">Examine</a>
+                                {% endif %}
+                            {% endif %}
+                        </td>
                     </tr>
-                    <tr data-status="waiting">
-                        <td class="fw-bold">#16</td>
-                        <td class="patient-id">PT-2026-085</td>
-                        <td class="patient-name fw-semibold">Ananya Iyer</td>
-                        <td>2 Yrs / Female</td>
-                        <td>10:30 AM</td>
-                        <td><span class="badge badge-soft-warning">Waiting</span></td>
-                        <td class="text-end"><a href="{% url 'doctor:patient_summary' %}" class="btn btn-outline-primary btn-sm">Examine</a></td>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No appointments found for today.
+                        </td>
                     </tr>
-                    <tr data-status="waiting">
-                        <td class="fw-bold">#17</td>
-                        <td class="patient-id">PT-2026-088</td>
-                        <td class="patient-name fw-semibold">Vihaan Patel</td>
-                        <td>9 Mths / Male</td>
-                        <td>10:45 AM</td>
-                        <td><span class="badge badge-soft-warning">Waiting</span></td>
-                        <td class="text-end"><a href="{% url 'doctor:patient_summary' %}" class="btn btn-outline-primary btn-sm">Examine</a></td>
-                    </tr>
-                    <tr data-status="completed">
-                        <td class="fw-bold">#14</td>
-                        <td class="patient-id">PT-2026-079</td>
-                        <td class="patient-name fw-semibold">Diya Joshi</td>
-                        <td>7 Yrs / Female</td>
-                        <td>09:45 AM</td>
-                        <td><span class="badge badge-soft-success">Completed</span></td>
-                        <td class="text-end"><a href="{% url 'doctor:prescription_preview' %}" class="btn btn-light btn-sm">View Rx</a></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

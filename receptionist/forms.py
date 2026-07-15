@@ -154,11 +154,17 @@ class OPDVisitForm(forms.ModelForm):
 
 
 class VitalsForm(forms.Form):
+    BOTTLE_FEED_CHOICES = [("", "Select Bottle Feed"), ("Yes", "Yes"), ("No", "No")]
+
     chief_complaint = forms.CharField(required=True)
     weight = forms.DecimalField(max_digits=5, decimal_places=1, required=True)
+    height = forms.DecimalField(max_digits=5, decimal_places=1, required=False,
+                                min_value=0)
     temperature = forms.DecimalField(max_digits=4, decimal_places=1, required=True)
     heart_rate = forms.IntegerField(required=True)
-    pulse_rate = forms.IntegerField(required=True)
+    pulse_rate = forms.IntegerField(required=False)
     blood_pressure = forms.CharField(max_length=20, required=True)
     spo2 = forms.IntegerField(required=True)
+    respiratory_rate = forms.IntegerField(required=False, min_value=0)
+    bottle_feed = forms.ChoiceField(choices=BOTTLE_FEED_CHOICES, required=False)
     blood_group = forms.ChoiceField(choices=Patient.BLOOD_GROUP_CHOICES, required=True)
