@@ -8,38 +8,112 @@
     <p class="text-muted">Review patient laboratory results and request status.</p>
 </div>
 
-<div class="clinic-card">
-    <div class="card-header">Received Reports</div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table clinic-table align-middle mb-0 fs-sm-custom">
-                <thead>
-                    <tr>
-                        <th class="ps-3">Patient ID</th>
-                        <th>Patient Name</th>
-                        <th>Requested On</th>
-                        <th>Status</th>
-                        <th class="text-end pe-3">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for req in lab_requests %}
-                    <tr>
-                        <td class="ps-3 fw-bold">{{ req.patient.uhid }}</td>
-                        <td class="fw-semibold">{{ req.patient.full_name }}</td>
-                        <td>{{ req.visit_date|date:"d/m/Y" }}</td>
-                        <td><span class="badge badge-soft-warning">Pending</span></td>
-                        <td class="text-end pe-3"><button class="btn btn-light btn-sm" disabled>Awaiting Labs</button></td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5" class="text-center text-muted py-4">
-                            No active laboratory requests found.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<!-- Tabs Navigation -->
+<ul class="nav nav-pills mb-4" id="reportTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active fw-bold" id="requested-tab" data-bs-toggle="pill" data-bs-target="#requested-pane" type="button" role="tab" aria-controls="requested-pane" aria-selected="true">
+            Lab Requested Patients <span class="badge bg-secondary ms-1">{{ requested_count }}</span>
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold" id="received-tab" data-bs-toggle="pill" data-bs-target="#received-pane" type="button" role="tab" aria-controls="received-pane" aria-selected="false">
+            Received Lab Reports <span class="badge bg-secondary ms-1">{{ received_count }}</span>
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="reportTabsContent">
+    <!-- Tab 1: Lab Requested Patients -->
+    <div class="tab-pane fade show active" id="requested-pane" role="tabpanel" aria-labelledby="requested-tab">
+        <div class="clinic-card">
+            <div class="card-header">Requested Patients Worklist</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table clinic-table align-middle mb-0 fs-sm-custom">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Patient ID</th>
+                                <th>Patient Name</th>
+                                <th>Visit ID</th>
+                                <th>Age/Gender</th>
+                                <th>Requested Tests</th>
+                                <th>Requested Date</th>
+                                <th>Status</th>
+                                <th class="text-end pe-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in requested_patients %}
+                            <tr>
+                                <td class="ps-3 fw-bold">{{ item.patient.uhid }}</td>
+                                <td class="fw-semibold">{{ item.patient.full_name }}</td>
+                                <td>{{ item.visit.opd_number }}</td>
+                                <td>{{ item.patient.age|cut:" 0 Months" }} / {{ item.patient.get_gender_display }}</td>
+                                <td class="text-wrap" style="max-width: 250px;">{{ item.requested_tests }}</td>
+                                <td>{{ item.requested_date|date:"d/m/Y" }}</td>
+                                <td><span class="badge {{ item.status_class }}">{{ item.status }}</span></td>
+                                <td class="text-end pe-3">
+                                    <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ item.visit.id }}&patient_id={{ item.patient.id }}" class="btn btn-outline-primary btn-sm fw-semibold">View Prescription</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No lab requested patients found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab 2: Received Lab Reports -->
+    <div class="tab-pane fade" id="received-pane" role="tabpanel" aria-labelledby="received-tab">
+        <div class="clinic-card">
+            <div class="card-header">Received Laboratory Reports</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table clinic-table align-middle mb-0 fs-sm-custom">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Patient ID</th>
+                                <th>Patient Name</th>
+                                <th>Visit ID</th>
+                                <th>Age/Gender</th>
+                                <th>Total Reports</th>
+                                <th>Report Date</th>
+                                <th>Status</th>
+                                <th class="text-end pe-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in received_patients %}
+                            <tr>
+                                <td class="ps-3 fw-bold">{{ item.patient.uhid }}</td>
+                                <td class="fw-semibold">{{ item.patient.full_name }}</td>
+                                <td>{{ item.visit.opd_number }}</td>
+                                <td>{{ item.patient.age|cut:" 0 Months" }} / {{ item.patient.get_gender_display }}</td>
+                                <td>{{ item.total_reports }}</td>
+                                <td>{{ item.report_date|date:"d/m/Y" }}</td>
+                                <td><span class="badge bg-success text-white">Completed</span></td>
+                                <td class="text-end pe-3">
+                                    <a href="{% url 'doctor:report_view' %}?visit_id={{ item.visit.id }}" class="btn btn-primary btn-sm fw-semibold">View Reports</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    No received lab reports found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>

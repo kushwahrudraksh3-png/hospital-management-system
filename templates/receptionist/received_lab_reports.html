@@ -1,0 +1,119 @@
+{% extends "receptionist/base.html" %}
+{% load static %}
+
+{% block title %}Received Lab Reports | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Received Lab Reports
+        </li>
+    </ol>
+</nav>
+
+{% if show_visit_reports %}
+<div class="mb-4">
+    <a href="{% url 'receptionist:received_lab_reports' %}" class="btn btn-outline-secondary btn-sm mb-3">
+        <i class="bi bi-arrow-left me-1"></i>Back to Received Reports
+    </a>
+    <h1 class="page-title">Investigation Reports</h1>
+    <p class="text-muted mb-0 mt-1">{{ patient.full_name }} | Visit ID: {{ visit.opd_number }}</p>
+</div>
+
+<section class="clinic-card">
+    <div class="card-header">Available Laboratory Reports</div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table clinic-table align-middle mb-0 fs-sm-custom">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Test Name</th>
+                        <th>Status</th>
+                        <th>Sent Date</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td class="ps-3 fw-bold">{{ report.lab_test.name }}</td>
+                        <td><span class="badge bg-success text-white">Received</span></td>
+                        <td>{{ report.generated_date|date:"d/m/Y H:i" }}</td>
+                        <td class="text-end pe-3">
+                            <a href="{% url 'lab:report_preview' %}?report_id={{ report.id }}" class="btn btn-primary btn-sm fw-semibold">View Report</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            No sent laboratory reports found for this visit.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+{% else %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="page-title">Received Lab Reports</h1>
+        <p class="text-muted mb-0 mt-1">
+            View and manage completed laboratory reports received from the pathology lab.
+        </p>
+    </div>
+</div>
+
+<section class="clinic-card">
+    <div class="card-header">
+        <h5 class="mb-0">Reports Worklist</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table clinic-table align-middle mb-0 fs-sm-custom">
+                <thead>
+                    <tr>
+                        <th class="ps-3">Patient ID</th>
+                        <th>Patient Name</th>
+                        <th>Visit ID</th>
+                        <th>Age/Gender</th>
+                        <th>Test Count</th>
+                        <th>Status</th>
+                        <th>Report Date</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in cases %}
+                    <tr>
+                        <td class="ps-3 fw-bold">{{ case.patient.uhid }}</td>
+                        <td class="fw-semibold">{{ case.patient.full_name }}</td>
+                        <td>{{ case.visit.opd_number }}</td>
+                        <td>{{ case.patient.age|cut:" 0 Months" }} / {{ case.patient.get_gender_display }}</td>
+                        <td>{{ case.test_count }}</td>
+                        <td><span class="badge bg-success text-white">Received</span></td>
+                        <td>{{ case.report_date|date:"d/m/Y" }}</td>
+                        <td class="text-end pe-3">
+                            <a href="{% url 'receptionist:received_lab_reports' %}?visit_id={{ case.visit.id }}" class="btn btn-primary btn-sm fw-semibold">View Reports</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            No laboratory reports received yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

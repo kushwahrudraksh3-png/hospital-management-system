@@ -1,0 +1,118 @@
+{% extends "lab/base_lab.html" %}
+
+{% block title %}Completed Reports | Lab | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">HMS Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'lab:dashboard' %}">Lab Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Completed Reports</li>
+  </ol>
+</nav>
+
+<!-- Page heading -->
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h1 class="page-title">Completed Reports</h1>
+    <p class="text-muted mb-0 mt-1">All finalized lab reports — ready or sent to doctor.</p>
+  </div>
+  <div class="search-field">
+    <i class="bi bi-search"></i>
+    <input class="form-control form-control-sm" aria-label="Search reports" placeholder="Search reports…">
+  </div>
+</div>
+<!-- Reports Table -->
+<article class="clinic-card">
+  <div class="table-responsive border-0 rounded-0">
+    <table class="table clinic-table">
+      <thead>
+        <tr>
+          <th>Report No.</th>
+          <th>Patient Name</th>
+          <th>Age / Gender</th>
+          <th>Ref. Doctor</th>
+          <th>Tests</th>
+          <th>Report Date</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for report in reports %}
+        <tr class="report-row" data-search-text="{{ report.patient.full_name|lower }} {{ report.patient.uhid|lower }} {{ report.visit.opd_number|lower }} {{ report.report_number|lower }} {{ report.visit.laboratory_bill.bill_number|lower }}">
+          <td class="fw-semibold">{{ report.report_number }}</td>
+          <td>
+            <div class="fw-semibold">{{ report.patient.full_name }}</div>
+            <small class="text-muted">{{ report.patient.uhid }}</small>
+          </td>
+          <td>{{ report.patient.age|cut:" 0 Months" }} / {{ report.patient.get_gender_display }}</td>
+          <td>
+            {% if report.visit.handwritten_prescription.doctor %}
+              Dr. {{ report.visit.handwritten_prescription.doctor.first_name }} {{ report.visit.handwritten_prescription.doctor.last_name }}
+            {% else %}
+              Dr. Kalpesh Manager (Patidar)
+            {% endif %}
+          </td>
+          <td><span class="badge badge-soft-muted">{{ report.lab_test.name }}</span></td>
+          <td>{{ report.generated_date|date:"d M Y" }}</td>
+          <td>
+            {% if report.status == 'SENT' %}
+              <span class="badge badge-soft-sent">Report Sent</span>
+            {% elif report.status == 'COMPLETED' %}
+              <span class="badge badge-soft-ready">Report Ready</span>
+            {% else %}
+              <span class="badge badge-soft-muted">{{ report.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <div class="d-flex gap-1 justify-content-end">
+              <a class="btn btn-light btn-sm" href="{% url 'lab:report_preview' %}?report_id={{ report.id }}" title="View Report">
+                <i class="bi bi-eye"></i>
+              </a>
+              <button class="btn btn-light btn-sm" type="button" title="Print" data-print-page onclick="window.open('{% url 'lab:report_preview' %}?report_id={{ report.id }}&print=true', '_blank')">
+                <i class="bi bi-printer"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center text-muted py-5 bg-white">
+            <div class="empty-state-icon mb-2"><i class="bi bi-file-earmark-check fs-3"></i></div>
+            <p class="mb-0">No completed reports found.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.querySelector('.search-field input');
+    const rows = document.querySelectorAll('.report-row');
+
+    function filterTable() {
+      const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+      
+      rows.forEach(row => {
+        const searchText = row.getAttribute('data-search-text') || '';
+        let matchesSearch = searchText.includes(query);
+        
+        if (matchesSearch) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', filterTable);
+    }
+  });
+</script>
+{% endblock %}

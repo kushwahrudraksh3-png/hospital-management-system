@@ -1,0 +1,586 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-Ray Bill - Vatsalya Children Hospital</title>
+    <!-- Google Fonts: Inter for printed template, Special Elite for stamp, Caveat for handwriting -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;700;800&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <style>
+        /* -------------------------------------------------------------
+           X-RAY BILL - VATSALYA CHILDREN HOSPITAL - DESIGN SYSTEM
+           ------------------------------------------------------------- */
+        :root {
+            --primary-color: #11295b; /* Deep Navy Blue ink */
+            --stamp-color: #1a4d2e;   /* Dark Green stamp ink */
+            --paper-bg: #faf8f5;      /* Subtle paper cream */
+            --screen-bg: #d1d5db;     /* Grey desk background */
+            --input-color: #0b1d3d;   /* Filled-in blue ink */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--screen-bg);
+            color: var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding: 40px 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* -------------------------------------------------------------
+           BILL CONTAINER - A5 PORTRAIT (148mm x 210mm)
+           ------------------------------------------------------------- */
+        .bill-container {
+            width: 148mm;
+            height: 210mm;
+            background-color: var(--paper-bg);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 10mm 12mm 10mm 16mm; /* Left padding larger for binding/perforations */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* Perforated Left Edge Simulation */
+        .bill-container::before {
+            content: '';
+            position: absolute;
+            left: 2px;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            background-image: radial-gradient(circle, rgba(17, 41, 91, 0.15) 1.5px, transparent 2px);
+            background-size: 6px 10px;
+            background-repeat: repeat-y;
+        }
+
+        /* Left vertical dividing line to simulate binding boundary */
+        .bill-container::after {
+            content: '';
+            position: absolute;
+            left: 10mm;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            border-left: 1px dotted rgba(17, 41, 91, 0.2);
+        }
+
+        /* -------------------------------------------------------------
+           HEADER SECTION
+           ------------------------------------------------------------- */
+        .reg-row {
+            display: flex;
+            justify-content: flex-end;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            letter-spacing: 0.2px;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .logo-container {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .hospital-logo {
+            width: 100%;
+            height: 100%;
+            color: var(--primary-color);
+        }
+
+        .hospital-details {
+            flex-grow: 1;
+            text-align: center;
+            padding-right: 48px; /* Offset the logo width for perfect center alignment */
+        }
+
+        .hospital-name {
+            font-size: 18.5px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+            margin-bottom: 2px;
+        }
+
+        .hospital-address {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.1px;
+            line-height: 1.3;
+        }
+
+        .hospital-phone {
+            font-size: 11.5px;
+            font-weight: 700;
+            margin-top: 1px;
+        }
+
+        /* Separator Line */
+        .header-divider {
+            border: none;
+            border-top: 2px solid var(--primary-color);
+            margin: 6px 0 15px 0;
+        }
+
+        /* -------------------------------------------------------------
+           FORM FIELDS & LAYOUT
+           ------------------------------------------------------------- */
+        .form-row {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .form-group label {
+            font-size: 13.5px;
+            font-weight: 700;
+            white-space: nowrap;
+            margin-right: 6px;
+            line-height: 1.2;
+        }
+
+        /* Input Elements */
+        input[type="text"] {
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--input-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 0 4px 2px 4px;
+            margin-bottom: 0px;
+            width: 100%;
+            height: 22px;
+            line-height: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Styling Solid & Dotted Underscores */
+        .underline-solid {
+            border-bottom: 1.5px solid var(--primary-color) !important;
+        }
+
+        .underline-dotted {
+            border-bottom: 1.5px dotted var(--primary-color) !important;
+        }
+
+        /* Specific Grid Configurations */
+        .row-no-date {
+            justify-content: space-between;
+        }
+
+        .group-no {
+            width: 45%;
+        }
+
+        .group-date {
+            width: 45%;
+            justify-content: flex-end;
+        }
+
+        /* Stamp style for Bill Number */
+        .input-stamp {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--stamp-color);
+            font-size: 13px;
+            font-weight: 500;
+            width: 120px;
+            display: inline-block;
+            margin-left: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .row-name-age, .row-resident-gender {
+            gap: 15px;
+        }
+
+        .group-name, .group-resident {
+            flex-grow: 1;
+        }
+
+        .group-age {
+            width: 220px;
+        }
+
+        .group-gender {
+            width: 140px;
+        }
+
+        .group-received {
+            flex-grow: 1;
+        }
+
+        .group-as {
+            width: 70px;
+            justify-content: flex-end;
+        }
+
+        .group-as label {
+            margin-left: 6px;
+            margin-right: 0;
+        }
+
+        /* X-Ray Section */
+        .xray-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            margin-top: 5px;
+        }
+
+        .xray-header-row {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 8px;
+        }
+
+        .xray-header-row label {
+            font-size: 13.5px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .xray-details-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-top: 15px;
+            position: relative;
+        }
+
+        /* Invisible textboxes that act as natural writing spots in the blank paper space */
+        .handwriting-input {
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--input-color);
+            width: 100%;
+            padding: 4px 8px;
+        }
+
+        .handwriting-input::placeholder {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 400;
+            color: rgba(17, 41, 91, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        /* -------------------------------------------------------------
+           BILL FOOTER
+           ------------------------------------------------------------- */
+        .bill-footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+            padding-bottom: 5px;
+        }
+
+        /* Amount Block */
+        .amount-box {
+            border: 1.5px solid var(--primary-color);
+            width: 140px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            position: relative;
+        }
+
+        .amount-box::before {
+            content: 'Rs.';
+            position: absolute;
+            left: 8px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .amount-box input {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            padding-left: 24px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            border: none;
+            background: transparent;
+            color: var(--primary-color);
+        }
+
+        /* Rec. Signature */
+        .signature-box {
+            font-size: 13.5px;
+            font-weight: 700;
+            padding-bottom: 6px;
+            letter-spacing: 0.2px;
+        }
+
+        /* -------------------------------------------------------------
+           CONTROLS PANEL (Screen Only)
+           ------------------------------------------------------------- */
+        .controls-panel {
+            margin-top: 25px;
+            z-index: 100;
+        }
+
+        .print-btn {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
+        }
+
+        .print-btn:hover {
+            background-color: #0b1a3d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .print-btn:active {
+            transform: translateY(0);
+        }
+
+        .print-icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* -------------------------------------------------------------
+           PRINT MEDIA STYLES
+           ------------------------------------------------------------- */
+        @media print {
+            @page {
+                size: A5 portrait;
+                margin: 0;
+            }
+
+            body {
+                background: #ffffff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+            }
+
+            .bill-container {
+                width: 148mm !important;
+                height: 210mm !important;
+                padding: 10mm 12mm 10mm 16mm !important;
+                box-shadow: none !important;
+                background-color: #ffffff !important;
+                border: none !important;
+                margin: 0 !important;
+            }
+
+            /* Hide interactive design assets */
+            .bill-container::before,
+            .bill-container::after {
+                display: none !important;
+            }
+
+            .controls-panel {
+                display: none !important;
+            }
+
+            /* Placeholders hidden on print */
+            .handwriting-input::placeholder {
+                color: transparent !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Bill Page -->
+    <div class="bill-container" id="billSheet">
+        
+        <!-- Registration Row -->
+        <div class="reg-row">
+            <span>Reg.NH-6886-MAR-2018</span>
+        </div>
+
+        <!-- Header Content (Logo + Brand Details) -->
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="{% static 'images/logo.png' %}" alt="Hospital Logo" class="hospital-logo-img" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            <div class="hospital-details">
+                <h1 class="hospital-name">Vatsalya Shree Hospital</h1>
+                <p class="hospital-address">Old A.B. Road Guljhara (Dhamnod), Dist. Dhar, 454552</p>
+                <p class="hospital-phone">Mob. 92438-43338</p>
+            </div>
+        </div>
+
+        <!-- Horizontal Blue Line -->
+        <hr class="header-divider">
+
+        <!-- No. & Date Row -->
+        <div class="form-row row-no-date">
+            <div class="form-group group-no">
+                <label for="billNo">No.</label>
+                <input type="text" id="billNo" class="underline-solid input-stamp" value="{{ bill.bill_number|default:'' }}" autocomplete="off">
+            </div>
+            <div class="form-group group-date">
+                <label for="billDate">Date</label>
+                <input type="text" id="billDate" class="underline-dotted" style="width: 140px;" value="{% if bill %}{{ bill.bill_date|date:'d/m/Y' }} {{ bill.bill_time|time:'H:i' }}{% else %}{% now 'd/m/Y H:i' %}{% endif %}" autocomplete="off">
+            </div>
+        </div>
+        <!-- Name & Age Row -->
+        <div class="form-row row-name-age">
+            <div class="form-group group-name">
+                <label for="ptName">Name</label>
+                <input type="text" id="ptName" class="underline-solid" value="{{ patient.full_name|default:'' }}" autocomplete="off">
+            </div>
+            <div class="form-group group-age">
+                <label for="ptAge">Age</label>
+                <input type="text" id="ptAge" class="underline-solid" value="{{ patient.age|cut:' 0 Months'|default:'' }}" autocomplete="off">
+            </div>
+        </div>
+
+        <!-- Resident & Gender Row -->
+        <div class="form-row row-resident-gender">
+            <div class="form-group group-resident">
+                <label for="ptResident">Resident</label>
+                <input type="text" id="ptResident" class="underline-solid" value="{{ patient.address|default:'' }}{% if patient.mobile_number %} (Mob: {{ patient.mobile_number }}){% endif %}" autocomplete="off">
+            </div>
+            <div class="form-group group-gender">
+                <label for="ptGender">Gender</label>
+                <input type="text" id="ptGender" class="underline-solid" value="{{ patient.get_gender_display|default:'' }}" autocomplete="off">
+            </div>
+        </div>
+
+        <!-- Received with thank's Row -->
+        <div class="form-row">
+            <div class="form-group group-received">
+                <label for="recWords">Received with thank's Rs.</label>
+                <input type="text" id="recWords" class="underline-solid" autocomplete="off">
+            </div>
+            <div class="form-group group-as">
+                <input type="text" id="recAs" class="underline-solid" style="text-align: center;" value="Cash" autocomplete="off">
+                <label for="recAs">As.</label>
+            </div>
+        </div>
+
+        <!-- X-Ray Fees & Details Section -->
+        <div class="xray-container">
+            <div class="xray-header-row">
+                <label>X-Ray Fees .</label>
+            </div>
+            <div class="xray-details-area">
+                <!-- Custom inputs inside blank space representing the X-Ray Name, Referring Doctor, and Remarks -->
+                <input type="text" id="xrayName" class="handwriting-input" value="{% if items %}{% for item in items %}{{ item.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}X-Ray (Per Film){% endif %}" autocomplete="off">
+                <input type="text" id="refDoctor" class="handwriting-input" value="Ref. By: {% if visit.handwritten_prescription.doctor %}Dr. {{ visit.handwritten_prescription.doctor.first_name }} {{ visit.handwritten_prescription.doctor.last_name }}{% else %}Dr. Kalpesh Manager (Patidar){% endif %}" autocomplete="off">
+                <input type="text" id="remarks" class="handwriting-input" value="OPD No: {{ visit.opd_number|default:'' }} | Visit Date: {{ visit.visit_date|date:'d/m/Y' }}" autocomplete="off">
+            </div>
+        </div>
+
+        <!-- Bottom Layout -->
+        <div class="bill-footer">
+            <div class="amount-box">
+                <input type="text" id="amountNumeric" value="{{ xray_total|default:'400.00' }}" autocomplete="off">
+            </div>
+            <div class="signature-box">
+                Signature
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Print Button Container -->
+    <div class="controls-panel">
+        <button onclick="window.print()" class="print-btn">
+            <svg class="print-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Print X-Ray Receipt
+        </button>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        function amountInWords(amount) {
+          var ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven',
+            'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
+            'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+          var tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty',
+            'Seventy', 'Eighty', 'Ninety'];
+
+          function convert(n) {
+            if (n < 20) return ones[n];
+            if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+            if (n < 1000) return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + convert(n % 100) : '');
+            if (n < 100000) return convert(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 ? ' ' + convert(n % 1000) : '');
+            return convert(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 ? ' ' + convert(n % 100000) : '');
+          }
+
+          if (amount === 0) return 'Zero Rupees Only';
+          var result = convert(Math.floor(amount));
+          return result + ' Rupees Only';
+        }
+
+        var grandTotal = parseFloat("{{ xray_total|default:'400.00' }}");
+        var recWordsInput = document.getElementById('recWords');
+        if (recWordsInput) {
+          recWordsInput.value = amountInWords(grandTotal);
+        }
+        
+        // Auto-trigger print dialog after a short timeout
+        setTimeout(function() {
+          window.print();
+        }, 500);
+      });
+    </script>
+</body>
+</html>

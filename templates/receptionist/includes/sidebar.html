@@ -15,10 +15,30 @@
             <i class="bi bi-person-plus"></i>
             Patient / OPD Registration
         </a>
+        {% if request.user.role == 'RECEPTIONIST' or request.user.is_superuser %}
+        <a class="nav-link{% if active_nav == 'ipd_patients' %} active{% endif %}" href="{% url 'receptionist:ipd_patients' %}">
+            <i class="bi bi-hospital"></i>
+            IPD Patients
+        </a>
+        <a class="nav-link{% if active_nav == 'ipd_registration' %} active{% endif %}" href="{% url 'receptionist:ipd_registration' %}">
+            <i class="bi bi-plus-square"></i>
+            IPD Registration
+        </a>
+        <a class="nav-link{% if active_nav == 'ipd_bill' %} active{% endif %}" href="{% url 'receptionist:ipd_bill' %}">
+            <i class="bi bi-receipt"></i>
+            IPD Bill
+        </a>
+        {% endif %}
         <a class="nav-link{% if active_nav == 'patient_list' or active_nav == 'patient_summary' or active_nav == 'patient_profile' or active_nav == 'edit_profile' %} active{% endif %}" href="{% url 'receptionist:patient_list' %}">
             <i class="bi bi-people"></i>
             Patient List
         </a>
+        {% if request.user.role == 'RECEPTIONIST' or request.user.is_superuser %}
+        <a class="nav-link{% if active_nav == 'received_lab_reports' %} active{% endif %}" href="{% url 'receptionist:received_lab_reports' %}">
+            <i class="bi bi-file-earmark-medical"></i>
+            Received Lab Reports
+        </a>
+        {% endif %}
         <a class="nav-link" href="{% url 'accounts:login' %}">
             <i class="bi bi-box-arrow-right"></i>
             Logout

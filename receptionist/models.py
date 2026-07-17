@@ -168,6 +168,8 @@ class OPDVisit(models.Model):
         PENDING_LAB = "Pending Lab", "Pending Lab"
         COMPLETED = "Completed", "Completed"
         CANCELLED = "Cancelled", "Cancelled"
+        IPD_RECOMMENDED = "IPD Recommended", "IPD Recommended"
+        DISCHARGED = "Discharged", "Discharged"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 

@@ -3,6 +3,22 @@
 
 {% block title %}Patient Summary | Vatsalya Children Hospital{% endblock %}
 
+{% block extra_css %}
+<style>
+.btn-info {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: var(--clinic-info, #0284c7);
+    --bs-btn-border-color: var(--clinic-info, #0284c7);
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #0369a1;
+    --bs-btn-hover-border-color: #0369a1;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #0369a1;
+    --bs-btn-active-border-color: #0369a1;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="mb-3">
@@ -139,19 +155,7 @@
             </div>
         </div>
     </div>
-    <!-- Pulse Rate -->
-    <div class="flex-fill" style="min-width: 130px; max-width: 250px;">
-        <div class="metric-card h-100">
-            <div class="metric-header">
-                <div class="metric-icon icon-red"><i class="bi bi-heart-pulse-fill"></i></div>
-                <span class="badge badge-soft-danger">Vitals</span>
-            </div>
-            <div>
-                <div class="metric-label">Pulse Rate</div>
-                <div class="metric-value fs-3 mt-1">{{ vitals.pulse_rate|default:"-" }} <span class="fs-6 fw-normal text-muted">bpm</span></div>
-            </div>
-        </div>
-    </div>
+
     <!-- Blood Group -->
     <div class="flex-fill" style="min-width: 130px; max-width: 250px;">
         <div class="metric-card h-100">
@@ -180,70 +184,7 @@
     </div>
 </div>
 
-<!-- Consultation History Section -->
-<div class="clinic-card">
-    <div class="card-header bg-light py-3 border-bottom d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <div>
-            <h5 class="mb-1 fw-bold text-dark">Consultation History</h5>
-            <p class="text-muted mb-0 fs-xs">Complete consultation history of the patient in chronological order.</p>
-        </div>
-    </div>
-    <div class="card-body p-0">
-        <!-- Active Table State -->
-        <div id="consultationTableContainer" class="table-responsive table-responsive-sticky">
-            <table class="table align-middle mb-0 fs-sm-custom">
-                <thead class="table-light">
-                    <tr>
-                        <th class="ps-3">Sr. No.</th>
-                        <th>Visit Date</th>
-                        <th>OPD Number</th>
-                        <th>Visit Type</th>
-                        <th>Follow-up Date</th>
-                        <th class="text-end pe-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for c in consultations %}
-                    <tr>
-                        <td class="ps-3 fw-bold">{{ forloop.counter }}</td>
-                        <td class="fw-semibold">{{ c.visit_date|date:"d/m/Y" }}</td>
-                        <td class="fw-medium">#{{ c.opd_number }}</td>
-                        <td>
-                            {% if c.visit_type == 'New Visit' %}
-                            <span class="badge badge-soft-success">New Patient</span>
-                            {% else %}
-                            <span class="badge badge-soft-primary">Follow-up</span>
-                            {% endif %}
-                        </td>
-                        <td>-</td>
-                        <td class="text-end pe-3">
-                            <div class="d-flex justify-content-end gap-1">
-                                <a href="{% url 'doctor:previous_history' %}?visit_id={{ c.id }}&patient_id={{ patient.id }}" class="btn btn-light btn-sm text-primary btn-icon" title="View Consultation"><i class="bi bi-eye"></i></a>
-                                <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ c.id }}&patient_id={{ patient.id }}" class="btn btn-light btn-sm text-success btn-icon" title="View Prescription"><i class="bi bi-prescription"></i></a>
-                                <button class="btn btn-light btn-sm text-muted btn-icon" title="View Lab Report" disabled><i class="bi bi-file-earmark-bar-graph"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="6" class="text-center text-muted py-4">No consultation history found for this patient.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
 
-        <!-- Empty State -->
-        <div id="consultationEmptyState" class="d-none py-5 text-center">
-            <div class="mb-3">
-                <i class="bi bi-folder-x text-muted" style="font-size: 3.5rem;"></i>
-            </div>
-            <h5 class="text-muted fw-semibold mb-2">No consultation history found for this patient.</h5>
-            <p class="text-muted fs-sm-custom mb-4">You can create a new consultation record for this patient below.</p>
-            <a href="{% url 'doctor:prescription' %}?visit_id={{ visit.id }}&patient_id={{ patient.id }}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create New Consultation</a>
-        </div>
-    </div>
-</div>
 
 <!-- Handwriting Prescription Pad Section -->
 <div class="clinic-card mt-4">
@@ -397,21 +338,26 @@
 
         <!-- Action Buttons -->
         <div class="row g-3 mt-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ patient.id }}" class="btn btn-outline-primary w-100 justify-content-center py-2">
                     <i class="bi bi-eye"></i> View Prescription
                 </a>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <button type="button" class="btn btn-primary w-100 justify-content-center py-2" id="saveHandwrittenPrescriptionBtn"
                         data-visit-id="{{ visit.id }}"
                         data-patient-id="{{ patient.id }}">
                     <i class="bi bi-save"></i> Save Prescription
                 </button>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <a href="{% url 'doctor:report_list' %}?visit_id={{ visit.id }}&patient_id={{ patient.id }}" class="btn btn-success w-100 justify-content-center py-2">
                     <i class="bi bi-arrow-right-circle"></i> Proceed to Lab
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'doctor:recommend_ipd' %}?patient_id={{ patient.id }}&visit_id={{ visit.id }}" class="btn btn-info w-100 justify-content-center py-2">
+                    <i class="bi bi-hospital"></i> Proceed to IPD
                 </a>
             </div>
         </div>

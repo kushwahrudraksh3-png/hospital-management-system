@@ -192,109 +192,26 @@
                             ></i>
                         </a>
                     </div>
-                </div>
-            </div>
-        </article>
-    </section>
-</div>
-<div class="row g-4 mb-4">
-    <section class="col-12">
-        <article class="clinic-card h-100">
-            <div
-                class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center"
-            >
-                <span>{% if selected_date == today %}Recent Patients{% else %}Patients on Selected Date{% endif %}</span>
-                <form class="d-flex align-items-center gap-2" method="get" action="{% url 'receptionist:patient_list' %}">
-                    <div class="search-field">
-                        <i class="bi bi-search"></i>
-                        <input
-                            name="q"
-                            class="form-control form-control-sm"
-                            aria-label="Search recent patients"
-                            placeholder="Search patients"
-                        />
-                    </div>
-                    <button
-                        class="btn btn-primary btn-sm"
-                        type="submit"
-                    >
-                        <i class="bi bi-search"></i>
-                        Search
-                    </button>
-                </form>
-            </div>
-            <div
-                class="table-responsive border-0 rounded-0"
-            >
-                <table class="table clinic-table">
-                    <thead>
-                        <tr>
-                            <th>Patient ID</th>
-                            <th>Name</th>
-                            <th>Age</th>
-                            <th>Gender</th>
-                            <th>Mobile</th>
-                            <th>Visit time</th>
-                            <th>Status</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for visit in recent_visits %}
-                        <tr>
-                            <td class="fw-semibold">
-                                {{ visit.patient.uhid }}
-                            </td>
-                            <td>
-                                <div class="fw-semibold">
-                                    {{ visit.patient.full_name }}
-                                </div>
-                                <small class="text-muted">
-                                    {{ visit.visit_type }}
+                    <div class="col-md-6">
+                        <a
+                            class="quick-action"
+                            href="{% url 'receptionist:ipd_registration' %}"
+                        >
+                            <span class="quick-action-icon">
+                                <i class="bi bi-hospital"></i>
+                            </span>
+                            <span>
+                                <strong>IPD Registration</strong>
+                                <small>
+                                    Register patient for inpatient admission
                                 </small>
-                            </td>
-                            <td>{{ visit.patient.age }}</td>
-                            <td>{{ visit.patient.get_gender_display }}</td>
-                            <td>{{ visit.patient.mobile_number }}</td>
-                            <td>{{ visit.visit_time|time:"h:i A" }}</td>
-                            <td>
-                                <span class="badge 
-                                    {% if visit.status == 'In Consultation' %}badge-soft-primary
-                                    {% elif visit.status == 'Completed' %}badge-soft-success
-                                    {% elif visit.status == 'Waiting' %}badge-soft-warning
-                                    {% elif visit.status == 'Cancelled' %}badge-soft-danger
-                                    {% elif visit.status == 'Pending Lab' %}badge-soft-info
-                                    {% else %}badge-soft-muted{% endif %}">
-                                    {{ visit.status }}
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <a
-                                    class="btn btn-light btn-sm"
-                                    href="{% url 'receptionist:patient_summary_detail' visit.patient.id %}"
-                                >
-                                    View
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" class="text-center text-muted py-4">
-                                No recent patients found.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-body pt-3">
-                <a
-                    class="small fw-semibold"
-                    href="{% url 'receptionist:patient_list' %}"
-                >
-                    View all patients
-                    <i class="bi bi-arrow-right ms-1"></i>
-                </a>
+                            </span>
+                            <i
+                                class="bi bi-arrow-right ms-auto text-muted"
+                            ></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </article>
     </section>

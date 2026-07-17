@@ -40,7 +40,7 @@ def dashboard(request):
     ).count()
     completed_count = OPDVisit.objects.filter(
         visit_date=selected_date,
-        status=OPDVisit.StatusChoices.COMPLETED
+        status__in=[OPDVisit.StatusChoices.COMPLETED, OPDVisit.StatusChoices.IPD_RECOMMENDED]
     ).count()
     total_appointments = OPDVisit.objects.filter(
         visit_date=selected_date
@@ -72,7 +72,8 @@ def queue(request):
         status__in=[
             OPDVisit.StatusChoices.READY_FOR_DOCTOR,
             OPDVisit.StatusChoices.PENDING_LAB,
-            OPDVisit.StatusChoices.COMPLETED
+            OPDVisit.StatusChoices.COMPLETED,
+            OPDVisit.StatusChoices.IPD_RECOMMENDED
         ],
         vitals__isnull=False
     ).select_related('patient', 'handwritten_prescription').order_by('visit_time')
@@ -271,6 +272,10 @@ def profile(request):
 
 @login_required
 def report_list(request):
+    from receptionist.models import OPDVisit
+    from lab.models import LaboratoryCase, LaboratoryReport, LaboratoryRequest
+    from django.db import models
+    
     visit_id = request.GET.get('visit_id')
     if visit_id:
         try:
@@ -283,20 +288,95 @@ def report_list(request):
         except OPDVisit.DoesNotExist:
             pass
             
-    # Fetch all active laboratory requests
-    lab_requests = LaboratoryRequest.objects.filter(
-        status=OPDVisit.StatusChoices.PENDING_LAB
-    ).select_related('patient').order_by('-visit_date', '-visit_time')
+    # Fetch active visits that are requested for lab (status = PENDING_LAB or has a lab case)
+    # and visit status is NOT Completed or Cancelled.
+    requested_visits = OPDVisit.objects.exclude(
+        status__in=[OPDVisit.StatusChoices.COMPLETED, OPDVisit.StatusChoices.CANCELLED]
+    ).filter(
+        models.Q(status=OPDVisit.StatusChoices.PENDING_LAB) | models.Q(laboratory_case__isnull=False)
+    ).distinct().select_related('patient').prefetch_related('laboratory_case__reports__lab_test').order_by('-visit_date', '-visit_time')
     
+    requested_patients = []
+    for visit in requested_visits:
+        # Determine status
+        case_status = "Pending"
+        status_class = "bg-warning text-dark"
+        
+        # Check if case and reports exist
+        has_case = hasattr(visit, 'laboratory_case')
+        reports = visit.laboratory_case.reports.all() if has_case else []
+        
+        if has_case and reports:
+            # If all reports are SENT, it's Completed
+            if all(r.status == 'SENT' for r in reports):
+                case_status = "Completed"
+                status_class = "bg-success text-white"
+            # If any report is IN_PROGRESS or COMPLETED, it's In Progress
+            elif any(r.status in ['IN_PROGRESS', 'COMPLETED'] for r in reports):
+                case_status = "In Progress"
+                status_class = "bg-info text-white"
+            else:
+                case_status = "Pending"
+                status_class = "bg-warning text-dark"
+        
+        # Format requested tests name
+        if has_case and reports:
+            requested_tests = ", ".join([r.lab_test.name for r in reports])
+        else:
+            requested_tests = "Lab Investigation"
+            
+        requested_patients.append({
+            'visit': visit,
+            'patient': visit.patient,
+            'requested_tests': requested_tests,
+            'status': case_status,
+            'status_class': status_class,
+            'requested_date': visit.visit_date,
+        })
+        
+    # Fetch cases where at least one report has status 'SENT'
+    received_cases = LaboratoryCase.objects.filter(
+        reports__status='SENT'
+    ).distinct().select_related('patient', 'visit').prefetch_related('reports__lab_test').order_by('-created_at')
+    
+    received_patients = []
+    for case in received_cases:
+        received_patients.append({
+            'case': case,
+            'patient': case.patient,
+            'visit': case.visit,
+            'total_reports': case.reports.filter(status='SENT').count(),
+            'report_date': case.visit.visit_date if case.visit else case.created_at.date(),
+        })
+        
     return render(request, "doctor/report_list.html", {
         "active_nav": "report_list",
-        "lab_requests": lab_requests
+        "requested_patients": requested_patients,
+        "requested_count": len(requested_patients),
+        "received_patients": received_patients,
+        "received_count": len(received_patients),
     })
 
 
 @login_required
 def report_view(request):
-    return render(request, "doctor/report_view.html", {"active_nav": "report_list"})
+    from receptionist.models import OPDVisit
+    from lab.models import LaboratoryReport
+    
+    visit_id = request.GET.get('visit_id')
+    visit = get_object_or_404(OPDVisit, id=visit_id)
+    patient = visit.patient
+    
+    # Fetch all reports for this visit
+    reports = LaboratoryReport.objects.filter(visit=visit).select_related('lab_test')
+    
+    context = {
+        "active_nav": "report_list",
+        "visit": visit,
+        "patient": patient,
+        "reports": reports,
+    }
+    return render(request, "doctor/report_view.html", context)
 
 
 @login_required
@@ -406,3 +486,43 @@ def save_prescription(request):
     except Exception as e:
         logger.exception('Error saving handwritten prescription.')
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@login_required
+def recommend_ipd(request):
+    patient_id = request.GET.get('patient_id')
+    visit_id = request.GET.get('visit_id')
+    if visit_id:
+        visit = get_object_or_404(OPDVisit, id=visit_id)
+        visit.status = OPDVisit.StatusChoices.IPD_RECOMMENDED
+        visit.save()
+    
+    # Redirect to doctor's IPD Patients queue page
+    return redirect(reverse('doctor:ipd_patients'))
+
+
+@login_required
+def ipd_patients(request):
+    ipd_visits = OPDVisit.objects.filter(
+        status=OPDVisit.StatusChoices.IPD_RECOMMENDED
+    ).select_related('patient', 'vitals').order_by('-updated_at')
+    
+    context = {
+        'active_nav': 'ipd_patients',
+        'ipd_visits': ipd_visits,
+        'base_template': 'doctor/base_doctor.html',
+    }
+    return render(request, "doctor/ipd_patients.html", context)
+
+
+@login_required
+def discharge_patient(request):
+    visit_id = request.GET.get('visit_id')
+    if visit_id:
+        visit = get_object_or_404(OPDVisit, id=visit_id)
+        visit.status = OPDVisit.StatusChoices.DISCHARGED
+        visit.save()
+    
+    # Redirect to doctor's todays patients page (doctor:queue)
+    return redirect(reverse('doctor:queue'))
+

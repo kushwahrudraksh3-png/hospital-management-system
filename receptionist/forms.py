@@ -93,6 +93,14 @@ class PatientRegistrationForm(forms.ModelForm):
 
 
 class OPDVisitForm(forms.ModelForm):
+    visit_type = forms.ChoiceField(
+        choices=[
+            ("New Visit", "New Patient"),
+            ("Follow-up", "Follow Up"),
+        ],
+        widget=forms.Select(attrs={"class": "form-select", "required": True})
+    )
+
     class Meta:
         model = OPDVisit
         fields = [

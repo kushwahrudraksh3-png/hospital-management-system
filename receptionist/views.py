@@ -159,7 +159,6 @@ def patient_registration(request):
         visit_form.fields['visit_date'].required = False
         visit_form.fields['visit_time'].required = False
         visit_form.fields['status'].required = False
-        visit_form.fields['visit_type'].required = False
         
         patient_valid = patient_form.is_valid()
         visit_valid = visit_form.is_valid()
@@ -195,17 +194,6 @@ def patient_registration(request):
                     # Always assign Visit Date and Visit Time using Django timezone utilities on the server
                     visit.visit_date = timezone.localdate()
                     visit.visit_time = timezone.localtime().time().replace(second=0, microsecond=0)
-                    
-                    hospital = HospitalSettings.objects.first()
-                    if not hospital:
-                        hospital = HospitalSettings.objects.create(
-                            hospital_name="Vatsalya Shree Hospital",
-                            address="Near Shrinath Talkies, Main Road, Guna (M.P.)",
-                            phone_number="+91 7542 250000",
-                            email="contact@vatsalyashree.com",
-                            consultation_fee=350.00
-                        )
-                    visit.visit_type = determine_visit_type(patient, hospital)
                     
                     visit.created_by = request.user
                     visit.updated_by = request.user
@@ -275,14 +263,36 @@ def patient_list(request):
             Q(mobile_number__icontains=q)
         )
 
-    # Tab filtering
+    # Date filter
+    date_str = request.GET.get('date', '').strip()
+    selected_date = None
+    if date_str:
+        try:
+            from datetime import datetime
+            selected_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            pass
+
+    # Tab and Date filtering
     filter_type = request.GET.get('filter', 'all')
-    if filter_type == 'today':
-        patients_query = patients_query.filter(visits__visit_date=today).distinct()
-    elif filter_type == 'new':
-        patients_query = patients_query.filter(visits__visit_date=today, visits__visit_type="New Visit").distinct()
-    elif filter_type == 'followup':
-        patients_query = patients_query.filter(visits__visit_date=today, visits__visit_type="Follow-up").distinct()
+    if selected_date:
+        if filter_type == 'all':
+            patients_query = patients_query.filter(
+                Q(created_at__date=selected_date) | Q(visits__visit_date=selected_date)
+            ).distinct()
+        elif filter_type == 'today':
+            patients_query = patients_query.filter(visits__visit_date=selected_date).distinct()
+        elif filter_type == 'new':
+            patients_query = patients_query.filter(visits__visit_date=selected_date, visits__visit_type="New Visit").distinct()
+        elif filter_type == 'followup':
+            patients_query = patients_query.filter(visits__visit_date=selected_date, visits__visit_type="Follow-up").distinct()
+    else:
+        if filter_type == 'today':
+            patients_query = patients_query.filter(visits__visit_date=today).distinct()
+        elif filter_type == 'new':
+            patients_query = patients_query.filter(visits__visit_date=today, visits__visit_type="New Visit").distinct()
+        elif filter_type == 'followup':
+            patients_query = patients_query.filter(visits__visit_date=today, visits__visit_type="Follow-up").distinct()
 
     # Sort & Annotate to avoid N+1 query issue
     patients_query = patients_query.annotate(
@@ -305,6 +315,7 @@ def patient_list(request):
         'page_obj': page_obj,
         'q': q,
         'filter_type': filter_type,
+        'date_str': date_str,
         'total_patients': total_patients,
         'today_patients_count': today_patients_count,
         'today_new_count': today_new_count,
@@ -339,8 +350,58 @@ def patient_summary(request, patient_id=None):
 
 
 @receptionist_required
-def patient_profile(request):
-    return render(request, "receptionist/patient_profile.html", {"active_nav": "patient_profile"})
+def patient_profile(request, patient_id=None):
+    from django.shortcuts import get_object_or_404, redirect
+    from django.contrib import messages
+    from .models import Patient, OPDVisit, Vitals
+    from doctor.models import Prescription
+    from lab.models import LaboratoryBill
+    
+    if patient_id is None:
+        patient_id = request.GET.get('patient_id')
+        
+    if patient_id is None:
+        patient = Patient.objects.filter(is_active=True).order_by('-created_at').first()
+        if not patient:
+            messages.warning(request, "No registered patients found.")
+            return redirect('receptionist:patient_list')
+    else:
+        patient = get_object_or_404(Patient, id=patient_id)
+        
+    visits = patient.visits.all().order_by('-visit_date', '-visit_time')
+    latest_visit = visits.first()
+    
+    latest_vitals = Vitals.objects.filter(patient=patient).order_by('-created_at').first()
+    
+    bmi = None
+    if latest_vitals and latest_vitals.weight and latest_vitals.height:
+        try:
+            height_m = float(latest_vitals.height) / 100.0
+            weight_kg = float(latest_vitals.weight)
+            if height_m > 0:
+                bmi = round(weight_kg / (height_m ** 2), 2)
+        except (ValueError, TypeError):
+            pass
+            
+    latest_prescription = Prescription.objects.filter(patient=patient).order_by('-created_at').first()
+    
+    latest_opd_visit = visits.filter(status=OPDVisit.StatusChoices.COMPLETED).first()
+    if not latest_opd_visit:
+        latest_opd_visit = latest_visit
+        
+    latest_lab_bill = LaboratoryBill.objects.filter(patient=patient).order_by('-created_at').first()
+    
+    context = {
+        'patient': patient,
+        'latest_visit': latest_visit,
+        'latest_vitals': latest_vitals,
+        'bmi': bmi,
+        'latest_prescription': latest_prescription,
+        'latest_opd_visit': latest_opd_visit,
+        'latest_lab_bill': latest_lab_bill,
+        'active_nav': 'patient_list',
+    }
+    return render(request, "receptionist/patient_profile.html", context)
 
 
 @receptionist_required
@@ -623,3 +684,111 @@ def create_opd_visit(request, patient_id):
             return redirect(reverse('receptionist:vitals_entry_detail', kwargs={'patient_id': patient.id}))
         
     return redirect('receptionist:patient_list')
+
+
+@receptionist_required
+def received_lab_reports(request):
+    from lab.models import LaboratoryCase, LaboratoryReport
+    
+    visit_id = request.GET.get('visit_id')
+    if visit_id:
+        from receptionist.models import OPDVisit
+        from django.shortcuts import get_object_or_404
+        
+        visit = get_object_or_404(OPDVisit, id=visit_id)
+        patient = visit.patient
+        reports = LaboratoryReport.objects.filter(visit=visit, status='SENT').select_related('lab_test')
+        
+        context = {
+            "active_nav": "received_lab_reports",
+            "visit": visit,
+            "patient": patient,
+            "reports": reports,
+            "show_visit_reports": True,
+        }
+        return render(request, "receptionist/received_lab_reports.html", context)
+        
+    # Main listing view: Fetch cases where at least one report has status 'SENT'
+    cases = LaboratoryCase.objects.filter(
+        reports__status='SENT'
+    ).distinct().select_related('patient', 'visit').prefetch_related('reports__lab_test').order_by('-created_at')
+    
+    # Process properties
+    for case in cases:
+        case.test_count = case.reports.filter(status='SENT').count()
+        case.report_date = case.visit.visit_date if case.visit else case.created_at.date()
+        
+    context = {
+        'active_nav': 'received_lab_reports',
+        'cases': cases,
+        'show_visit_reports': False,
+    }
+    return render(request, "receptionist/received_lab_reports.html", context)
+
+
+@receptionist_required
+def ipd_registration(request):
+    patient_id = request.GET.get('patient_id')
+    patient = None
+    if patient_id:
+        try:
+            from .models import Patient
+            patient = Patient.objects.filter(id=patient_id).first()
+        except Exception:
+            pass
+            
+    context = {
+        'active_nav': 'ipd_registration',
+        'patient': patient,
+    }
+    return render(request, "receptionist/ipd_registration.html", context)
+
+
+@receptionist_required
+def ipd_patients(request):
+    status_filter = request.GET.get('status', 'recommended')
+    if status_filter == 'discharged':
+        target_status = OPDVisit.StatusChoices.DISCHARGED
+    else:
+        target_status = OPDVisit.StatusChoices.IPD_RECOMMENDED
+
+    ipd_visits = OPDVisit.objects.filter(
+        status=target_status
+    ).select_related('patient', 'vitals').order_by('-updated_at')
+    
+    context = {
+        'active_nav': 'ipd_patients',
+        'ipd_visits': ipd_visits,
+        'base_template': 'receptionist/base.html',
+        'status_filter': status_filter,
+    }
+    return render(request, "doctor/ipd_patients.html", context)
+
+
+@receptionist_required
+def ipd_bill(request):
+    patient_id = request.GET.get('patient_id')
+    visit_id = request.GET.get('visit_id')
+    
+    patient = None
+    visit = None
+    
+    if patient_id:
+        try:
+            patient = Patient.objects.get(id=patient_id)
+        except Patient.DoesNotExist:
+            pass
+            
+    if visit_id:
+        try:
+            visit = OPDVisit.objects.get(id=visit_id)
+        except OPDVisit.DoesNotExist:
+            pass
+
+    context = {
+        'active_nav': 'ipd_bill',
+        'patient': patient,
+        'visit': visit,
+    }
+    return render(request, "receptionist/ipd_bill.html", context)
+

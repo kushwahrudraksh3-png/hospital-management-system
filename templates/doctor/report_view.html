@@ -1,63 +1,66 @@
 {% extends "doctor/base_doctor.html" %}
 
-{% block title %}View Investigation Report | Vatsalya Children Hospital{% endblock %}
+{% block title %}View Investigation Reports | Vatsalya Children Hospital{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-1">Investigation Report</h1>
-        <p class="text-muted">Aarav Sharma | CBC Blood Report</p>
-    </div>
-    <button class="btn btn-light" data-back-btn><i class="bi bi-arrow-left"></i> Back</button>
+<div class="mb-4">
+    <a href="{% url 'doctor:report_list' %}" class="btn btn-outline-secondary btn-sm mb-3">
+        <i class="bi bi-arrow-left me-1"></i>Back to Report List
+    </a>
+    <h1 class="mb-1">Investigation Reports</h1>
+    <p class="text-muted">{{ patient.full_name }} | Visit ID: {{ visit.opd_number }}</p>
 </div>
 
 <div class="clinic-card">
-    <div class="card-header bg-light">Complete Blood Count (CBC)</div>
-    <div class="card-body">
-        <div class="row mb-3 fs-xs">
-            <div class="col-sm-6">
-                <strong>Requested On:</strong> 28/06/2026<br>
-                <strong>Sample Collected:</strong> 28/06/2026 11:30 AM
-            </div>
-            <div class="col-sm-6 text-sm-end">
-                <strong>Lab:</strong> Main Hospital Lab<br>
-                <strong>Released Date:</strong> 28/06/2026 04:00 PM
-            </div>
-        </div>
-
+    <div class="card-header bg-light">Available Laboratory Reports</div>
+    <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-bordered align-middle fs-sm-custom">
-                <thead class="table-light">
+            <table class="table clinic-table align-middle mb-0 fs-sm-custom">
+                <thead>
                     <tr>
-                        <th>Test Parameter</th>
-                        <th>Result Value</th>
-                        <th>Reference Range</th>
-                        <th>Units</th>
-                        <th>Remark</th>
+                        <th class="ps-3">Test Name</th>
+                        <th>Status</th>
+                        <th>Sent Date</th>
+                        <th class="text-end pe-3">Action</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% for report in reports %}
                     <tr>
-                        <td>Hemoglobin (Hb)</td>
-                        <td class="fw-semibold">12.5</td>
-                        <td>11.0 - 14.5</td>
-                        <td>g/dL</td>
-                        <td><span class="badge badge-soft-success">Normal</span></td>
+                        <td class="ps-3 fw-bold">{{ report.lab_test.name }}</td>
+                        <td>
+                            {% if report.status == 'SENT' %}
+                            <span class="badge bg-success text-white">Sent to Doctor</span>
+                            {% elif report.status == 'COMPLETED' %}
+                            <span class="badge bg-success text-white">Completed</span>
+                            {% elif report.status == 'IN_PROGRESS' %}
+                            <span class="badge bg-info text-white">In Progress</span>
+                            {% else %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if report.status == 'SENT' %}
+                            {{ report.generated_date|date:"d/m/Y H:i" }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-3">
+                            {% if report.status == 'SENT' %}
+                            <a href="{% url 'lab:report_preview' %}?report_id={{ report.id }}" class="btn btn-primary btn-sm fw-semibold">View Report</a>
+                            {% else %}
+                            <button class="btn btn-secondary btn-sm fw-semibold" disabled>Awaiting Lab</button>
+                            {% endif %}
+                        </td>
                     </tr>
+                    {% empty %}
                     <tr>
-                        <td>Total WBC Count</td>
-                        <td class="fw-semibold text-danger">11,200</td>
-                        <td>4,000 - 11,000</td>
-                        <td>/cumm</td>
-                        <td><span class="badge badge-soft-danger">High (Infection)</span></td>
+                        <td colspan="4" class="text-center text-muted py-4">
+                            No sent laboratory reports found for this visit.
+                        </td>
                     </tr>
-                    <tr>
-                        <td>Platelet Count</td>
-                        <td class="fw-semibold">2.4</td>
-                        <td>1.5 - 4.5</td>
-                        <td>Lakhs/cumm</td>
-                        <td><span class="badge badge-soft-success">Normal</span></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>

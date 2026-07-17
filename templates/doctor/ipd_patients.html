@@ -1,0 +1,132 @@
+{% extends base_template %}
+
+{% block title %}IPD Patients | Vatsalya Children Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            {% if base_template == 'receptionist/base.html' %}
+                <a href="{% url 'receptionist:dashboard' %}">Home</a>
+            {% else %}
+                <a href="{% url 'doctor:dashboard' %}">Home</a>
+            {% endif %}
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">IPD Patients</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">IPD Recommended Queue</h1>
+        <p class="text-muted mb-0">List of patients recommended for inpatient department (IPD) admission.</p>
+    </div>
+</div>
+
+<div class="clinic-card">
+    <div class="card-header bg-light py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+            <h5 class="mb-1 fw-bold text-dark">IPD Recommendations</h5>
+            {% if status_filter == 'discharged' %}
+            <p class="text-muted mb-0 fs-xs">Patients who have been successfully discharged.</p>
+            {% else %}
+            <p class="text-muted mb-0 fs-xs">Patients currently awaiting receptionist admission confirmation.</p>
+            {% endif %}
+        </div>
+        {% if base_template == 'receptionist/base.html' %}
+        <div class="filter-tabs">
+            <a href="?status=recommended" class="filter-tab{% if status_filter != 'discharged' %} active{% endif %}" style="text-decoration: none;">IPD Recommended Patients</a>
+            <a href="?status=discharged" class="filter-tab{% if status_filter == 'discharged' %} active{% endif %}" style="text-decoration: none;">Discharged Patients</a>
+        </div>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table clinic-table align-middle mb-0 fs-sm-custom">
+                <thead>
+                    <tr class="table-light">
+                        <th class="ps-3">Sr. No.</th>
+                        <th>Patient Details</th>
+                        <th>Referring Doctor</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for visit in ipd_visits %}
+                    <tr>
+                        <td class="ps-3 fw-bold">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="fw-semibold text-dark">{{ visit.patient.full_name }}</div>
+                            <div class="text-muted small">ID: {{ visit.patient.uhid }} | Visit ID: {{ visit.id|stringformat:"s"|slice:":8" }}...</div>
+                            <div class="text-muted small">Age/Sex: {{ visit.patient.age }} / {{ visit.patient.get_gender_display }}</div>
+                            <div class="text-muted small">Mob: {{ visit.patient.mobile_number }}</div>
+                        </td>
+                        <td>
+                            <span class="text-dark fw-semibold">{{ visit.created_by.get_full_name|default:"Dr. Kalpesh Manager" }}</span>
+                        </td>
+                        <td>
+                            {% if visit.status == 'IPD Recommended' %}
+                            <span class="badge badge-soft-warning">🟠 IPD Recommended</span>
+                            {% elif visit.status == 'Discharged' %}
+                            <span class="badge badge-soft-success">🟢 Discharged</span>
+                            {% else %}
+                            <span class="badge badge-soft-muted">{{ visit.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-3">
+                            <div class="d-flex justify-content-end gap-2">
+                                {% if base_template == 'receptionist/base.html' and visit.status == 'Discharged' %}
+                                <a href="{% url 'receptionist:ipd_bill' %}?patient_id={{ visit.patient.id }}&visit_id={{ visit.id }}" class="btn btn-primary btn-sm" title="IPD Bill">
+                                    <i class="bi bi-receipt"></i> IPD Bill
+                                </a>
+                                {% else %}
+                                    {% if base_template == 'receptionist/base.html' %}
+                                    <a href="{% url 'receptionist:patient_summary_detail' patient_id=visit.patient.id %}" class="btn btn-light btn-sm text-primary" title="View Profile">
+                                        <i class="bi bi-person"></i> Profile
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'doctor:patient_summary' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn btn-light btn-sm text-primary" title="View Profile">
+                                        <i class="bi bi-person"></i> Profile
+                                    </a>
+                                    {% endif %}
+                                    <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn btn-light btn-sm text-success" title="View Prescription">
+                                        <i class="bi bi-prescription"></i> Rx
+                                    </a>
+                                    {% if visit.status == 'IPD Recommended' %}
+                                        {% if base_template == 'receptionist/base.html' %}
+                                        <a href="{% url 'receptionist:ipd_registration' %}?patient_id={{ visit.patient.id }}&visit_id={{ visit.id }}" class="btn btn-primary btn-sm" title="Proceed to Reception IPD">
+                                            <i class="bi bi-hospital"></i> Admit
+                                        </a>
+                                        {% else %}
+                                        <a href="{% url 'doctor:discharge_patient' %}?visit_id={{ visit.id }}" class="btn btn-primary btn-sm" title="Discharge Patient">
+                                            <i class="bi bi-hospital"></i> Discharge
+                                        </a>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">
+                            <div class="mb-3">
+                                <i class="bi bi-folder-x display-4 text-muted"></i>
+                            </div>
+                            {% if status_filter == 'discharged' %}
+                            <h5 class="text-muted fw-semibold mb-1">No Discharged Patients.</h5>
+                            <p class="text-muted fs-sm-custom mb-0">There are no discharged patients at this time.</p>
+                            {% else %}
+                            <h5 class="text-muted fw-semibold mb-1">No IPD Recommended Patients.</h5>
+                            <p class="text-muted fs-sm-custom mb-0">There are no patients recommended for IPD admission at this time.</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -296,10 +296,15 @@
                         name="visit_type"
                         class="form-select"
                         required
-                        disabled
                     >
-                        <option value="New Visit" selected>
-                            Determined Automatically
+                        <option value="" {% if not visit_form.visit_type.value %}selected{% endif %} disabled>
+                            Select visit type
+                        </option>
+                        <option value="New Visit" {% if visit_form.visit_type.value == 'New Visit' %}selected{% endif %}>
+                            New Patient
+                        </option>
+                        <option value="Follow-up" {% if visit_form.visit_type.value == 'Follow-up' %}selected{% endif %}>
+                            Follow Up
                         </option>
                     </select>
                     {% if visit_form.visit_type.errors %}

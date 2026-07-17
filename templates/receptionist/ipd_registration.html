@@ -1,0 +1,225 @@
+{% extends "receptionist/base.html" %}
+{% load static %}
+
+{% block title %}IPD Registration | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            IPD Registration
+        </li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="page-title">IPD Registration</h1>
+        <p class="text-muted mb-0 mt-1">
+            Register a patient for inpatient admission (IPD) and allocate room/bed.
+        </p>
+    </div>
+    <span class="badge badge-soft-primary py-2 px-3">
+        <i class="bi bi-hospital me-1"></i>
+        IPD Desk
+    </span>
+</div>
+
+<form id="ipdRegistrationForm" onsubmit="event.preventDefault(); alert('IPD Registration saved (Frontend Demo Only).');">
+    {% csrf_token %}
+    
+    <!-- 1. Patient Information -->
+    <article class="clinic-card mb-4">
+        <div class="card-header">
+            <h2 class="form-section-title">
+                <i class="bi bi-person-vcard text-primary me-2"></i>
+                Patient Information
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4 col-xl-3">
+                    <label class="form-label" for="searchPatient">Search / Select Patient <span class="required-mark">*</span></label>
+                    <div class="input-group">
+                        <input id="searchPatient" class="form-control" placeholder="Enter UHID or Mobile" value="{% if patient %}{{ patient.uhid }}{% endif %}" required />
+                        <button type="button" class="btn btn-outline-primary btn-icon"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+                <div class="col-md-8 col-xl-5">
+                    <label class="form-label" for="fullName">Patient Full Name</label>
+                    <input id="fullName" class="form-control readonly-control" placeholder="Search patient to fill" value="{% if patient %}{{ patient.full_name }}{% endif %}" readonly />
+                </div>
+                <div class="col-md-6 col-xl-2">
+                    <label class="form-label" for="age">Age</label>
+                    <input id="age" class="form-control readonly-control" value="{% if patient %}{{ patient.age }}{% endif %}" readonly />
+                </div>
+                <div class="col-md-6 col-xl-2">
+                    <label class="form-label" for="gender">Gender</label>
+                    <input id="gender" class="form-control readonly-control" value="{% if patient %}{{ patient.get_gender_display }}{% endif %}" readonly />
+                </div>
+                <div class="col-md-6 col-xl-6">
+                    <label class="form-label" for="fatherName">Father's / Husband's Name</label>
+                    <input id="fatherName" class="form-control readonly-control" value="{% if patient %}{{ patient.father_name|default:'' }}{% endif %}" readonly />
+                </div>
+                <div class="col-md-6 col-xl-6">
+                    <label class="form-label" for="mobileNumber">Mobile Number</label>
+                    <input id="mobileNumber" class="form-control readonly-control" value="{% if patient %}{{ patient.mobile_number }}{% endif %}" readonly />
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- 2. Admission Information -->
+    <article class="clinic-card mb-4">
+        <div class="card-header">
+            <h2 class="form-section-title">
+                <i class="bi bi-door-open text-primary me-2"></i>
+                Admission Information
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="admissionDate">Admission Date <span class="required-mark">*</span></label>
+                    <input id="admissionDate" type="date" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="admissionTime">Admission Time <span class="required-mark">*</span></label>
+                    <input id="admissionTime" type="time" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="admissionType">Admission Type <span class="required-mark">*</span></label>
+                    <select id="admissionType" class="form-select" required>
+                        <option value="" disabled selected>Select Admission Type</option>
+                        <option value="ROUTINE">Routine / Planned</option>
+                        <option value="EMERGENCY">Emergency</option>
+                        <option value="TRANSFER">Transfer Admission</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- 3. Ward / Room Information -->
+    <article class="clinic-card mb-4">
+        <div class="card-header">
+            <h2 class="form-section-title">
+                <i class="bi bi-layout-three-columns text-primary me-2"></i>
+                Ward / Room Information
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="wardCategory">Ward / Room Category <span class="required-mark">*</span></label>
+                    <select id="wardCategory" class="form-select" required>
+                        <option value="" disabled selected>Select Category</option>
+                        <option value="GENERAL">General Ward</option>
+                        <option value="SEMI_PRIVATE">Semi-Private Room</option>
+                        <option value="PRIVATE">Private Room</option>
+                        <option value="ICU">ICU (Intensive Care Unit)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="roomNumber">Room / Ward Number <span class="required-mark">*</span></label>
+                    <select id="roomNumber" class="form-select" required>
+                        <option value="" disabled selected>Select Room</option>
+                        <option value="101">Room 101 (General)</option>
+                        <option value="102">Room 102 (General)</option>
+                        <option value="201">Room 201 (Private)</option>
+                        <option value="202">Room 202 (Private)</option>
+                        <option value="301">ICU Bed 1</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="bedNumber">Bed Number <span class="required-mark">*</span></label>
+                    <select id="bedNumber" class="form-select" required>
+                        <option value="" disabled selected>Select Bed</option>
+                        <option value="Bed A">Bed A</option>
+                        <option value="Bed B">Bed B</option>
+                        <option value="Bed C">Bed C</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- 4. Consultant Information -->
+    <article class="clinic-card mb-4">
+        <div class="card-header">
+            <h2 class="form-section-title">
+                <i class="bi bi-person-badge text-primary me-2"></i>
+                Consultant / Admitting Doctor
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="admittingDoctor">Admitting Consultant <span class="required-mark">*</span></label>
+                    <select id="admittingDoctor" class="form-select" required>
+                        <option value="" disabled selected>Select Doctor</option>
+                        <option value="1">Dr. Kalpesh Manager</option>
+                        <option value="2">Dr. Akshat Sarkar</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="referredDoctor">Referred By (if any)</label>
+                    <input id="referredDoctor" class="form-control" placeholder="Dr. Name / Hospital" />
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- 5. Admission Notes -->
+    <article class="clinic-card mb-4">
+        <div class="card-header">
+            <h2 class="form-section-title">
+                <i class="bi bi-file-earmark-text text-primary me-2"></i>
+                Admission Notes / Remarks
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label" for="provisionalDiagnosis">Provisional Diagnosis / Reason <span class="required-mark">*</span></label>
+                    <textarea id="provisionalDiagnosis" class="form-control" rows="3" placeholder="Enter reason for admission or provisional diagnosis" required></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label" for="admissionRemarks">Remarks / Special Instructions</label>
+                    <textarea id="admissionRemarks" class="form-control" rows="3" placeholder="Any special instructions or nursing alerts"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 6. Action Buttons -->
+        <div class="form-actions">
+            <a class="btn btn-light" href="{% url 'receptionist:dashboard' %}">
+                <i class="bi bi-x-lg"></i>
+                Cancel
+            </a>
+            <button class="btn btn-outline-primary" type="reset">
+                <i class="bi bi-arrow-counterclockwise"></i>
+                Reset
+            </button>
+            <button class="btn btn-primary" type="submit">
+                <i class="bi bi-check2-circle"></i>
+                Register Patient for IPD
+            </button>
+        </div>
+    </article>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Set today's date and current time by default
+        var today = new Date();
+        var dateStr = today.toISOString().substring(0, 10);
+        var timeStr = today.toTimeString().substring(0, 5);
+        document.getElementById("admissionDate").value = dateStr;
+        document.getElementById("admissionTime").value = timeStr;
+    });
+</script>
+{% endblock %}

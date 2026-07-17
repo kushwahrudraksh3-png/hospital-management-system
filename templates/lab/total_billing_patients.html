@@ -1,0 +1,95 @@
+{% extends "lab/base_lab.html" %}
+{% load static %}
+
+{% block title %}Total Billing Patients | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">HMS Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'lab:dashboard' %}">Lab Dashboard</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Total Billing Patients</li>
+  </ol>
+</nav>
+
+<!-- Page heading -->
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h1 class="page-title">Total Billing Patients</h1>
+    <p class="text-muted mb-0 mt-1">View all patients whose pathology billing records have been generated.</p>
+  </div>
+</div>
+
+<!-- Filter Tabs + Search -->
+<article class="clinic-card mb-4">
+  <div class="card-header d-flex flex-wrap gap-3 justify-content-between align-items-center">
+    <div class="filter-tabs">
+      <a href="?filter=today{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-tab {% if filter_type == 'today' %}active{% endif %}">Today's Patients</a>
+      <a href="?filter=all{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-tab {% if filter_type == 'all' %}active{% endif %}">All Patients</a>
+    </div>
+    <form method="get" class="search-field">
+      <input type="hidden" name="filter" value="{{ filter_type }}">
+      <i class="bi bi-search" onclick="this.parentNode.submit();" style="cursor: pointer;"></i>
+      <input type="text" name="q" class="form-control form-control-sm" placeholder="Search patients…" value="{{ search_query }}">
+    </form>
+  </div>
+
+  <!-- Patient Table -->
+  <div class="table-responsive border-0 rounded-0">
+    <table class="table clinic-table">
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Patient Name</th>
+          <th>UHID</th>
+          <th>Visit ID</th>
+          <th>Bill Number</th>
+          <th>Billing Date</th>
+          <th>Doctor</th>
+          <th>Total Tests</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bill in bills %}
+        <tr>
+          <td>
+            <span class="badge bg-success">
+              ✅ Bill Generated
+            </span>
+          </td>
+          <td>
+            <div class="fw-semibold">{{ bill.patient.full_name }}</div>
+          </td>
+          <td>{{ bill.patient.uhid }}</td>
+          <td>{{ bill.visit.opd_number }}</td>
+          <td class="fw-semibold">{{ bill.bill_number }}</td>
+          <td>{{ bill.created_at|date:"d M Y" }}</td>
+          <td>
+            {% if bill.visit.handwritten_prescription.doctor %}
+              Dr. {{ bill.visit.handwritten_prescription.doctor.first_name }} {{ bill.visit.handwritten_prescription.doctor.last_name }}
+            {% else %}
+              Dr. Kalpesh Manager (Patidar)
+            {% endif %}
+          </td>
+          <td class="fw-bold text-center">{{ bill.total_tests }}</td>
+          <td class="text-end">
+            <a class="btn btn-light btn-sm" href="{% url 'lab:bill_receipt' %}?bill_id={{ bill.id }}">
+              <i class="bi bi-receipt me-1"></i>View Bill
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center text-muted py-5 bg-white">
+            <div class="empty-state-icon mb-2"><i class="bi bi-info-circle fs-3 text-muted"></i></div>
+            <p class="mb-0">No generated laboratory bills found.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</article>
+{% endblock %}

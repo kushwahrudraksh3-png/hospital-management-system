@@ -39,7 +39,7 @@
                 </thead>
                 <tbody>
                     {% for visit in today_visits %}
-                    <tr data-status="{% if visit.status == 'Pending Lab' %}lab-request{% elif visit.status == 'Completed' %}completed{% else %}waiting{% endif %}">
+                    <tr data-status="{% if visit.status == 'Pending Lab' %}lab-request{% elif visit.status == 'Completed' or visit.status == 'IPD Recommended' %}completed{% else %}waiting{% endif %}">
                         <td class="fw-bold">#{{ visit.token_number|default:forloop.counter }}</td>
                         <td class="patient-id">{{ visit.patient.uhid }}</td>
                         <td class="patient-name fw-semibold">{{ visit.patient.full_name }}</td>
@@ -51,12 +51,14 @@
                             <span class="badge badge-soft-warning badge-requested-lab" style="display: none;">Pending</span>
                             {% elif visit.status == 'Completed' %}
                             <span class="badge badge-soft-success">Completed</span>
+                            {% elif visit.status == 'IPD Recommended' %}
+                            <span class="badge badge-soft-warning">🟠 IPD Recommended</span>
                             {% else %}
                             <span class="badge badge-soft-warning">Waiting</span>
                             {% endif %}
                         </td>
                         <td class="text-end">
-                            {% if visit.status == 'Completed' %}
+                            {% if visit.status == 'Completed' or visit.status == 'IPD Recommended' %}
                             <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn btn-light btn-sm">View Rx</a>
                             {% elif visit.status == 'Pending Lab' %}
                                 {% if visit.handwritten_prescription %}

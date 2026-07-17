@@ -1,0 +1,604 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathology Bill - Vatsalya Shree Hospital</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:bold&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* -------------------------------------------------------------
+           PATHOLOGY BILL - VATSALYA CHILDREN HOSPITAL - STYLESHEET
+           ------------------------------------------------------------- */
+
+        /* Root Variables for Design Tokens */
+        :root {
+            /* Primary Ink Color - Reflex Navy Blue */
+            --primary-color: #1a3a78;
+            /* Stamped Bill Number Color - Classical Red */
+            --stamped-color: #d32f2f;
+            /* Soft dark text for values */
+            --text-color: #111111;
+            /* Borders & Lines - Navy Blue */
+            --border-color: #1a3a78;
+            /* Paper background */
+            --paper-bg: #ffffff;
+            /* Screen-only background */
+            --screen-bg: #eef2f6;
+            /* Grid Line Thickness */
+            --border-thickness: 1.2px;
+        }
+
+        /* Base resets */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--screen-bg);
+            color: var(--primary-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            padding: 20px 0;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Controls Panel - Screen Only (Below the bill) */
+        .controls-panel {
+            margin-top: 15px;
+            z-index: 10;
+        }
+
+        .print-button {
+            background-color: var(--primary-color);
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .print-button:hover {
+            background-color: #112856;
+            transform: translateY(-1px);
+        }
+
+        .print-button:active {
+            transform: translateY(1px);
+        }
+
+        .print-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Bill Container - A5 Dimensions (148mm x 210mm) */
+        .bill-container {
+            width: 148mm;
+            height: 210mm;
+            background-color: var(--paper-bg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 8mm;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        /* Registration Row */
+        .reg-number-row {
+            font-size: 9.5px;
+            font-weight: 500;
+            text-transform: none;
+            margin-bottom: 2px;
+            letter-spacing: 0.2px;
+        }
+
+        /* Header Section */
+        .bill-header {
+            display: grid;
+            grid-template-columns: 32mm 1fr 32mm;
+            align-items: center;
+            margin-bottom: 2px;
+            width: 100%;
+        }
+
+        /* Logo Styles */
+        .logo-container {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .hospital-logo-img {
+            max-height: 52px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* Hospital Title & Details */
+        .hospital-info {
+            flex-grow: 1;
+            text-align: center;
+            padding-left: 5px;
+        }
+
+        .hospital-name {
+            font-size: 16.5px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+            margin-bottom: 1px;
+            line-height: 1.2;
+        }
+
+        .hospital-address {
+            font-size: 10px;
+            font-weight: 500;
+            margin-bottom: 1px;
+            letter-spacing: 0.1px;
+        }
+
+        .hospital-phone {
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        /* Divider Line */
+        .header-divider {
+            border: none;
+            border-top: var(--border-thickness) solid var(--border-color);
+            margin: 4px 0 10px 0;
+        }
+
+        /* Patient Info Section */
+        .patient-info-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-end;
+            width: 100%;
+        }
+
+        .info-group {
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .info-group .info-label {
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            margin-right: 4px;
+            line-height: 1.2;
+        }
+
+        /* Static values with dotted borders */
+        .info-value {
+            flex-grow: 1;
+            color: var(--text-color);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 0 4px;
+            border-bottom: 1px dotted var(--primary-color);
+            min-height: 16px;
+            display: inline-block;
+            line-height: 1.2;
+        }
+
+        /* Specific Row Settings */
+        .row-sr-date {
+            justify-content: space-between;
+        }
+
+        .group-sr {
+            width: 45%;
+        }
+
+        .group-date {
+            width: 45%;
+            justify-content: flex-end;
+        }
+
+        .group-date .info-label {
+            margin-right: 6px;
+        }
+
+        /* Bill Number stamped look */
+        .stamped-value {
+            border: none;
+            color: var(--stamped-color);
+            font-family: 'Courier Prime', 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 0 4px;
+            min-height: auto;
+        }
+
+        .group-name {
+            width: 100%;
+        }
+
+        .row-address-age {
+            justify-content: space-between;
+        }
+
+        .group-address {
+            width: 65%;
+        }
+
+        .group-age-sex {
+            width: 32%;
+            justify-content: flex-end;
+        }
+
+        .group-age-sex .info-label {
+            margin-right: 6px;
+        }
+
+        .group-doctor {
+            width: 100%;
+        }
+
+        /* Pathology Bill Title */
+        .bill-title-container {
+            text-align: center;
+            margin: 8px 0;
+        }
+
+        .bill-title {
+            font-size: 14.5px;
+            font-weight: 800;
+            text-decoration: underline;
+            letter-spacing: 1px;
+            display: inline-block;
+        }
+
+        /* Table styling */
+        .investigation-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: var(--border-thickness) solid var(--border-color);
+            margin-bottom: 8px;
+            table-layout: fixed;
+        }
+
+        .investigation-table th, 
+        .investigation-table td {
+            border: 0.8px solid var(--border-color);
+            height: 8mm; /* Fixed row height to fit precisely 9 rows in A5 */
+            font-size: 12px;
+        }
+
+        .investigation-table th {
+            font-weight: 700;
+            text-align: center;
+            background-color: transparent;
+        }
+
+        /* Column Widths */
+        .col-sr {
+            width: 12%;
+        }
+
+        .col-inv {
+            width: 66%;
+        }
+
+        .col-amt {
+            width: 22%;
+        }
+
+        /* Cell alignment */
+        .cell-sr {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .cell-inv {
+            padding: 0 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .cell-amt {
+            padding: 0 10px;
+            text-align: right;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        /* Total Row styling */
+        .total-row {
+            font-weight: 700;
+        }
+
+        .total-row td {
+            height: 8mm;
+            border-top: var(--border-thickness) solid var(--border-color);
+        }
+
+        .cell-total-label {
+            text-align: right;
+            padding-right: 15px;
+            font-size: 11.5px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+
+        .cell-total-value {
+            padding: 0 10px;
+            text-align: right;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        /* Footer styling */
+        .bill-footer {
+            margin-top: auto; /* Push to the very bottom */
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            padding-top: 10px;
+        }
+
+        /* Timings in Hindi */
+        .timing-info {
+            text-align: left;
+        }
+
+        .timing-line {
+            font-size: 11px;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .font-hindi {
+            font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
+        }
+
+        /* Regards Column */
+        .regards-info {
+            text-align: center;
+            width: 55mm;
+        }
+
+        .regards-title {
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 12px; /* Space for signature */
+            letter-spacing: 0.5px;
+        }
+
+        .regards-hospital {
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: 0.1px;
+            white-space: nowrap;
+        }
+
+        /* -------------------------------------------------------------
+           PRINT STYLES - @media print
+           ------------------------------------------------------------- */
+        @media print {
+            @page {
+                size: A5 portrait;
+                margin: 0;
+            }
+
+            html,
+            body {
+                width: 148mm !important;
+                height: 210mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
+                background: white !important;
+                display: block !important;
+            }
+
+            .controls-panel {
+                display: none !important;
+            }
+
+            .bill-container {
+                width: 148mm !important;
+                height: 210mm !important;
+                margin: 0 !important;
+                padding: 8mm !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+                background: white !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Bill Container (A5 Portrait Size) -->
+    <div class="bill-container" id="billPage">
+        
+        <!-- Top Registration Row -->
+        <div class="reg-number-row">
+            <span>Reg. No. NH/6886/MAR-2018</span>
+        </div>
+
+        <!-- Header Section (Logo & Hospital Info) -->
+        <header class="bill-header">
+            <!-- Logo Left -->
+            <div class="logo-container">
+                <img src="{% static 'images/logo.png' %}" alt="Hospital Logo" class="hospital-logo-img">
+            </div>
+
+            <!-- Hospital Info Center -->
+            <div class="hospital-info">
+                <h1 class="hospital-name">Vatsalya Shree Hospital</h1>
+                <p class="hospital-address">Old A.B. Road Guljhara (Dhamnod), Dist. Dhar, 454552</p>
+                <p class="hospital-phone">Mob.: 96300 37055</p>
+            </div>
+
+            <!-- Spacer to center the hospital info -->
+            <div class="header-right-spacer" style="width: 32mm;"></div>
+        </header>
+
+        <!-- Horizontal separator -->
+        <hr class="header-divider">
+
+        <!-- Patient Info Form Section -->
+        <section class="patient-info-section">
+            <!-- Row 1: Sr. No and Date -->
+            <div class="info-row row-sr-date">
+                <div class="info-group group-sr">
+                    <span class="info-label">Sr.</span>
+                    <span class="info-value stamped-value">{{ bill.bill_number|default:"N/A" }}</span>
+                </div>
+                <div class="info-group group-date">
+                    <span class="info-label">Date</span>
+                    <span class="info-value">{% if bill %}{{ bill.bill_date|date:"d-m-Y" }} {{ bill.bill_time|time:"H:i" }}{% else %}N/A{% endif %}</span>
+                </div>
+            </div>
+
+            <!-- Row 2: Patient Name -->
+            <div class="info-row row-name">
+                <div class="info-group group-name">
+                    <span class="info-label">Pt. Name :</span>
+                    <span class="info-value">{{ patient.full_name|default:"N/A" }}</span>
+                </div>
+            </div>
+
+            <!-- Row 3: Address and Age/Sex -->
+            <div class="info-row row-address-age">
+                <div class="info-group group-address">
+                    <span class="info-label">Address :</span>
+                    <span class="info-value">{{ patient.address|default:"N/A" }}</span>
+                </div>
+                <div class="info-group group-age-sex">
+                    <span class="info-label">Age/Sex</span>
+                    <span class="info-value">{{ patient.age|cut:" 0 Months"|default:"N/A" }} / {{ patient.get_gender_display|slice:":1"|default:"N/A" }}</span>
+                </div>
+            </div>
+
+            <!-- Row 4: Ref By Doctor -->
+            <div class="info-row row-doctor">
+                <div class="info-group group-doctor">
+                    <span class="info-label">Ref. By :</span>
+                    <span class="info-value">
+                        {% if bill.visit.handwritten_prescription.doctor %}
+                            Dr. {{ bill.visit.handwritten_prescription.doctor.first_name }} {{ bill.visit.handwritten_prescription.doctor.last_name }}
+                        {% else %}
+                            Dr. KALPESH PATIDAR (MANAGER)
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bill Title -->
+        <div class="bill-title-container">
+            <h2 class="bill-title">PATHOLOGY BILL</h2>
+        </div>
+
+        <!-- Investigation Table -->
+        <table class="investigation-table" id="investigationTable">
+            <thead>
+                <tr>
+                    <th class="col-sr">SR.</th>
+                    <th class="col-inv">INVESTIGATION</th>
+                    <th class="col-amt">AMOUNT</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td class="cell-sr">{{ forloop.counter }}</td>
+                    <td class="cell-inv">{{ item.name }}</td>
+                    <td class="cell-amt">₹{{ item.price }}</td>
+                </tr>
+                {% endfor %}
+                {% for _ in remaining_rows %}
+                <tr>
+                    <td class="cell-sr"></td>
+                    <td class="cell-inv"></td>
+                    <td class="cell-amt"></td>
+                </tr>
+                {% endfor %}
+                <!-- Total Row -->
+                <tr class="total-row">
+                    <td colspan="2" class="cell-total-label">TOTAL AMOUNT</td>
+                    <td class="cell-total-value">₹{{ bill.grand_total|default:"0.00" }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Footer Section -->
+        <footer class="bill-footer">
+            <!-- Right: Regards and Hospital Name -->
+            <div class="regards-info">
+                <p class="regards-title">REGARDS</p>
+                <p class="regards-hospital">Vatsalya Shree Hospital</p>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Controls Panel (Screen Only) - Centered Below the Bill -->
+    <div class="controls-panel" id="controlsPanel">
+        <button id="printBtn" class="print-button">
+            <svg class="print-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Print Bill
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Print button click handler
+            const printBtn = document.getElementById('printBtn');
+            if (printBtn) {
+                printBtn.addEventListener('click', () => {
+                    window.print();
+                });
+            }
+            // Auto-trigger print dialog immediately
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

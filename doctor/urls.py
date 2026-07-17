@@ -17,6 +17,10 @@ urlpatterns = [
     path("report-view/", views.report_view, name="report_view"),
     path("save-prescription/", views.save_prescription, name="save_prescription"),
     
+    path("recommend-ipd/", views.recommend_ipd, name="recommend_ipd"),
+    path("ipd-patients/", views.ipd_patients, name="ipd_patients"),
+    path("discharge-patient/", views.discharge_patient, name="discharge_patient"),
+    
     # Legacy redirect mapping to match existing JavaScript redirects
     path("prescription.html", views.prescription, name="prescription_legacy"),
 ]

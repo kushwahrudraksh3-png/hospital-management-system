@@ -1,0 +1,347 @@
+{% extends "lab/base_lab.html" %}
+{% load static %}
+
+{% block title %}Total Billing Patients | Vatsalya Shree Hospital{% endblock %}
+
+{% block extra_css %}
+<style>
+  .test-selection-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .test-selection-card:hover {
+    border-color: var(--bs-primary-border-subtle, #9ec5fe) !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
+    transform: translateY(-2px);
+  }
+  .test-selection-card.checked {
+    border-color: #3b82f6 !important;
+    background-color: #f0f7ff !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+  }
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .form-check-input:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">HMS Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'lab:dashboard' %}">Lab Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'lab:doctor_prescription' %}">Doctor Prescription</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Total Billing Patients</li>
+          </ol>
+        </nav>
+
+        <!-- Page heading -->
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+          <div>
+            <h1 class="page-title">Total Billing Patients</h1>
+            <p class="text-muted mb-0 mt-1">Generate the pathology bill for prescribed investigations.</p>
+          </div>
+          <!-- Django: {{ bill.bill_number }} -->
+          <span class="badge badge-soft-primary py-2 px-3">
+            <i class="bi bi-receipt me-1"></i>Draft Bill LB-2026-0101
+          </span>
+        </div>
+
+
+
+        <!-- Patient Summary Banner -->
+        <article class="clinic-card patient-hero mb-4" aria-label="Patient Summary">
+          <div class="patient-hero-top">
+            <div class="patient-photo"><i class="bi bi-person-fill"></i></div>
+            <div class="flex-grow-1">
+              <!-- Django: {{ patient.name }} -->
+              <h2 class="patient-hero-name">{{ patient.full_name|default:"Unknown Patient" }}
+                <span class="badge badge-soft-success ms-1 align-middle">Active</span>
+              </h2>
+              <div class="patient-hero-meta">
+                <!-- Django: {{ patient.id }} · {{ patient.age }} · {{ patient.gender }} -->
+                <span>{{ patient.uhid|default:"N/A" }}</span>
+                <span>{{ patient.age|cut:" 0 Months"|default:"N/A" }}</span>
+                <span>{{ patient.get_gender_display|default:"N/A" }}</span>
+              </div>
+            </div>
+            <div class="text-end d-none d-md-block">
+              <span class="data-label">Bill Date</span>
+              <!-- Django: {{ bill.date }} -->
+              <span class="data-value">{% if visit %}{{ visit.visit_date|date:"d M Y" }}{% else %}{% now "d M Y" %}{% endif %}</span>
+            </div>
+          </div>
+          <div class="patient-info-grid">
+            <div class="patient-info-item">
+              <span class="patient-info-label">Address</span>
+              <!-- Django: {{ patient.address }} -->
+              <span class="patient-info-value">{{ patient.address|default:"N/A" }}</span>
+            </div>
+            <div class="patient-info-item">
+              <span class="patient-info-label">Ref. Doctor</span>
+              <!-- Django: {{ visit.doctor.name }} -->
+              <span class="patient-info-value">
+                {% if prescription.doctor %}
+                  Dr. {{ prescription.doctor.first_name }} {{ prescription.doctor.last_name }}
+                {% else %}
+                  Dr. Kalpesh Manager (Patidar)
+                {% endif %}
+              </span>
+            </div>
+            <div class="patient-info-item">
+              <span class="patient-info-label">Mobile</span>
+              <!-- Django: {{ patient.mobile }} -->
+              <span class="patient-info-value">{{ patient.mobile_number|default:"N/A" }}</span>
+            </div>
+            <div class="patient-info-item">
+              <span class="patient-info-label">OPD Number</span>
+              <!-- Django: {{ visit.opd_number }} -->
+              <span class="patient-info-value">{{ visit.opd_number|default:"N/A" }}</span>
+            </div>
+          </div>
+        </article>
+
+        <form method="post" id="labBillingForm">
+          {% csrf_token %}
+          <input type="hidden" name="visit_id" value="{{ visit_id|default:'' }}">
+          <input type="hidden" name="patient_id" value="{{ patient_id|default:'' }}">
+          <div class="row g-4">
+
+            <section class="col-12">
+              <!-- Select Investigations Card -->
+              <article class="clinic-card mb-4 shadow-sm">
+                <div class="card-header d-flex align-items-center justify-content-between bg-white border-bottom-0 pt-4 px-4 pb-2">
+                  <h2 class="form-section-title mb-0" style="font-size: 1.15rem; color: #1e293b; font-weight: 700;">
+                    <i class="bi bi-check2-square text-primary me-2"></i>Select Investigations
+                  </h2>
+                  <span class="badge rounded-pill bg-light text-dark px-3 py-2 border" style="font-size: 0.8rem; font-weight: 500;">
+                    <span id="checkedCount" class="fw-bold text-primary">0</span> Selected
+                  </span>
+                </div>
+                <div class="card-body px-4 pb-4 pt-2">
+                  <div class="row g-3">
+                    {% for test in active_tests %}
+                    <div class="col-md-6 col-lg-4">
+                      <div class="test-selection-card d-flex align-items-center justify-content-between p-3 rounded-3 border" style="cursor: pointer; background: #fafafa; transition: all 0.2s ease;">
+                        <div class="d-flex align-items-center flex-grow-1">
+                          <div class="form-check mb-0 d-flex align-items-center">
+                            <input class="form-check-input test-checkbox cursor-pointer me-3" type="checkbox" name="tests" value="{{ test.id }}" id="test_{{ test.id }}" data-test-name="{{ test.name }}" data-test-price="{{ test.price }}" style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                            <label class="form-check-label fw-semibold text-slate-700 cursor-pointer" for="test_{{ test.id }}" style="font-size: 0.95rem; cursor: pointer;">
+                              {{ test.name }}
+                            </label>
+                          </div>
+                        </div>
+                        <div class="text-end ps-2">
+                          <span class="badge bg-white text-primary border border-primary-subtle px-2 py-1 fw-bold" style="font-size: 0.85rem;">
+                            ₹{{ test.price }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-4">
+                      <div class="text-muted mb-2"><i class="bi bi-info-circle fs-3"></i></div>
+                      <p class="text-muted mb-0">No active laboratory tests found in the Master List.</p>
+                      <small class="text-muted d-block mt-1">Please add them in the Django Admin interface.</small>
+                    </div>
+                    {% endfor %}
+                  </div>
+                </div>
+              </article>
+
+              <!-- Investigations Table (auto-filled from selection) -->
+              <article class="clinic-card">
+                <div class="card-header">
+                  <h2 class="form-section-title"><i class="bi bi-list-check"></i>Investigations &amp; Charges</h2>
+                </div>
+                <div class="table-responsive border-0 rounded-0">
+                  <table class="table clinic-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Investigation Name</th>
+                        <th class="text-end">Amount (₹)</th>
+                      </tr>
+                    </thead>
+                    <tbody data-lab-billing-body>
+                      <tr id="emptyTableRow">
+                        <td colspan="3" class="text-center text-muted py-4">
+                          No investigations selected. Please select tests from the list above.
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tfoot>
+                      <tr class="fw-bold table-light">
+                        <td colspan="2" class="text-end py-3">Grand Total</td>
+                        <td class="text-end text-primary fs-5 py-3" data-lab-bill-grand-total>₹0.00</td>
+                      </tr>
+                      <tr class="small text-muted">
+                        <td colspan="3" class="py-3">
+                          Amount in words: <strong class="text-dark" data-lab-bill-words>Zero Rupees Only</strong>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </article>
+            </section>
+
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions mt-4 u-bg-surface u-border u-rounded">
+            <a class="btn btn-light" href="{% url 'lab:doctor_prescription' %}?visit_id={{ visit_id|default:'' }}&patient_id={{ patient_id|default:'' }}">
+              <i class="bi bi-arrow-left"></i>Back
+            </a>
+            <button class="btn btn-outline-primary" type="reset" id="resetLabBillingBtn">
+              <i class="bi bi-arrow-counterclockwise"></i>Reset
+            </button>
+            <button class="btn btn-primary" type="submit">
+              <i class="bi bi-printer"></i>Save &amp; Print Bill
+            </button>
+          </div>
+        </form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var checkboxes = document.querySelectorAll('.test-checkbox');
+    var tbody = document.querySelector('[data-lab-billing-body]');
+    var grandTotalEl = document.querySelector('[data-lab-bill-grand-total]');
+    var wordsEl = document.querySelector('[data-lab-bill-words]');
+    var checkedCountEl = document.getElementById('checkedCount');
+    var emptyRow = document.getElementById('emptyTableRow');
+    var resetBtn = document.getElementById('resetLabBillingBtn');
+
+    function formatINR(value) {
+      return '₹' + value.toLocaleString('en-IN', {
+        minimumFractionDigits: 2, maximumFractionDigits: 2
+      });
+    }
+
+    function amountInWords(amount) {
+      var ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven',
+        'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen',
+        'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+      var tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty',
+        'Seventy', 'Eighty', 'Ninety'];
+
+      function convert(n) {
+        if (n < 20) return ones[n];
+        if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
+        if (n < 1000) return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + convert(n % 100) : '');
+        if (n < 100000) return convert(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 ? ' ' + convert(n % 1000) : '');
+        return convert(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 ? ' ' + convert(n % 100000) : '');
+      }
+
+      if (amount === 0) return 'Zero Rupees Only';
+      var result = convert(Math.floor(amount));
+      return result + ' Rupees Only';
+    }
+
+    function updateBilling() {
+      var selectedCheckboxes = document.querySelectorAll('.test-checkbox:checked');
+      var checkedCount = selectedCheckboxes.length;
+      if (checkedCountEl) checkedCountEl.textContent = checkedCount;
+
+      // Clear existing rows
+      tbody.innerHTML = '';
+
+      if (checkedCount === 0) {
+        if (emptyRow) {
+          tbody.appendChild(emptyRow);
+        } else {
+          var tr = document.createElement('tr');
+          tr.id = 'emptyTableRow';
+          tr.innerHTML = '<td colspan="3" class="text-center text-muted py-4">No investigations selected. Please select tests from the list above.</td>';
+          tbody.appendChild(tr);
+        }
+        if (grandTotalEl) grandTotalEl.textContent = '₹0.00';
+        if (wordsEl) wordsEl.textContent = 'Zero Rupees Only';
+        return;
+      }
+
+      var grandTotal = 0;
+
+      selectedCheckboxes.forEach(function (cb, index) {
+        var name = cb.dataset.testName;
+        var price = parseFloat(cb.dataset.testPrice) || 0;
+        grandTotal += price;
+
+        var tr = document.createElement('tr');
+        
+        var tdIndex = document.createElement('td');
+        tdIndex.textContent = index + 1;
+        tr.appendChild(tdIndex);
+
+        var tdName = document.createElement('td');
+        tdName.className = 'fw-semibold text-dark';
+        tdName.textContent = name;
+        tr.appendChild(tdName);
+
+        var tdPrice = document.createElement('td');
+        tdPrice.className = 'text-end fw-semibold text-slate-700';
+        tdPrice.textContent = formatINR(price);
+        tr.appendChild(tdPrice);
+
+        tbody.appendChild(tr);
+      });
+
+      if (grandTotalEl) {
+        grandTotalEl.textContent = formatINR(grandTotal);
+      }
+      if (wordsEl) {
+        wordsEl.textContent = amountInWords(grandTotal);
+      }
+    }
+
+    // Add event listeners to checkboxes and parent cards
+    checkboxes.forEach(function (checkbox) {
+      checkbox.addEventListener('change', function () {
+        var card = checkbox.closest('.test-selection-card');
+        if (card) {
+          card.classList.toggle('checked', checkbox.checked);
+        }
+        updateBilling();
+      });
+
+      // Let clicking on the card toggle the checkbox
+      var card = checkbox.closest('.test-selection-card');
+      if (card) {
+        card.addEventListener('click', function (e) {
+          // If the click did not directly target the checkbox, toggle it
+          if (e.target !== checkbox && !checkbox.contains(e.target)) {
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change'));
+          }
+        });
+      }
+    });
+
+    // Reset button functionality
+    if (resetBtn) {
+      resetBtn.addEventListener('click', function () {
+        setTimeout(function() {
+          checkboxes.forEach(function (checkbox) {
+            checkbox.checked = false;
+            var card = checkbox.closest('.test-selection-card');
+            if (card) {
+              card.classList.remove('checked');
+            }
+          });
+          updateBilling();
+        }, 50);
+      });
+    }
+
+    // Initial update
+    updateBilling();
+  });
+</script>
+{% endblock %}

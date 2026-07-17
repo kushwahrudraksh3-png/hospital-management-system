@@ -1,0 +1,77 @@
+{% extends "receptionist/base.html" %}
+{% load static %}
+
+{% block title %}IPD Bill | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:ipd_patients' %}?status=discharged">IPD Patients</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            IPD Bill
+        </li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="page-title">IPD Bill</h1>
+        <p class="text-muted mb-0 mt-1">
+            Generate and view patient IPD bills and invoices.
+        </p>
+    </div>
+    <span class="badge badge-soft-primary py-2 px-3">
+        <i class="bi bi-receipt me-1"></i>
+        Billing Desk
+    </span>
+</div>
+
+<article class="clinic-card mb-4">
+    <div class="card-header bg-light py-3 border-bottom">
+        <h2 class="form-section-title mb-0">
+            <i class="bi bi-receipt text-primary me-2"></i>
+            IPD Billing Module
+        </h2>
+    </div>
+    <div class="card-body py-5 text-center">
+        <div class="mb-4">
+            <i class="bi bi-clock-history text-muted" style="font-size: 4rem;"></i>
+        </div>
+        <h4 class="fw-semibold text-dark mb-2">Module Under Development</h4>
+        <p class="text-muted max-width-md mx-auto mb-4" style="max-width: 500px;">
+            IPD Billing functionality will be available here. All patient data, recommendations, and discharge records are safely preserved in the database.
+        </p>
+        
+        {% if patient %}
+        <div class="alert alert-info d-inline-block text-start mb-0" style="max-width: 600px; border-radius: 8px;">
+            <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill me-2"></i>Target Patient Record Selected</div>
+            <table class="table table-sm table-borderless mb-0 text-dark small" style="min-width: 300px;">
+                <tr>
+                    <td class="fw-semibold pb-0 ps-0">Patient Name:</td>
+                    <td class="pb-0">{{ patient.full_name }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-semibold pb-0 ps-0">UHID (Patient ID):</td>
+                    <td class="pb-0">{{ patient.uhid }}</td>
+                </tr>
+                {% if visit %}
+                <tr>
+                    <td class="fw-semibold pb-0 ps-0">Visit ID:</td>
+                    <td class="pb-0">{{ visit.id }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-semibold pb-0 ps-0">Status:</td>
+                    <td class="pb-0"><span class="badge badge-soft-success">🟢 {{ visit.status }}</span></td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</article>
+{% endblock %}

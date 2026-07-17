@@ -1,28 +1,124 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Lab Dashboard | Vatsalya Shree Hospital</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  <link href="{% static 'css/receptionist.css' %}" rel="stylesheet">
-</head>
-<body>
-  <div class="d-flex justify-content-center align-items-center vh-100">
-    <div class="text-center">
-      <span class="d-inline-flex mb-3" style="width:56px;height:56px;border-radius:12px;background:var(--clinic-primary);color:#fff;font-size:1.5rem;align-items:center;justify-content:center;">
-        <i class="bi bi-eyedropper"></i>
-      </span>
-      <h1 class="h4 fw-bold">Lab Administrator Dashboard</h1>
-      <p class="text-muted">Vatsalya Shree Hospital</p>
-      <p class="text-muted small">Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</p>
-      <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-sm mt-2">
-        <i class="bi bi-box-arrow-right me-1"></i>Logout
-      </a>
+{% extends "lab/base_lab.html" %}
+
+{% block title %}Lab Dashboard | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">HMS Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Lab Dashboard</li>
+  </ol>
+</nav>
+
+<!-- Page heading -->
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h1 class="page-title">Lab Examination Dashboard</h1>
+    <p class="text-muted mb-0 mt-1">Good morning, {% if request.user.first_name %}{{ request.user.first_name }} {{ request.user.last_name }}{% else %}Neha Patel{% endif %}. Here's today's lab overview.</p>
+  </div>
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2 px-3 py-2 u-bg-surface u-border u-rounded">
+      <i class="bi bi-clock text-primary"></i>
+      <span class="small fw-semibold" data-current-time>{{ current_time_str }}</span>
+    </div>
+    <form method="GET" action="{% url 'lab:dashboard' %}" class="d-flex align-items-center gap-2">
+      <input type="date" name="date" class="form-control form-control-sm" value="{{ selected_date|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" style="width: 140px;">
+      <button type="submit" class="btn btn-primary btn-sm">Proceed</button>
+    </form>
+  </div>
+</div>
+
+<!-- Metric Cards -->
+<section class="mb-4" aria-label="Today's lab summary">
+  <div class="row g-3">
+    <div class="col-sm-6 col-md-3">
+      <article class="clinic-card metric-card">
+        <div class="d-flex justify-content-between">
+          <div class="metric-icon icon-primary"><i class="bi bi-people"></i></div>
+          {% if patient_percent_change >= 0 %}
+          <span class="badge badge-soft-success align-self-start"><i class="bi bi-arrow-up-short"></i>{{ patient_change_abs }}%</span>
+          {% else %}
+          <span class="badge badge-soft-danger align-self-start"><i class="bi bi-arrow-down-short"></i>{{ patient_change_abs }}%</span>
+          {% endif %}
+        </div>
+        <p class="metric-label">Today's Patients</p>
+        <div class="metric-value">{{ todays_patients_count }}</div>
+        <span class="text-muted small">Referred from Doctor Module</span>
+      </article>
+    </div>
+    <div class="col-sm-6 col-md-3">
+      <article class="clinic-card metric-card">
+        <div class="d-flex justify-content-between">
+          <div class="metric-icon icon-warning"><i class="bi bi-hourglass-split"></i></div>
+          <span class="badge badge-soft-warning align-self-start">Pending</span>
+        </div>
+        <p class="metric-label">Pending Billing</p>
+        <div class="metric-value">{{ pending_billing_count }}</div>
+        <span class="text-muted small">Awaiting bill generation</span>
+      </article>
+    </div>
+    <div class="col-sm-6 col-md-3">
+      <article class="clinic-card metric-card">
+        <div class="d-flex justify-content-between">
+          <div class="metric-icon icon-success"><i class="bi bi-file-earmark-check"></i></div>
+          <span class="badge badge-soft-success align-self-start">Done</span>
+        </div>
+        <p class="metric-label">Reports Completed</p>
+        <div class="metric-value">{{ reports_completed_count }}</div>
+        <span class="text-muted small">Sent to doctor: {{ reports_completed_count }}</span>
+      </article>
+    </div>
+    <div class="col-sm-6 col-md-3">
+      <article class="clinic-card metric-card">
+        <div class="d-flex justify-content-between">
+          <div class="metric-icon icon-info"><i class="bi bi-people-fill"></i></div>
+          <span class="badge badge-soft-primary align-self-start">Total</span>
+        </div>
+        <p class="metric-label">All Patients</p>
+        <div class="metric-value">{{ all_patients_count }}</div>
+        <span class="text-muted small">Cumulative lab database</span>
+      </article>
     </div>
   </div>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+</section>
+
+<!-- Quick Actions + Status Flow -->
+<div class="row g-4 mb-4">
+  <section class="col-12">
+    <article class="clinic-card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Quick Actions</span>
+        <span class="text-muted fw-normal small">Lab technician shortcuts</span>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <a class="quick-action" href="{% url 'lab:todays_patients' %}">
+              <span class="quick-action-icon"><i class="bi bi-people"></i></span>
+              <span><strong>View Today's Patients</strong><small>See all referred lab patients</small></span>
+              <i class="bi bi-arrow-right ms-auto text-muted"></i>
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a class="quick-action" href="{% url 'lab:report_entry' %}">
+              <span class="quick-action-icon"><i class="bi bi-pencil-square"></i></span>
+              <span><strong>Enter Report Results</strong><small>Fill investigation results</small></span>
+              <i class="bi bi-arrow-right ms-auto text-muted"></i>
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a class="quick-action" href="{% url 'lab:completed_reports' %}">
+              <span class="quick-action-icon"><i class="bi bi-file-earmark-bar-graph"></i></span>
+              <span><strong>Completed Reports</strong><small>View and reprint reports</small></span>
+              <i class="bi bi-arrow-right ms-auto text-muted"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+</div>
+
+
+{% endblock %}

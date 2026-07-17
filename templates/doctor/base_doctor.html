@@ -35,6 +35,10 @@
                     <i class="bi bi-people"></i>
                     Today's Patients
                 </a>
+                <a href="{% url 'doctor:ipd_patients' %}" class="nav-link {% if active_nav == 'ipd_patients' %}active{% endif %}">
+                    <i class="bi bi-hospital"></i>
+                    IPD Patients
+                </a>
                 <a href="{% url 'doctor:patient_search' %}" class="nav-link {% if active_nav == 'patient_search' %}active{% endif %}">
                     <i class="bi bi-search"></i>
                     Patient Search

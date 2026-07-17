@@ -1,0 +1,576 @@
+{% extends "lab/base_lab.html" %}
+
+{% block title %}Report Entry | Lab | Vatsalya Shree Hospital{% endblock %}
+
+{% block extra_css %}
+<style>
+  .test-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .test-card:hover {
+    border-color: var(--bs-primary-border-subtle, #9ec5fe) !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.05);
+    transform: translateY(-2px);
+  }
+  .test-card.active {
+    border-color: #3b82f6 !important;
+    background-color: #f0f7ff !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+  }
+  .test-card.active .select-badge {
+    background-color: #3b82f6 !important;
+    color: white !important;
+    border-color: #3b82f6 !important;
+  }
+  .patient-strip {
+    transition: all 0.25s ease;
+  }
+  .patient-strip:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    transform: translateY(-1px);
+    border-color: #3b82f6 !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/">HMS Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'lab:dashboard' %}">Lab Dashboard</a></li>
+    {% if show_form %}
+      <li class="breadcrumb-item"><a href="{% url 'lab:report_entry' %}">Report Entry Queue</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Parameter Entry</li>
+    {% else %}
+      <li class="breadcrumb-item active" aria-current="page">Report Entry Queue</li>
+    {% endif %}
+  </ol>
+</nav>
+
+<!-- Page heading -->
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  {% if show_form %}
+  <div>
+    <h1 class="page-title">Laboratory Report Entry</h1>
+    <p class="text-muted mb-0 mt-1">Enter report values for patient's laboratory tests.</p>
+  </div>
+  <span class="badge badge-soft-collected py-2 px-3">
+    <i class="bi bi-clipboard2-pulse me-1"></i>Report Entry
+  </span>
+  {% else %}
+  <div>
+    <h1 class="page-title">Laboratory Case Queue</h1>
+    <p class="text-muted mb-0 mt-1">Queue of active patient cases with ordered tests waiting for report generation.</p>
+  </div>
+  <span class="badge badge-soft-primary py-2 px-3">
+    <i class="bi bi-list-task me-1"></i>Case Queue
+  </span>
+  {% endif %}
+</div>
+
+{% if show_form %}
+  <!-- BACK BUTTON TO QUEUE -->
+  <div class="mb-4">
+    <a href="{% url 'lab:report_entry' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Back to Report Queue
+    </a>
+  </div>
+
+  <!-- PAGE 2: TOP SECTION - Patient Information Card -->
+  <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; border: 1px solid var(--clinic-border) !important;">
+    <div class="card-header bg-white border-bottom py-3">
+      <h3 class="form-section-title mb-0" style="font-size: 1.1rem; color: #1e293b; font-weight: 700;">
+        <i class="bi bi-person-card-text text-primary me-2"></i>Patient Information Card
+      </h3>
+    </div>
+    <div class="card-body p-4">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <span class="text-muted d-block small" style="font-size: 0.75rem;">Patient Name</span>
+          <span class="fw-bold text-dark fs-5">{{ patient.full_name }}</span>
+        </div>
+        <div class="col-md-3">
+          <span class="text-muted d-block small" style="font-size: 0.75rem;">Patient ID (UHID)</span>
+          <span class="fw-semibold text-dark fs-6">{{ patient.uhid }}</span>
+        </div>
+        <div class="col-md-3">
+          <span class="text-muted d-block small" style="font-size: 0.75rem;">Visit ID</span>
+          <span class="fw-semibold text-dark fs-6">{{ visit.opd_number }}</span>
+        </div>
+        <div class="col-md-3">
+          <span class="text-muted d-block small" style="font-size: 0.75rem;">Age / Gender</span>
+          <span class="fw-semibold text-dark fs-6">{{ patient.age|cut:" 0 Months" }} / {{ patient.get_gender_display }}</span>
+        </div>
+        
+        <div class="col-md-3 mt-3">
+          <span class="text-muted d-block small" style="font-size: 0.75rem;">Referring Doctor</span>
+          <span class="fw-semibold text-dark">
+            {% if visit.handwritten_prescription.doctor %}
+              Dr. {{ visit.handwritten_prescription.doctor.first_name }} {{ visit.handwritten_prescription.doctor.last_name }}
+            {% else %}
+              Dr. Kalpesh Manager (Patidar)
+            {% endif %}
+          </span>
+        </div>
+        <div class="col-md-3 mt-3">
+          <span class="text-muted d-block small" style="font-size: 0.75rem;">Visit Date</span>
+          <span class="fw-semibold text-dark">{{ visit.visit_date|date:"d M Y" }}</span>
+        </div>
+        <div class="col-md-3 mt-3">
+          <span class="text-muted d-block small" style="font-size: 0.75rem;">Bill Number</span>
+          <span class="fw-semibold text-dark">{{ bill.bill_number|default:"N/A" }}</span>
+        </div>
+        <div class="col-md-3 mt-3">
+          <span class="text-muted d-block small" style="font-size: 0.75rem;">Report Status</span>
+          {% if case.status == 'SENT' %}
+            <span class="badge text-white px-2 py-1 fw-bold" style="background-color: #0f5132; font-size: 0.8rem;">Sent to Doctor</span>
+          {% elif case.status == 'COMPLETED' %}
+            <span class="badge bg-success text-white px-2 py-1 fw-bold" style="font-size: 0.8rem;">Completed</span>
+          {% elif case.status == 'IN_PROGRESS' %}
+            <span class="badge bg-primary text-white px-2 py-1 fw-bold" style="font-size: 0.8rem;">In Progress</span>
+          {% else %}
+            <span class="badge bg-warning text-dark px-2 py-1 fw-bold" style="font-size: 0.8rem;">Pending</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: TEST SECTION - Billed Investigations as Individual Cards -->
+  <h4 class="fw-bold text-dark mb-3" style="font-size: 1.1rem;">Billed Investigations</h4>
+  <div class="row g-3 mb-4">
+    {% for item in test_data %}
+      <div class="col-md-6 col-lg-4">
+        <div class="test-card d-flex align-items-center justify-content-between p-3 rounded-3 border cursor-pointer" id="card-test-{{ item.test.id }}" data-test-id="{{ item.test.id }}" style="background: #fafafa; border: 1px solid var(--clinic-border) !important;">
+          <div class="d-flex align-items-center flex-grow-1">
+            <div>
+              <h5 class="fw-bold mb-0 text-dark" style="font-size: 1rem;">{{ item.test.name }}</h5>
+              <span class="badge rounded-pill bg-light text-dark px-2 py-1 border mt-2 select-badge" style="font-size: 0.75rem;">
+                Select Test
+              </span>
+            </div>
+          </div>
+          <div class="text-end ps-2">
+            <i class="bi bi-chevron-right text-muted fs-5 transition-icon"></i>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- PAGE 2: PARAMETER ENTRY SECTION -->
+  <div class="card border-0 shadow-sm mb-4" id="parameter-section-card" style="border-radius: 12px; display: none; border: 1px solid var(--clinic-border) !important;">
+    <div class="card-header bg-light py-3 border-0">
+      <h3 class="form-section-title mb-0" id="parameter-section-title" style="font-size: 1.15rem; color: #1e293b; font-weight: 700;">
+        <i class="bi bi-clipboard2-pulse text-primary me-2"></i>Parameter Entry
+      </h3>
+    </div>
+    <div class="card-body p-4">
+      {% for item in test_data %}
+      <div class="test-parameters-form-wrapper" id="parameters-wrapper-{{ item.test.id }}" style="display: none;">
+        {% if item.parameters %}
+          <form id="reportForm-{{ item.test.id }}" method="POST" action="{% url 'lab:report_save' %}" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="visit_id" value="{{ visit.id }}">
+            <input type="hidden" name="patient_id" value="{{ patient.id }}">
+            <input type="hidden" name="bill_id" value="{{ bill.id|default:'' }}">
+            <input type="hidden" name="lab_test_id" value="{{ item.test.id }}">
+            <input type="hidden" name="action" id="formAction-{{ item.test.id }}" value="generate">
+            
+            <div class="table-responsive">
+              <table class="table clinic-table align-middle report-table">
+                <thead>
+                  <tr>
+                    <th>Parameter</th>
+                    <th>Reference Range</th>
+                    <th>Unit</th>
+                    <th style="width: 320px;">Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for param in item.parameters %}
+                    {% if param.parameter_type|lower == "subheader" %}
+                      <tr class="bg-light">
+                        <td colspan="4" class="fw-bold text-primary py-2" style="font-size: 0.95rem; letter-spacing: 0.5px;">{{ param.parameter_name }}</td>
+                      </tr>
+                    {% else %}
+                      <tr>
+                        <td class="fw-semibold text-dark">{{ param.parameter_name }}</td>
+                        <td class="ref-range text-muted" style="font-size: 0.85rem;">
+                          {% if patient.gender == 'Male' and param.male_reference_range %}
+                            {{ param.male_reference_range }}
+                          {% elif patient.gender == 'Female' and param.female_reference_range %}
+                            {{ param.female_reference_range }}
+                          {% elif param.common_reference_range %}
+                            {{ param.common_reference_range }}
+                          {% elif param.male_reference_range or param.female_reference_range %}
+                            M: {{ param.male_reference_range|default:"-" }} / F: {{ param.female_reference_range|default:"-" }}
+                          {% else %}
+                            -
+                          {% endif %}
+                        </td>
+                        <td class="unit-label text-muted" style="font-size: 0.85rem;">{{ param.unit|default:"-" }}</td>
+                        <td>
+                          <input type="text" name="param_{{ param.id }}" value="{{ param.draft_value|default:'' }}" class="form-control form-control-sm param-input" placeholder="Enter result" aria-label="{{ param.parameter_name }} result">
+                        </td>
+                      </tr>
+                    {% endif %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="d-flex justify-content-end gap-2 mt-4">
+              <button type="submit" onclick="document.getElementById('formAction-{{ item.test.id }}').value='draft';" class="btn btn-outline-primary px-4 py-2" style="border-radius: 8px; font-weight: 600;">
+                <i class="bi bi-floppy me-1"></i>Save Draft
+              </button>
+              <button type="submit" onclick="document.getElementById('formAction-{{ item.test.id }}').value='generate';" class="btn btn-success px-4 py-2" style="border-radius: 8px; font-weight: 600;">
+                Generate Report
+              </button>
+            </div>
+          </form>
+        {% else %}
+          <div class="text-center py-5">
+            <div class="mb-3 text-warning"><i class="bi bi-exclamation-triangle-fill fs-1"></i></div>
+            <h4 class="fw-bold text-dark mb-1">No Parameters Configured</h4>
+            <p class="text-muted mb-0">No parameters have been configured for this laboratory test.</p>
+            <p class="small text-secondary mt-1">Please configure parameters for <strong>{{ item.test.name }}</strong> in the Django Admin panel.</p>
+          </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+{% else %}
+  <!-- PAGE 1: MAIN CASE QUEUE WORKLIST -->
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <ul class="nav nav-pills" id="queueTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="pending-tab" data-bs-toggle="pill" data-bs-target="#pending-queue" type="button" role="tab" aria-controls="pending-queue" aria-selected="true" style="font-weight: 600; border-radius: 8px; padding: 10px 16px;">
+          <i class="bi bi-clock-history me-2"></i>Requested Lab Tests <span class="badge bg-danger ms-2" id="pending-badge">{{ pending_count }}</span>
+        </button>
+      </li>
+      <li class="nav-item ms-2" role="presentation">
+        <button class="nav-link" id="completed-tab" data-bs-toggle="pill" data-bs-target="#completed-queue" type="button" role="tab" aria-controls="completed-queue" aria-selected="false" style="font-weight: 600; border-radius: 8px; padding: 10px 16px;">
+          <i class="bi bi-file-earmark-check me-2"></i>Reports Sent to Doctor <span class="badge bg-success ms-2" id="completed-badge">{{ completed_count }}</span>
+        </button>
+      </li>
+    </ul>
+    
+    <div class="search-field" style="max-width: 300px; width: 100%;">
+      <i class="bi bi-search"></i>
+      <input id="queueSearch" class="form-control form-control-sm" aria-label="Search queue" placeholder="Search queue…">
+    </div>
+  </div>
+
+  <div class="tab-content" id="queueTabContent">
+    <!-- PENDING QUEUE TAB -->
+    <div class="tab-pane fade show active" id="pending-queue" role="tabpanel" aria-labelledby="pending-tab">
+      <article class="clinic-card mb-4 border-0 bg-transparent shadow-none">
+        <div class="card-header bg-transparent border-0 px-0 pb-3">
+          <h2 class="form-section-title mb-0" style="font-size: 1.15rem; color: #1e293b; font-weight: 700;">
+            <i class="bi bi-clock-history text-primary me-2"></i>Requested Lab Tests Queue
+          </h2>
+        </div>
+        
+        <div class="table-responsive shadow-sm border rounded-3 bg-white" id="pending-table-container">
+          <table class="table table-hover table-striped align-middle clinic-table mb-0" style="font-size: 0.9rem;">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-center py-3" style="width: 120px;">Status</th>
+                <th class="text-start py-3">Patient Name</th>
+                <th class="text-center py-3">UHID</th>
+                <th class="text-center py-3">Age / Gender</th>
+                <th class="text-center py-3">Visit ID</th>
+                <th class="text-center py-3">Bill Number</th>
+                <th class="text-center py-3">Billing Date</th>
+                <th class="text-center py-3">Doctor</th>
+                <th class="text-center py-3" style="width: 100px;">Total Tests</th>
+                <th class="text-center py-3" style="width: 140px;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for case in pending_cases %}
+              <tr class="queue-row" data-search-text="{{ case.patient.full_name|lower }} {{ case.patient.uhid|lower }} {{ case.case_number|lower }} {{ case.visit.opd_number|lower }}">
+                <td class="text-center">
+                  {% if case.status == 'IN_PROGRESS' %}
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fw-bold" style="font-size: 0.75rem; background-color: #e0f2fe !important; color: #0369a1 !important; border-color: #bae6fd !important;">
+                      In Progress
+                    </span>
+                  {% else %}
+                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 fw-bold" style="font-size: 0.75rem; background-color: #fef3c7 !important; color: #d97706 !important; border-color: #fde68a !important;">
+                      Pending
+                    </span>
+                  {% endif %}
+                </td>
+                <td class="text-start">
+                  <span class="fw-bold text-dark">{{ case.patient.full_name }}</span>
+                  <small class="text-muted d-block" style="font-size: 0.75rem;">UHID: {{ case.patient.uhid }}</small>
+                </td>
+                <td class="text-center text-secondary">{{ case.patient.uhid }}</td>
+                <td class="text-center text-dark fw-semibold">{{ case.patient.age|cut:" 0 Months" }} / {{ case.patient.get_gender_display }}</td>
+                <td class="text-center text-dark">{{ case.visit.opd_number }}</td>
+                <td class="text-center text-dark">{{ case.bill.bill_number|default:"-" }}</td>
+                <td class="text-center text-muted" style="font-size: 0.85rem;">{{ case.visit.visit_date|date:"d M Y" }}</td>
+                <td class="text-center text-dark">
+                  {% if case.visit.handwritten_prescription.doctor %}
+                    Dr. {{ case.visit.handwritten_prescription.doctor.first_name }} {{ case.visit.handwritten_prescription.doctor.last_name }}
+                  {% else %}
+                    Dr. Kalpesh Manager (Patidar)
+                  {% endif %}
+                </td>
+                <td class="text-center text-dark fw-bold">{{ case.non_xray_reports_count }}</td>
+                <td class="text-center">
+                  <a href="{% url 'lab:report_entry' %}?visit_id={{ case.visit.id }}&patient_id={{ case.patient.id }}&bill_id={{ case.bill.id|default:'' }}" class="btn btn-primary btn-sm px-3 fw-semibold py-1" style="border-radius: 6px; font-size: 0.8rem; white-space: nowrap;">
+                    Create Report
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="10" class="text-center text-muted py-5 bg-white">
+                  <div class="empty-state-icon mb-2"><i class="bi bi-inbox fs-3"></i></div>
+                  <p class="mb-0">No pending laboratory requests.</p>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="empty-state py-5 text-center bg-white rounded-3 border" hidden>
+          <div class="empty-state-icon mb-2"><i class="bi bi-search fs-3"></i></div>
+          <h3>No matching patients</h3>
+          <p>Try refining your search terms.</p>
+        </div>
+      </article>
+    </div>
+
+    <!-- COMPLETED QUEUE TAB -->
+    <div class="tab-pane fade" id="completed-queue" role="tabpanel" aria-labelledby="completed-tab">
+      <article class="clinic-card mb-4 border-0 bg-transparent shadow-none">
+        <div class="card-header bg-transparent border-0 px-0 pb-3">
+          <h2 class="form-section-title mb-0" style="font-size: 1.15rem; color: #1e293b; font-weight: 700;">
+            <i class="bi bi-file-earmark-check text-success me-2"></i>Completed Reports Sent to Doctor
+          </h2>
+        </div>
+        
+        <div class="table-responsive shadow-sm border rounded-3 bg-white" id="completed-table-container">
+          <table class="table table-hover table-striped align-middle clinic-table mb-0" style="font-size: 0.9rem;">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th class="text-center py-3" style="width: 120px;">Status</th>
+                <th class="text-start py-3">Patient Name</th>
+                <th class="text-center py-3">UHID</th>
+                <th class="text-center py-3">Age / Gender</th>
+                <th class="text-center py-3">Visit ID</th>
+                <th class="text-center py-3">Bill Number</th>
+                <th class="text-center py-3">Billing Date</th>
+                <th class="text-center py-3">Doctor</th>
+                <th class="text-center py-3" style="width: 100px;">Total Tests</th>
+                <th class="text-center py-3" style="width: 140px;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for case in completed_cases %}
+              <tr class="queue-row" data-search-text="{{ case.patient.full_name|lower }} {{ case.patient.uhid|lower }} {{ case.case_number|lower }} {{ case.visit.opd_number|lower }}">
+                <td class="text-center">
+                  <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold" style="font-size: 0.75rem; background-color: #d1e7dd !important; color: #0f5132 !important;">
+                    Sent to Doctor
+                  </span>
+                </td>
+                <td class="text-start">
+                  <span class="fw-bold text-dark">{{ case.patient.full_name }}</span>
+                  <small class="text-muted d-block" style="font-size: 0.75rem;">UHID: {{ case.patient.uhid }}</small>
+                </td>
+                <td class="text-center text-secondary">{{ case.patient.uhid }}</td>
+                <td class="text-center text-dark fw-semibold">{{ case.patient.age|cut:" 0 Months" }} / {{ case.patient.get_gender_display }}</td>
+                <td class="text-center text-dark">{{ case.visit.opd_number }}</td>
+                <td class="text-center text-dark">{{ case.bill.bill_number|default:"-" }}</td>
+                <td class="text-center text-muted" style="font-size: 0.85rem;">{{ case.visit.visit_date|date:"d M Y" }}</td>
+                <td class="text-center text-dark">
+                  {% if case.visit.handwritten_prescription.doctor %}
+                    Dr. {{ case.visit.handwritten_prescription.doctor.first_name }} {{ case.visit.handwritten_prescription.doctor.last_name }}
+                  {% else %}
+                    Dr. Kalpesh Manager (Patidar)
+                  {% endif %}
+                </td>
+                <td class="text-center text-dark fw-bold">{{ case.non_xray_reports_count }}</td>
+                <td class="text-center">
+                  <a href="{% url 'lab:report_entry' %}?visit_id={{ case.visit.id }}&patient_id={{ case.patient.id }}&bill_id={{ case.bill.id|default:'' }}" class="btn btn-primary btn-sm px-3 fw-semibold py-1" style="border-radius: 6px; font-size: 0.8rem; white-space: nowrap;">
+                    Edit Report
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="10" class="text-center text-muted py-5 bg-white">
+                  <div class="empty-state-icon mb-2"><i class="bi bi-check-circle fs-3 text-success"></i></div>
+                  <p class="mb-0">No completed reports sent to doctor yet.</p>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="empty-state py-5 text-center bg-white rounded-3 border" hidden>
+          <div class="empty-state-icon mb-2"><i class="bi bi-search fs-3"></i></div>
+          <h3>No matching patients</h3>
+          <p>Try refining your search terms.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+{% if show_form %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const testCards = document.querySelectorAll('.test-card');
+    const paramSectionCard = document.getElementById('parameter-section-card');
+    const paramWrappers = document.querySelectorAll('.test-parameters-form-wrapper');
+    const paramTitle = document.getElementById('parameter-section-title');
+
+    function selectTest(testId, testName) {
+      // Highlight card
+      testCards.forEach(c => {
+        if (c.getAttribute('data-test-id') === testId) {
+          c.classList.add('active');
+          const badge = c.querySelector('.select-badge');
+          if (badge) {
+            badge.textContent = 'Selected';
+            badge.className = 'badge rounded-pill bg-primary text-white px-2 py-1 mt-2 select-badge';
+          }
+          const icon = c.querySelector('.transition-icon');
+          if (icon) {
+            icon.className = 'bi bi-chevron-down text-primary fs-5 transition-icon';
+          }
+        } else {
+          c.classList.remove('active');
+          const badge = c.querySelector('.select-badge');
+          if (badge) {
+            badge.textContent = 'Select Test';
+            badge.className = 'badge rounded-pill bg-light text-dark px-2 py-1 border mt-2 select-badge';
+          }
+          const icon = c.querySelector('.transition-icon');
+          if (icon) {
+            icon.className = 'bi bi-chevron-right text-muted fs-5 transition-icon';
+          }
+        }
+      });
+
+      // Show/hide parameter forms
+      paramWrappers.forEach(w => {
+        if (w.id === `parameters-wrapper-${testId}`) {
+          w.style.display = 'block';
+        } else {
+          w.style.display = 'none';
+        }
+      });
+
+      // Show the outer card container
+      if (paramSectionCard) {
+        paramSectionCard.style.display = 'block';
+      }
+
+      // Update parameter section title
+      if (paramTitle) {
+        paramTitle.innerHTML = `<i class="bi bi-clipboard2-pulse text-primary me-2"></i>${testName} Parameter Entry`;
+      }
+
+      // Smooth scroll to parameter section card
+      if (paramSectionCard) {
+        paramSectionCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    testCards.forEach(card => {
+      card.addEventListener('click', function () {
+        const testId = this.getAttribute('data-test-id');
+        const testName = this.querySelector('h5').textContent.trim();
+        selectTest(testId, testName);
+      });
+    });
+
+    // Handle initial selection from url parameter (initial_test_id) if present
+    const initialTestId = "{{ initial_test_id|default:'' }}";
+    if (initialTestId) {
+      const initialCard = document.getElementById(`card-test-${initialTestId}`);
+      if (initialCard) {
+        initialCard.click();
+      }
+    } else if (testCards.length > 0) {
+      // By default, select the first test card
+      testCards[0].click();
+    }
+
+    // Set up form validations for each test form
+    const forms = document.querySelectorAll('form[id^="reportForm-"]');
+    forms.forEach(form => {
+      form.addEventListener('submit', function (event) {
+        const testId = form.querySelector('input[name="lab_test_id"]').value;
+        const action = document.getElementById(`formAction-${testId}`).value;
+        if (action === 'generate') {
+          if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          form.classList.add('was-validated');
+        }
+      });
+    });
+  });
+</script>
+{% else %}
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const queueSearch = document.getElementById('queueSearch');
+    if (queueSearch) {
+      queueSearch.addEventListener('input', function () {
+        const query = queueSearch.value.trim().toLowerCase();
+        
+        const activeTabPane = document.querySelector('.tab-pane.active');
+        if (activeTabPane) {
+          const rows = activeTabPane.querySelectorAll('.queue-row');
+          const cardsContainer = activeTabPane.querySelector('.table-responsive');
+          const emptyState = activeTabPane.querySelector('.empty-state');
+          let matches = 0;
+          
+          rows.forEach(row => {
+            const searchText = row.getAttribute('data-search-text') || '';
+            if (searchText.includes(query)) {
+              row.style.display = '';
+              matches++;
+            } else {
+              row.style.display = 'none';
+            }
+          });
+          
+          if (matches === 0 && rows.length > 0) {
+            if (cardsContainer) cardsContainer.style.display = 'none';
+            if (emptyState) emptyState.removeAttribute('hidden');
+          } else {
+            if (cardsContainer) cardsContainer.style.display = '';
+            if (emptyState) emptyState.setAttribute('hidden', '');
+          }
+        }
+      });
+      
+      document.querySelectorAll('#queueTabs button').forEach(tabBtn => {
+        tabBtn.addEventListener('shown.bs.tab', function () {
+          queueSearch.value = '';
+          document.querySelectorAll('.queue-row').forEach(row => row.style.display = '');
+          document.querySelectorAll('.table-responsive').forEach(tbl => tbl.style.display = '');
+          document.querySelectorAll('.empty-state').forEach(es => es.setAttribute('hidden', ''));
+        });
+      });
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

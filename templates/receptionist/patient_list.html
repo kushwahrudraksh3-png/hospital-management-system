@@ -91,45 +91,66 @@
 
 <section class="clinic-card">
     <div class="card-header">
-        <form method="GET" action="{% url 'receptionist:patient_list' %}" class="d-flex flex-wrap gap-3 justify-content-between align-items-center w-100">
+        <form method="GET" action="{% url 'receptionist:patient_list' %}" class="w-100">
             <input type="hidden" name="filter" value="{{ filter_type }}">
-            <div class="search-field flex-grow-1">
-                <i class="bi bi-search"></i>
-                <input
-                    name="q"
-                    class="form-control"
-                    aria-label="Search patients"
-                    placeholder="Search by patient name, mobile number or patient ID"
-                    value="{{ q|default:'' }}"
-                />
+            <div class="d-flex flex-wrap gap-3 justify-content-between align-items-center w-100 mb-3">
+                <div class="search-field flex-grow-1" style="min-width: 250px;">
+                    <i class="bi bi-search"></i>
+                    <input
+                        name="q"
+                        class="form-control"
+                        aria-label="Search patients"
+                        placeholder="Search by patient name, mobile number or patient ID"
+                        value="{{ q|default:'' }}"
+                    />
+                </div>
+                <div
+                    class="filter-tabs"
+                    aria-label="Patient filters"
+                >
+                    <a
+                        class="filter-tab {% if filter_type == 'all' or not filter_type %}active{% endif %}"
+                        href="{% url 'receptionist:patient_list' %}?filter=all{% if q %}&q={{ q }}{% endif %}{% if date_str %}&date={{ date_str }}{% endif %}"
+                    >
+                        All Patients
+                    </a>
+                    <a
+                        class="filter-tab {% if filter_type == 'today' %}active{% endif %}"
+                        href="{% url 'receptionist:patient_list' %}?filter=today{% if q %}&q={{ q }}{% endif %}{% if date_str %}&date={{ date_str }}{% endif %}"
+                    >
+                        Today's Patients
+                    </a>
+                    <a
+                        class="filter-tab {% if filter_type == 'new' %}active{% endif %}"
+                        href="{% url 'receptionist:patient_list' %}?filter=new{% if q %}&q={{ q }}{% endif %}{% if date_str %}&date={{ date_str }}{% endif %}"
+                    >
+                        New Patients
+                    </a>
+                    <a
+                        class="filter-tab {% if filter_type == 'followup' %}active{% endif %}"
+                        href="{% url 'receptionist:patient_list' %}?filter=followup{% if q %}&q={{ q }}{% endif %}{% if date_str %}&date={{ date_str }}{% endif %}"
+                    >
+                        Follow-up Patients
+                    </a>
+                </div>
             </div>
-            <div
-                class="filter-tabs"
-                aria-label="Patient filters"
-            >
+            <div class="d-flex flex-wrap align-items-center gap-2 pt-3 border-top">
+                <span class="text-muted small fw-semibold me-2"><i class="bi bi-calendar-event me-1"></i>Date:</span>
+                <input
+                    type="date"
+                    name="date"
+                    class="form-control form-control-sm"
+                    style="width: auto; max-width: 180px;"
+                    value="{{ date_str|default:'' }}"
+                />
+                <button type="submit" class="btn btn-primary btn-sm px-3">
+                    Apply
+                </button>
                 <a
-                    class="filter-tab {% if filter_type == 'all' or not filter_type %}active{% endif %}"
-                    href="{% url 'receptionist:patient_list' %}?filter=all{% if q %}&q={{ q }}{% endif %}"
+                    href="{% url 'receptionist:patient_list' %}?filter=all"
+                    class="btn btn-light btn-sm px-3 text-muted"
                 >
-                    All Patients
-                </a>
-                <a
-                    class="filter-tab {% if filter_type == 'today' %}active{% endif %}"
-                    href="{% url 'receptionist:patient_list' %}?filter=today{% if q %}&q={{ q }}{% endif %}"
-                >
-                    Today's Patients
-                </a>
-                <a
-                    class="filter-tab {% if filter_type == 'new' %}active{% endif %}"
-                    href="{% url 'receptionist:patient_list' %}?filter=new{% if q %}&q={{ q }}{% endif %}"
-                >
-                    New Patients
-                </a>
-                <a
-                    class="filter-tab {% if filter_type == 'followup' %}active{% endif %}"
-                    href="{% url 'receptionist:patient_list' %}?filter=followup{% if q %}&q={{ q }}{% endif %}"
-                >
-                    Follow-up Patients
+                    Reset
                 </a>
             </div>
         </form>
@@ -227,7 +248,7 @@
                     <li class="page-item">
                         <a
                             class="page-link"
-                            href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                            href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if date_str %}&date={{ date_str }}{% endif %}"
                         >
                             Previous
                         </a>
@@ -247,7 +268,7 @@
                         <li class="page-item">
                             <a
                                 class="page-link"
-                                href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                                href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if date_str %}&date={{ date_str }}{% endif %}"
                             >
                                 {{ num }}
                             </a>
@@ -259,7 +280,7 @@
                     <li class="page-item">
                         <a
                             class="page-link"
-                            href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}"
+                            href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if filter_type %}&filter={{ filter_type }}{% endif %}{% if date_str %}&date={{ date_str }}{% endif %}"
                         >
                             Next
                         </a>
