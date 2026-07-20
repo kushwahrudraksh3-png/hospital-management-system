@@ -60,9 +60,6 @@
     <a class="btn btn-primary" href="{% url 'lab:lab_billing' %}?visit_id={{ visit_id }}&patient_id={{ patient_id }}">
       <i class="bi bi-receipt"></i>Generate Bill
     </a>
-    <a class="btn btn-success" href="{% url 'lab:xray_bill_generate' %}?visit_id={{ visit_id }}&patient_id={{ patient_id }}">
-      <i class="bi bi-x-diamond"></i>Generate X-Ray Bill
-    </a>
     <button class="btn btn-outline-primary" data-print-page>
       <i class="bi bi-printer"></i>Print Prescription
     </button>

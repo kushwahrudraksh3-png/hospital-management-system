@@ -121,9 +121,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 tab.classList.add('active');
                 
                 const filter = tab.dataset.filterTab;
+                const todayDateStr = document.querySelector('[data-queue-table]')?.dataset.todayDate;
                 tableRows.forEach(row => {
                     const status = row.dataset.status;
-                    if (filter === 'all' || status === filter) {
+                    const visitType = row.dataset.visitType;
+                    const visitDate = row.dataset.visitDate;
+                    
+                    let show = false;
+                    if (filter === 'followup') {
+                        show = (visitType === 'Follow-up' && visitDate === todayDateStr);
+                    } else if (filter === 'all' || status === filter) {
+                        show = true;
+                    }
+                    
+                    if (show) {
                         row.style.display = '';
                     } else {
                         row.style.display = 'none';
@@ -474,82 +485,137 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Helper function to save/update prescription asynchronously with validation
+    const savePrescriptionAsync = async (visitId, patientId, btnElement, loadingText) => {
+        if (!visitId || !patientId) {
+            alert('Error: Missing visit or patient information.');
+            return false;
+        }
+
+        // Prescription Validation: Check mandatory prescription data exists (strokes on canvas)
+        if (!strokes || strokes.length === 0) {
+            alert('Validation Error: Prescription data is missing. Please enter/write prescription details before proceeding.');
+            return false;
+        }
+
+        if (typeof html2canvas === 'undefined') {
+            alert('Error: Page capture library not loaded. Please refresh and try again.');
+            return false;
+        }
+
+        const originalHTML = btnElement ? btnElement.innerHTML : '';
+        if (btnElement) {
+            btnElement.classList.add('disabled');
+            btnElement.style.pointerEvents = 'none';
+            btnElement.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> ${loadingText || 'Saving...'}`;
+        }
+
+        try {
+            const wrapper = canvas.parentElement;
+
+            // Capture the entire prescription wrapper (background + handwriting)
+            const compositeCanvas = await html2canvas(wrapper, {
+                scale: 2,                // High-resolution output (2x)
+                useCORS: true,           // Allow cross-origin images (logos)
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+            });
+
+            const dataUrl = compositeCanvas.toDataURL('image/png');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            const response = await fetch('/doctor/save-prescription/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({
+                    visit_id: visitId,
+                    patient_id: patientId,
+                    image_data: dataUrl,
+                    canvas_data: strokes,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                return true;
+            } else {
+                alert('Error: ' + (result.message || 'Failed to save prescription.'));
+                if (btnElement) {
+                    btnElement.innerHTML = originalHTML;
+                    btnElement.classList.remove('disabled');
+                    btnElement.style.pointerEvents = '';
+                }
+                return false;
+            }
+        } catch (err) {
+            console.error('Prescription save error:', err);
+            alert('Error capturing prescription. Please try again.');
+            if (btnElement) {
+                btnElement.innerHTML = originalHTML;
+                btnElement.classList.remove('disabled');
+                btnElement.style.pointerEvents = '';
+            }
+            return false;
+        }
+    };
+
     // Save Action Button
     const saveActionBtn = document.getElementById('saveHandwrittenPrescriptionBtn');
     if (saveActionBtn) {
         saveActionBtn.addEventListener('click', async () => {
             const visitId = saveActionBtn.dataset.visitId;
             const patientId = saveActionBtn.dataset.patientId;
-
-            if (!visitId || !patientId) {
-                alert('Error: Missing visit or patient information.');
-                return;
-            }
-
-            // Check html2canvas is loaded
-            if (typeof html2canvas === 'undefined') {
-                alert('Error: Page capture library not loaded. Please refresh and try again.');
-                return;
-            }
-
-            // Disable button and show loading state
             const originalHTML = saveActionBtn.innerHTML;
-            saveActionBtn.disabled = true;
-            saveActionBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Capturing...';
 
-            try {
-                const wrapper = canvas.parentElement;
-
-                // Capture the entire prescription wrapper (background + handwriting)
-                const compositeCanvas = await html2canvas(wrapper, {
-                    scale: 2,                // High-resolution output (2x)
-                    useCORS: true,           // Allow cross-origin images (logos)
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                });
-
-                const dataUrl = compositeCanvas.toDataURL('image/png');
-                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
-                saveActionBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
-
-                const response = await fetch('/doctor/save-prescription/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                    body: JSON.stringify({
-                        visit_id: visitId,
-                        patient_id: patientId,
-                        image_data: dataUrl,
-                        canvas_data: strokes,
-                    }),
-                });
-
-                const result = await response.json();
-
-                if (response.ok && result.status === 'success') {
-                    saveActionBtn.innerHTML = '<i class="bi bi-check-circle"></i> Saved!';
-                    saveActionBtn.classList.remove('btn-primary');
-                    saveActionBtn.classList.add('btn-success');
-                    setTimeout(() => {
-                        saveActionBtn.innerHTML = originalHTML;
-                        saveActionBtn.classList.remove('btn-success');
-                        saveActionBtn.classList.add('btn-primary');
-                        saveActionBtn.disabled = false;
-                    }, 2000);
-                } else {
-                    alert('Error: ' + (result.message || 'Failed to save prescription.'));
+            const success = await savePrescriptionAsync(visitId, patientId, saveActionBtn, 'Saving...');
+            if (success) {
+                saveActionBtn.innerHTML = '<i class="bi bi-check-circle"></i> Saved!';
+                saveActionBtn.classList.remove('btn-primary');
+                saveActionBtn.classList.add('btn-success');
+                setTimeout(() => {
                     saveActionBtn.innerHTML = originalHTML;
-                    saveActionBtn.disabled = false;
-                }
-            } catch (err) {
-                console.error('Prescription save error:', err);
-                alert('Error capturing prescription. Please try again.');
-                saveActionBtn.innerHTML = originalHTML;
-                saveActionBtn.disabled = false;
+                    saveActionBtn.classList.remove('btn-success');
+                    saveActionBtn.classList.add('btn-primary');
+                    saveActionBtn.classList.remove('disabled');
+                    saveActionBtn.style.pointerEvents = '';
+                }, 2000);
+            }
+        });
+    }
+
+    // Auto-save before Proceed to Lab
+    const proceedToLabBtn = document.getElementById('proceedToLabBtn');
+    if (proceedToLabBtn) {
+        proceedToLabBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const targetUrl = proceedToLabBtn.getAttribute('href');
+            const visitId = proceedToLabBtn.dataset.visitId;
+            const patientId = proceedToLabBtn.dataset.patientId;
+
+            const success = await savePrescriptionAsync(visitId, patientId, proceedToLabBtn, 'Saving & Proceeding...');
+            if (success) {
+                window.location.href = targetUrl;
+            }
+        });
+    }
+
+    // Auto-save before Proceed to IPD
+    const proceedToIpdBtn = document.getElementById('proceedToIpdBtn');
+    if (proceedToIpdBtn) {
+        proceedToIpdBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const targetUrl = proceedToIpdBtn.getAttribute('href');
+            const visitId = proceedToIpdBtn.dataset.visitId;
+            const patientId = proceedToIpdBtn.dataset.patientId;
+
+            const success = await savePrescriptionAsync(visitId, patientId, proceedToIpdBtn, 'Saving & Proceeding...');
+            if (success) {
+                window.location.href = targetUrl;
             }
         });
     }

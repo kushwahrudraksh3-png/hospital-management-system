@@ -1,0 +1,390 @@
+{% extends "receptionist/base.html" %}
+
+{% block title %}Hospital IPD Dashboard | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb bg-transparent p-0 m-0">
+            <li class="breadcrumb-item"><a href="{% url 'receptionist:dashboard' %}" class="text-decoration-none text-primary"><i class="bi bi-house-door-fill me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active text-muted" aria-current="page">Hospital IPD Dashboard</li>
+        </ol>
+    </nav>
+
+    <!-- Header Section -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+        <div class="row align-items-center g-3">
+            <div class="col-md-6">
+                <h1 class="page-title h3 mb-1 text-dark fw-bold"><i class="bi bi-speedometer2 me-2 text-primary"></i>Hospital IPD Dashboard</h1>
+                <p class="text-muted mb-0">Real-time hospital monitoring, room availability, and bed occupancy analytics.</p>
+            </div>
+            <!-- Search and Date Filter Toolbar -->
+            <div class="col-md-6 d-flex flex-wrap justify-content-md-end align-items-center gap-2">
+                <form method="GET" class="d-flex gap-2 w-100 w-md-auto">
+                    <div class="input-group shadow-sm rounded-3 overflow-hidden" style="max-width: 250px;">
+                        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0 py-2" placeholder="Search Patients, Doctors...">
+                    </div>
+                    
+                    <select name="filter" class="form-select shadow-sm py-2" onchange="this.form.submit()">
+                        <option value="all_time" {% if cohort == 'all_time' %}selected{% endif %}>All Time</option>
+                        <option value="today" {% if cohort == 'today' %}selected{% endif %}>Today</option>
+                        <option value="this_week" {% if cohort == 'this_week' %}selected{% endif %}>Last 7 Days</option>
+                        <option value="this_month" {% if cohort == 'this_month' %}selected{% endif %}>Last 30 Days</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary px-3 shadow-sm">Apply</button>
+                    {% if search_query or cohort != 'all_time' %}
+                        <a href="{% url 'receptionist:ipd_dashboard' %}" class="btn btn-light border px-3">Reset</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Top Summary Cards (Dynamic stats) -->
+    <div class="row g-3 mb-4">
+        <!-- Total Admissions -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl">
+            <div class="card border-0 shadow-sm h-100 p-3 bg-white rounded-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small d-block fw-semibold">Total IPD Admissions</span>
+                        <h3 class="fw-bold text-dark mt-1 mb-0">{{ total_admissions }}</h3>
+                        <span class="text-muted small-text fs-7">Cumulative registrations</span>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-3">
+                        <i class="bi bi-person-fill-check fs-4 text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Currently Admitted -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl">
+            <div class="card border-0 shadow-sm h-100 p-3 bg-white rounded-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small d-block fw-semibold">Currently Admitted</span>
+                        <h3 class="fw-bold text-warning mt-1 mb-0">{{ currently_admitted }}</h3>
+                        <span class="text-muted small-text fs-7">Active admitted patients</span>
+                    </div>
+                    <div class="bg-warning bg-opacity-10 p-3 rounded-3">
+                        <i class="bi bi-hospital fs-4 text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Today's Admissions -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl">
+            <div class="card border-0 shadow-sm h-100 p-3 bg-white rounded-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small d-block fw-semibold">Today's Admissions</span>
+                        <h3 class="fw-bold text-success mt-1 mb-0">{{ today_admissions }}</h3>
+                        <span class="text-muted small-text fs-7">Admitted in last 24h</span>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-3 rounded-3">
+                        <i class="bi bi-box-arrow-in-right fs-4 text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Today's Discharges -->
+        <div class="col-12 col-sm-6 col-md-4 col-xl">
+            <div class="card border-0 shadow-sm h-100 p-3 bg-white rounded-3">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <span class="text-muted small d-block fw-semibold">Today's Discharges</span>
+                        <h3 class="fw-bold text-danger mt-1 mb-0">{{ today_discharges }}</h3>
+                        <span class="text-muted small-text fs-7">Discharged in last 24h</span>
+                    </div>
+                    <div class="bg-danger bg-opacity-10 p-3 rounded-3">
+                        <i class="bi bi-box-arrow-left fs-4 text-danger"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    </div>
+
+    <!-- 2. Patient Registry Section (Full Width Row) -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-0">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between g-2">
+                        <h5 class="card-title mb-0 fw-bold text-dark"><i class="bi bi-people-fill text-primary me-2"></i>Patient Registry & Queues</h5>
+                        <!-- Custom Tab Triggers -->
+                        <ul class="nav nav-pills bg-light p-1 rounded-3" id="patientQueueTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active py-1.5 px-3 rounded-3 fw-semibold small" id="admissions-tab" data-bs-toggle="tab" data-bs-target="#admissions-content" type="button" role="tab" aria-controls="admissions-content" aria-selected="true">
+                                    <i class="bi bi-arrow-down-left-circle me-1 text-success"></i>Recent Admissions
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link py-1.5 px-3 rounded-3 fw-semibold small" id="discharges-tab" data-bs-toggle="tab" data-bs-target="#discharges-content" type="button" role="tab" aria-controls="discharges-content" aria-selected="false">
+                                    <i class="bi bi-arrow-up-right-circle me-1 text-danger"></i>Recent Discharges
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="card-body px-4 pb-4 pt-3">
+                    <div class="tab-content" id="patientQueueTabsContent">
+                        <!-- Tab Content 1: Admissions -->
+                        <div class="tab-pane fade show active" id="admissions-content" role="tabpanel" aria-labelledby="admissions-tab">
+                            <div class="table-responsive" style="max-height: 400px;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light sticky-top" style="z-index: 1;">
+                                        <tr>
+                                            <th class="border-0">Patient Name & UHID</th>
+                                            <th class="border-0">Ward Block</th>
+                                            <th class="border-0">Room/Bed</th>
+                                            <th class="border-0">Admitting Doctor</th>
+                                            <th class="border-0">Admission Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for adm in recent_admissions %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold text-dark">{{ adm.patient.full_name }}</div>
+                                                <code class="small text-muted">{{ adm.patient.uhid }}</code>
+                                            </td>
+                                            <td><span class="badge bg-primary bg-opacity-10 text-primary border-0 px-2.5 py-1.5 rounded-2">{{ adm.ward_type }}</span></td>
+                                            <td class="text-secondary fw-semibold">Room {{ adm.room_number|default:"-" }} / Bed {{ adm.bed_number|default:"-" }}</td>
+                                            <td class="text-dark">{% if adm.admitting_doctor %}Dr. {{ adm.admitting_doctor.get_full_name|default:adm.admitting_doctor.username }}{% else %}N/A{% endif %}</td>
+                                            <td class="text-secondary small">{{ adm.admission_date|date:"d-m-Y" }} <span class="text-muted">{{ adm.admission_time }}</span></td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-5">
+                                                <i class="bi bi-inbox fs-2 d-block mb-2 text-muted opacity-50"></i>
+                                                No recent admissions registered.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content 2: Discharges -->
+                        <div class="tab-pane fade" id="discharges-content" role="tabpanel" aria-labelledby="discharges-tab">
+                            <div class="table-responsive" style="max-height: 400px;">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light sticky-top" style="z-index: 1;">
+                                        <tr>
+                                            <th class="border-0">Patient Name & UHID</th>
+                                            <th class="border-0">Ward Block</th>
+                                            <th class="border-0">Discharged By</th>
+                                            <th class="border-0">Discharge Date</th>
+                                            <th class="border-0">Bill Reference</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for adm in recent_discharges %}
+                                        {% with bill=adm.ipd_bills.first %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold text-dark">{{ adm.patient.full_name }}</div>
+                                                <code class="small text-muted">{{ adm.patient.uhid }}</code>
+                                            </td>
+                                            <td><span class="badge bg-danger bg-opacity-10 text-danger border-0 px-2.5 py-1.5 rounded-2">{{ adm.ward_type }}</span></td>
+                                            <td class="text-dark">{% if adm.admitting_doctor %}Dr. {{ adm.admitting_doctor.get_full_name|default:adm.admitting_doctor.username }}{% else %}N/A{% endif %}</td>
+                                            <td class="text-secondary small">{{ adm.discharge_date|date:"d-m-Y" }}</td>
+                                            <td>
+                                                {% if bill %}
+                                                    <a href="{% url 'receptionist:ipd_billing_page' adm.id %}" class="btn btn-sm btn-outline-primary fw-semibold px-2.5 py-1 rounded-2">
+                                                        <i class="bi bi-receipt me-1"></i>{{ bill.bill_number }}
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted small">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endwith %}
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-5">
+                                                <i class="bi bi-inbox fs-2 d-block mb-2 text-muted opacity-50"></i>
+                                                No recent discharged case history.
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Bed & Room Occupancy Map (Full Width Row) -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+                <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-0">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between g-2">
+                        <h5 class="card-title mb-0 fw-bold text-dark"><i class="bi bi-grid-fill text-primary me-2"></i>Bed & Room Occupancy Map</h5>
+                        <!-- Custom Tab Triggers -->
+                        <ul class="nav nav-pills bg-light p-1 rounded-3" id="bedMapTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active py-1.5 px-3 rounded-3 fw-semibold small" id="rooms-tab" data-bs-toggle="tab" data-bs-target="#rooms-content" type="button" role="tab" aria-controls="rooms-content" aria-selected="true">
+                                    Private / Deluxe Rooms
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link py-1.5 px-3 rounded-3 fw-semibold small" id="picu-tab" data-bs-toggle="tab" data-bs-target="#picu-content" type="button" role="tab" aria-controls="picu-content" aria-selected="false">
+                                    Pediatric ICU (PICU)
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link py-1.5 px-3 rounded-3 fw-semibold small" id="nicu-tab" data-bs-toggle="tab" data-bs-target="#nicu-content" type="button" role="tab" aria-controls="nicu-content" aria-selected="false">
+                                    Neonatal ICU (NICU)
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="tab-content" id="bedMapTabsContent">
+                        <!-- Tab Content 1: Private & Deluxe Rooms -->
+                        <div class="tab-pane fade show active" id="rooms-content" role="tabpanel" aria-labelledby="rooms-tab">
+                            <!-- Deluxe Rooms Grid -->
+                            <div class="mb-4 pb-2 border-bottom border-light">
+                                <div class="mb-3">
+                                    <span class="badge bg-dark bg-opacity-75 text-white fw-bold px-3 py-1.5 rounded-pill small">Deluxe Rooms (Rooms 202 - 204)</span>
+                                </div>
+                                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+                                    {% for room in deluxe_rooms %}
+                                    <div class="col">
+                                        <div class="p-3 text-center rounded-3 border h-100 d-flex flex-column align-items-center justify-content-center {% if room.status == 'Occupied' %}bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger{% else %}bg-success bg-opacity-10 border-success border-opacity-25 text-success{% endif %}">
+                                            <i class="bi bi-door-closed-fill fs-4 mb-1"></i>
+                                            <div class="fw-bold mb-0.5">Room {{ room.number }}</div>
+                                            {% if room.status == 'Occupied' %}
+                                                <div class="text-truncate small w-100 fw-semibold text-muted" title="{{ room.patient_name }}">{{ room.patient_name }}</div>
+                                            {% else %}
+                                                <div class="small fw-semibold">Available</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Private Rooms Grid -->
+                            <div>
+                                <div class="mb-3">
+                                    <span class="badge bg-dark bg-opacity-75 text-white fw-bold px-3 py-1.5 rounded-pill small">Private Rooms (Rooms 101 - 201)</span>
+                                </div>
+                                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+                                    {% for room in private_rooms %}
+                                    <div class="col">
+                                        <div class="p-3 text-center rounded-3 border h-100 d-flex flex-column align-items-center justify-content-center {% if room.status == 'Occupied' %}bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger{% else %}bg-success bg-opacity-10 border-success border-opacity-25 text-success{% endif %}">
+                                            <i class="bi bi-door-closed-fill fs-4 mb-1"></i>
+                                            <div class="fw-bold mb-0.5">Room {{ room.number }}</div>
+                                            {% if room.status == 'Occupied' %}
+                                                <div class="text-truncate small w-100 fw-semibold text-muted" title="{{ room.patient_name }}">{{ room.patient_name }}</div>
+                                            {% else %}
+                                                <div class="small fw-semibold">Available</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content 2: PICU Beds Grid -->
+                        <div class="tab-pane fade" id="picu-content" role="tabpanel" aria-labelledby="picu-tab">
+                            <div>
+                                <div class="mb-3">
+                                    <span class="badge bg-dark bg-opacity-75 text-white fw-bold px-3 py-1.5 rounded-pill small">Pediatric ICU (PICU) Beds</span>
+                                </div>
+                                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+                                    {% for bed in picu_beds %}
+                                    <div class="col">
+                                        <div class="p-3 text-center rounded-3 border h-100 d-flex flex-column align-items-center justify-content-center {% if bed.status == 'Occupied' %}bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger{% else %}bg-success bg-opacity-10 border-success border-opacity-25 text-success{% endif %}">
+                                            <i class="bi bi-activity fs-4 mb-1"></i>
+                                            <div class="fw-bold mb-0.5">{{ bed.number }}</div>
+                                            {% if bed.status == 'Occupied' %}
+                                                <div class="text-truncate small w-100 fw-semibold text-muted" title="{{ bed.patient_name }}">{{ bed.patient_name }}</div>
+                                            {% else %}
+                                                <div class="small fw-semibold">Available</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content 3: NICU Beds Grid -->
+                        <div class="tab-pane fade" id="nicu-content" role="tabpanel" aria-labelledby="nicu-tab">
+                            <div>
+                                <div class="mb-3">
+                                    <span class="badge bg-dark bg-opacity-75 text-white fw-bold px-3 py-1.5 rounded-pill small">Neonatal ICU (NICU) Beds</span>
+                                </div>
+                                <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-6 g-3">
+                                    {% for bed in nicu_beds %}
+                                    <div class="col">
+                                        <div class="p-3 text-center rounded-3 border h-100 d-flex flex-column align-items-center justify-content-center {% if bed.status == 'Occupied' %}bg-danger bg-opacity-10 border-danger border-opacity-25 text-danger{% else %}bg-success bg-opacity-10 border-success border-opacity-25 text-success{% endif %}">
+                                            <i class="bi bi-heart-pulse fs-4 mb-1"></i>
+                                            <div class="fw-bold mb-0.5">{{ bed.number }}</div>
+                                            {% if bed.status == 'Occupied' %}
+                                                <div class="text-truncate small w-100 fw-semibold text-muted" title="{{ bed.patient_name }}">{{ bed.patient_name }}</div>
+                                            {% else %}
+                                                <div class="small fw-semibold">Available</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling to match beautiful hospital layouts */
+    .fs-7 {
+        font-size: 0.75rem;
+    }
+    .nav-pills .nav-link {
+        color: #6c757d;
+        border: 1px solid transparent;
+        transition: all 0.2s ease-in-out;
+    }
+    .nav-pills .nav-link:hover {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+    .nav-pills .nav-link.active {
+        background-color: #ffffff !important;
+        color: #0d6efd !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    .table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        color: #495057;
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+    .table td {
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+</style>
+{% endblock %}

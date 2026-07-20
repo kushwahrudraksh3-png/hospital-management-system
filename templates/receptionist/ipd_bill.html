@@ -1,77 +1,643 @@
-{% extends "receptionist/base.html" %}
 {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IPD Final Bill - {{ bill.bill_number|default:admission.id }}</title>
+  <style>
+    /* Reset & Core Styling */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-{% block title %}IPD Bill | Vatsalya Shree Hospital{% endblock %}
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #1e293b;
+      background-color: #f1f5f9;
+      padding: 15px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
 
-{% block content %}
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-            <a href="{% url 'receptionist:dashboard' %}">Home</a>
-        </li>
-        <li class="breadcrumb-item">
-            <a href="{% url 'receptionist:ipd_patients' %}?status=discharged">IPD Patients</a>
-        </li>
-        <li class="breadcrumb-item active" aria-current="page">
-            IPD Bill
-        </li>
-    </ol>
-</nav>
+    /* Action Bar (Screen Only) */
+    .action-bar {
+      width: 210mm;
+      margin: 0 auto 10px auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
-    <div>
-        <h1 class="page-title">IPD Bill</h1>
-        <p class="text-muted mb-0 mt-1">
-            Generate and view patient IPD bills and invoices.
-        </p>
-    </div>
-    <span class="badge badge-soft-primary py-2 px-3">
-        <i class="bi bi-receipt me-1"></i>
-        Billing Desk
-    </span>
-</div>
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      background-color: #ffffff;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      text-decoration: none;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease;
+    }
 
-<article class="clinic-card mb-4">
-    <div class="card-header bg-light py-3 border-bottom">
-        <h2 class="form-section-title mb-0">
-            <i class="bi bi-receipt text-primary me-2"></i>
-            IPD Billing Module
-        </h2>
-    </div>
-    <div class="card-body py-5 text-center">
-        <div class="mb-4">
-            <i class="bi bi-clock-history text-muted" style="font-size: 4rem;"></i>
+    .btn-back:hover {
+      background-color: #f8fafc;
+      color: #0f172a;
+      border-color: #94a3b8;
+    }
+
+    .btn-print {
+      display: inline-flex;
+      align-items: center;
+      background-color: #1e3a8a;
+      color: #ffffff;
+      border: none;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .btn-print:hover {
+      background-color: #1e40af;
+    }
+
+    /* Print Page Container */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      background-color: #ffffff;
+      padding: 8mm 10mm;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      border: 1px solid #cbd5e1;
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    /* Outer Bill Border Frame */
+    .bill-frame {
+      border: 1.5px solid #0f172a;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      box-sizing: border-box;
+      justify-content: space-between;
+    }
+
+    /* Header Section */
+    .header-container {
+      border-bottom: 1.5px solid #0f172a;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      position: relative;
+      text-align: center;
+    }
+
+    .reg-number {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 9px;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .header-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      text-align: center;
+    }
+
+    .logo-box {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2px;
+    }
+
+    .logo-box img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .hospital-details {
+      text-align: center;
+    }
+
+    .hospital-details h1 {
+      font-size: 15px;
+      font-weight: 900;
+      color: #1e3a8a;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .hospital-details p.address {
+      font-size: 10px;
+      color: #334155;
+      font-weight: 500;
+      margin-bottom: 1px;
+      line-height: 1.2;
+    }
+
+    .hospital-details p.contact {
+      font-size: 9px;
+      color: #475569;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    /* Invoice Banner */
+    .invoice-banner {
+      background-color: #f1f5f9;
+      border: 1px solid #0f172a;
+      padding: 4px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .invoice-banner .title {
+      font-size: 11px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: 0.5px;
+    }
+
+    .invoice-banner .meta {
+      font-size: 10px;
+      font-weight: 700;
+      color: #1e3a8a;
+    }
+
+    /* Patient & Admission Info Grid */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .info-box {
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 6px 8px;
+      background-color: #fafafa;
+    }
+
+    .info-box-title {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #1e3a8a;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 2px;
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .info-table td {
+      padding: 2px 0;
+      font-size: 9px;
+      vertical-align: top;
+      line-height: 1.2;
+    }
+
+    .info-table td.label {
+      font-weight: 600;
+      color: #475569;
+      width: 35%;
+    }
+
+    .info-table td.value {
+      font-weight: 700;
+      color: #0f172a;
+      width: 65%;
+    }
+
+    /* Billing Items Table */
+    .table-section {
+      flex: 1;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .bill-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #0f172a;
+    }
+
+    .bill-table th,
+    .bill-table td {
+      border: 1px solid #0f172a;
+      padding: 3px 5px;
+      font-size: 9px;
+      line-height: 1.2;
+    }
+
+    .bill-table th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .bill-table td.col-sno {
+      text-align: center;
+      width: 5%;
+      font-weight: 600;
+    }
+
+    .bill-table td.col-particular {
+      text-align: left;
+      font-weight: 700;
+      color: #0f172a;
+      width: 40%;
+    }
+
+    .bill-table td.col-unit {
+      text-align: center;
+      width: 12%;
+    }
+
+    .bill-table td.col-duration {
+      text-align: center;
+      width: 13%;
+    }
+
+    .bill-table td.col-rate {
+      text-align: right;
+      width: 10%;
+    }
+
+    .bill-table td.col-qty {
+      text-align: center;
+      width: 8%;
+    }
+
+    .bill-table td.col-amount {
+      text-align: right;
+      font-weight: 700;
+      width: 12%;
+    }
+
+    /* Financial Summary Table */
+    .summary-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .summary-table {
+      width: 45%;
+      border-collapse: collapse;
+      border: 1px solid #0f172a;
+    }
+
+    .summary-table td {
+      border: 1px solid #0f172a;
+      padding: 3px 6px;
+      font-size: 9px;
+      line-height: 1.2;
+    }
+
+    .summary-table td.sum-label {
+      text-align: right;
+      font-weight: 700;
+      color: #334155;
+      width: 55%;
+    }
+
+    .summary-table td.sum-value {
+      text-align: right;
+      font-weight: 800;
+      color: #0f172a;
+      width: 45%;
+    }
+
+    .summary-table tr.highlight-row {
+      background-color: #f8fafc;
+    }
+
+    .summary-table tr.highlight-row td {
+      font-size: 10px;
+      font-weight: 900;
+      color: #1e3a8a;
+    }
+
+    .summary-table td.balance-due {
+      color: #dc2626;
+    }
+
+    .summary-table td.advance-balance {
+      color: #16a34a;
+    }
+
+    /* Footer Signatures Section */
+    .footer-section {
+      margin-top: auto;
+      padding-top: 8px;
+      border-top: 1px dashed #cbd5e1;
+    }
+
+    .audit-bar {
+      display: flex;
+      justify-content: space-between;
+      font-size: 8px;
+      color: #64748b;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .signatures-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+      text-align: center;
+    }
+
+    .sig-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      height: 40px;
+    }
+
+    .sig-line {
+      width: 85%;
+      border-top: 1px solid #0f172a;
+      margin-top: 4px;
+      padding-top: 2px;
+      font-size: 9px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    /* Print Rules */
+    @media print {
+      body {
+        background-color: #ffffff;
+        padding: 0;
+        margin: 0;
+      }
+
+      .no-print, .action-bar {
+        display: none !important;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      .page {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        width: 210mm;
+        height: 297mm;
+        padding: 8mm 10mm;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+        overflow: hidden;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Screen Action Bar -->
+  <div class="action-bar no-print">
+    <a href="{% url 'receptionist:ipd_billing_page' admission_id=bill.admission.id %}" class="btn-back">
+      &larr; Back to Billing Page
+    </a>
+    <button class="btn-print" onclick="window.print()">
+      Print Bill / Export PDF
+    </button>
+  </div>
+
+  <!-- A4 Printable Page -->
+  <div class="page">
+    <div class="bill-frame">
+
+      <!-- Hospital Header -->
+      <div class="header-container">
+        <div class="reg-number">Reg. No. NH/7245/MAY2026</div>
+        <div class="header-main">
+          <div class="logo-box">
+            <img src="{% static 'images/logo.png' %}" alt="Hospital Logo" onerror="this.src='/static/images/logo.png';">
+          </div>
+          <div class="hospital-details">
+            <h1>VATSALYA SHREE HOSPITAL</h1>
+            <p class="address">Ward-1, Old A.B. Road, Gujri (Dist-Dhar) M.P. 454552</p>
+            <p class="contact">Mob. 96300 37055, 88788 37055</p>
+          </div>
         </div>
-        <h4 class="fw-semibold text-dark mb-2">Module Under Development</h4>
-        <p class="text-muted max-width-md mx-auto mb-4" style="max-width: 500px;">
-            IPD Billing functionality will be available here. All patient data, recommendations, and discharge records are safely preserved in the database.
-        </p>
-        
-        {% if patient %}
-        <div class="alert alert-info d-inline-block text-start mb-0" style="max-width: 600px; border-radius: 8px;">
-            <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill me-2"></i>Target Patient Record Selected</div>
-            <table class="table table-sm table-borderless mb-0 text-dark small" style="min-width: 300px;">
-                <tr>
-                    <td class="fw-semibold pb-0 ps-0">Patient Name:</td>
-                    <td class="pb-0">{{ patient.full_name }}</td>
-                </tr>
-                <tr>
-                    <td class="fw-semibold pb-0 ps-0">UHID (Patient ID):</td>
-                    <td class="pb-0">{{ patient.uhid }}</td>
-                </tr>
-                {% if visit %}
-                <tr>
-                    <td class="fw-semibold pb-0 ps-0">Visit ID:</td>
-                    <td class="pb-0">{{ visit.id }}</td>
-                </tr>
-                <tr>
-                    <td class="fw-semibold pb-0 ps-0">Status:</td>
-                    <td class="pb-0"><span class="badge badge-soft-success">🟢 {{ visit.status }}</span></td>
-                </tr>
+      </div>
+
+      <!-- Invoice Metadata Banner -->
+      <div class="invoice-banner">
+        <span class="title">FINAL IPD BILL & INVOICE</span>
+        <span class="meta">Bill No: {{ bill.bill_number }} | Status: {{ bill.status|default:"Final" }}</span>
+      </div>
+
+      <!-- Patient & Admission Grids -->
+      <div class="info-grid">
+        <!-- Patient Details -->
+        <div class="info-box">
+          <div class="info-box-title">Patient Information</div>
+          <table class="info-table">
+            <tr>
+              <td class="label">Patient Name:</td>
+              <td class="value">{{ bill.patient.full_name }}</td>
+            </tr>
+            <tr>
+              <td class="label">UHID / ID:</td>
+              <td class="value">{{ bill.patient.uhid|default:bill.patient.id }}</td>
+            </tr>
+            <tr>
+              <td class="label">Age / Gender:</td>
+              <td class="value">{{ bill.patient.age }} Y / {{ bill.patient.gender }}</td>
+            </tr>
+            <tr>
+              <td class="label">Mobile No:</td>
+              <td class="value">{{ bill.patient.mobile_number|default:"-" }}</td>
+            </tr>
+            <tr>
+              <td class="label">Guardian:</td>
+              <td class="value">{{ bill.patient.father_name|default:"-" }}</td>
+            </tr>
+            <tr>
+              <td class="label">Address:</td>
+              <td class="value">{{ bill.patient.address|default:"-" }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Admission Details -->
+        <div class="info-box">
+          <div class="info-box-title">Admission Information</div>
+          <table class="info-table">
+            <tr>
+              <td class="label">Admission ID:</td>
+              <td class="value">#{{ bill.admission.id }}</td>
+            </tr>
+            <tr>
+              <td class="label">Admission Date:</td>
+              <td class="value">{{ bill.admission.admission_date|date:"d/m/Y" }}{% if bill.admission.admission_time %} {{ bill.admission.admission_time|time:"h:i A" }}{% endif %}</td>
+            </tr>
+            <tr>
+              <td class="label">Discharge Date:</td>
+              <td class="value">
+                {% if bill.admission.discharge_date %}
+                  {{ bill.admission.discharge_date|date:"d/m/Y" }}
+                {% else %}
+                  Currently Admitted
                 {% endif %}
-            </table>
+              </td>
+            </tr>
+            <tr>
+              <td class="label">Ward / Bed:</td>
+              <td class="value">{{ bill.admission.ward_type }} / Bed {{ bill.admission.bed_number|default:"-" }}</td>
+            </tr>
+            <tr>
+              <td class="label">Room No:</td>
+              <td class="value">{{ bill.admission.room_number|default:"-" }}</td>
+            </tr>
+            <tr>
+              <td class="label">Payment Mode:</td>
+              <td class="value">{{ bill.payment_mode|default:bill.admission.payment_mode|default:"Cash" }}</td>
+            </tr>
+            <tr>
+              <td class="label">Doctor Incharge:</td>
+              <td class="value">Dr. {{ bill.admission.admitting_doctor.get_full_name|default:"Kalpesh Manager" }}</td>
+            </tr>
+          </table>
         </div>
-        {% endif %}
+      </div>
+
+      <!-- Bill Line Items Table -->
+      <div class="table-section">
+        <table class="bill-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Particulars</th>
+              <th>Unit</th>
+              <th>Duration</th>
+              <th>Rate (₹)</th>
+              <th>Qty</th>
+              <th>Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in bill_items %}
+            <tr>
+              <td class="col-sno">{{ item.display_order }}</td>
+              <td class="col-particular">{{ item.particular }}</td>
+              <td class="col-unit">{{ item.unit|default:"-" }}</td>
+              <td class="col-duration">{{ item.duration|default:"-" }}</td>
+              <td class="col-rate">₹{{ item.rate|floatformat:2 }}</td>
+              <td class="col-qty">{{ item.quantity|floatformat:2 }}</td>
+              <td class="col-amount">₹{{ item.amount|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 15px; color: #64748b;">
+                No saved billing items found.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Financial Summary Table -->
+      <div class="summary-wrapper">
+        <table class="summary-table">
+          <tr>
+            <td class="sum-label">Gross Total</td>
+            <td class="sum-value">₹{{ bill.gross_total|floatformat:2 }}</td>
+          </tr>
+          <tr>
+            <td class="sum-label">Discount (-)</td>
+            <td class="sum-value">₹{{ bill.discount|floatformat:2 }}</td>
+          </tr>
+          <tr class="highlight-row">
+            <td class="sum-label">Net Payable Amount</td>
+            <td class="sum-value">₹{{ bill.net_amount|floatformat:2 }}</td>
+          </tr>
+          <tr>
+            <td class="sum-label">Deposit Received (-)</td>
+            <td class="sum-value">₹{{ bill.deposit_received|floatformat:2 }}</td>
+          </tr>
+          <tr class="highlight-row">
+            <td class="sum-label">
+              {% if bill.balance_due < 0 %}Advance Balance{% else %}Balance Due{% endif %}
+            </td>
+            <td class="sum-value {% if bill.balance_due < 0 %}advance-balance{% else %}balance-due{% endif %}">
+              ₹{{ abs_balance_due|floatformat:2 }}
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Footer Section -->
+      <div class="footer-section">
+        <div class="audit-bar">
+          <span>Prepared By: <strong>{{ prepared_by }}</strong></span>
+          <span>Generated On: <strong>{{ generated_at|date:"d/m/Y h:i A" }}</strong></span>
+        </div>
+
+        <div class="signatures-grid">
+          <div class="sig-box">
+            <div class="sig-line">Patient / Relative Signature</div>
+          </div>
+          <div class="sig-box">
+            <div class="sig-line">Hospital Stamp / Seal</div>
+          </div>
+          <div class="sig-box">
+            <div class="sig-line">Authorized Signatory</div>
+          </div>
+        </div>
+      </div>
+
     </div>
-</article>
-{% endblock %}
+  </div>
+
+</body>
+</html>

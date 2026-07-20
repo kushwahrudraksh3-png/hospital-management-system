@@ -16,7 +16,7 @@
             <button class="filter-tab active" data-filter-tab="all">All Patients</button>
             <button class="filter-tab" data-filter-tab="waiting">Waiting</button>
             <button class="filter-tab" data-filter-tab="lab-request">Lab Request</button>
-            <button class="filter-tab" data-filter-tab="completed">Completed</button>
+            <button class="filter-tab" data-filter-tab="followup">Follow-up</button>
         </div>
         <div class="search-field">
             <i class="bi bi-search"></i>
@@ -25,7 +25,7 @@
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table clinic-table queue-table align-middle mb-0">
+            <table class="table clinic-table queue-table align-middle mb-0" data-queue-table data-today-date="{{ today|date:'Y-m-d' }}">
                 <thead>
                     <tr>
                         <th>Queue No</th>
@@ -39,7 +39,7 @@
                 </thead>
                 <tbody>
                     {% for visit in today_visits %}
-                    <tr data-status="{% if visit.status == 'Pending Lab' %}lab-request{% elif visit.status == 'Completed' or visit.status == 'IPD Recommended' %}completed{% else %}waiting{% endif %}">
+                    <tr data-status="{% if visit.status == 'Pending Lab' %}lab-request{% elif visit.status == 'Completed' or visit.status == 'IPD Recommended' %}completed{% else %}waiting{% endif %}" data-visit-type="{{ visit.visit_type }}" data-visit-date="{{ visit.visit_date|date:'Y-m-d' }}">
                         <td class="fw-bold">#{{ visit.token_number|default:forloop.counter }}</td>
                         <td class="patient-id">{{ visit.patient.uhid }}</td>
                         <td class="patient-name fw-semibold">{{ visit.patient.full_name }}</td>

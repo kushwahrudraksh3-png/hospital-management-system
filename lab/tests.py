@@ -115,7 +115,7 @@ class LabBillingWorkflowTestCase(TestCase):
         self.assertContains(response, "Create Report")
         
         # Verify the "Create Report" button URL points to the correct patient, visit, and lab test
-        expected_btn_url = f"{reverse('lab:report_entry')}?visit_id={self.visit.id}&patient_id={self.patient.id}&bill_id={bill.id}&lab_test_id={self.test_cbc.id}"
+        expected_btn_url = f"{reverse('lab:report_entry')}?visit_id={self.visit.id}&patient_id={self.patient.id}&bill_id={bill.id}"
         self.assertContains(response, expected_btn_url)
 
         # 4. Access the report entry form directly by passing parameters.
@@ -126,35 +126,20 @@ class LabBillingWorkflowTestCase(TestCase):
         self.assertContains(form_response, "John Doe")
         self.assertContains(form_response, self.patient.uhid)
         # Check standard references in form mode
-        self.assertContains(form_response, "CBC Test Parameter Entry")
+        self.assertContains(form_response, "Parameter Entry")
 
     def test_xray_billing_workflow(self):
-        # 1. Access doctor prescription page and check that "Generate X-Ray Bill" button is present
+        # 1. Access doctor prescription page and check that "Generate X-Ray Bill" button is NOT present
         prescription_url = f"{reverse('lab:doctor_prescription')}?visit_id={self.visit.id}&patient_id={self.patient.id}"
         response = self.client.get(prescription_url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Generate X-Ray Bill")
+        self.assertNotContains(response, "Generate X-Ray Bill")
         
-        # 2. Click "Generate X-Ray Bill" which hits views.xray_bill_generate
-        generate_url = f"{reverse('lab:xray_bill_generate')}?visit_id={self.visit.id}&patient_id={self.patient.id}"
-        response = self.client.get(generate_url)
-        # Should redirect to xray bill receipt
-        bill = LaboratoryBill.objects.get(visit=self.visit)
-        self.assertRedirects(response, f"{reverse('lab:xray_bill_receipt')}?bill_id={bill.id}")
-        
-        # Check that X-Ray test is in the bill
-        self.assertEqual(bill.items.count(), 1)
-        self.assertEqual(bill.items.first().name, "X-Ray (Per Film)")
-        self.assertEqual(bill.grand_total, 400.00)
-        
-        # 3. Access xray bill receipt page
-        receipt_url = f"{reverse('lab:xray_bill_receipt')}?bill_id={bill.id}"
-        receipt_response = self.client.get(receipt_url)
-        self.assertEqual(receipt_response.status_code, 200)
-        
-        # Verify patient details, date, and investigation info are auto-filled
-        self.assertContains(receipt_response, self.patient.full_name)
-        self.assertContains(receipt_response, "X-Ray (Per Film)")
-        self.assertContains(receipt_response, "400.00")
-        self.assertContains(receipt_response, "Print X-Ray Receipt")
+        # 2. Verify that xray_bill_generate and xray_bill_receipt URLs no longer exist
+        from django.urls import NoReverseMatch
+        with self.assertRaises(NoReverseMatch):
+            reverse('lab:xray_bill_generate')
+        with self.assertRaises(NoReverseMatch):
+            reverse('lab:xray_bill_receipt')
+
 

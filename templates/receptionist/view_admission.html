@@ -1,0 +1,163 @@
+{% extends "receptionist/base.html" %}
+
+{% block title %}Admission Details | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:admitted_patients' %}">Admitted Patients</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Admission Details
+        </li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="page-title">Admission Details</h1>
+        <p class="text-muted mb-0 mt-1">
+            Detailed information of patient IPD admission.
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'receptionist:admitted_patients' %}" class="btn btn-light border">
+            <i class="bi bi-arrow-left-short fs-5"></i> Back to Admitted Patients
+        </a>
+        <a href="{% url 'receptionist:ipd_deposit_receipt' admission.id %}" class="btn btn-outline-primary">
+            <i class="bi bi-receipt me-1"></i> Print Deposit Receipt
+        </a>
+        <a href="{% url 'receptionist:edit_admission' admission.id %}" class="btn btn-primary">
+            <i class="bi bi-pencil me-1"></i> Edit Admission
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Patient Profile Summary -->
+    <div class="col-md-4">
+        <article class="clinic-card">
+            <div class="card-header border-bottom py-3 text-center bg-light">
+                <div class="user-avatar mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.5rem;">
+                    {{ admission.patient.full_name|make_list|first }}
+                </div>
+                <h3 class="fw-bold text-dark mb-1">{{ admission.patient.full_name }}</h3>
+                <span class="badge bg-success py-1.5 px-3 fs-7">
+                    🟢 {{ admission.status }}
+                </span>
+            </div>
+            <div class="card-body py-4">
+                <h5 class="form-section-title border-bottom pb-2 mb-3">Patient Information</h5>
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted ps-0">UHID:</td>
+                        <td class="fw-bold text-dark text-end"><code>{{ admission.patient.uhid }}</code></td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Age / Gender:</td>
+                        <td class="fw-semibold text-dark text-end">{{ admission.patient.age }} / {{ admission.patient.get_gender_display }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Mobile Number:</td>
+                        <td class="fw-semibold text-dark text-end">+91 {{ admission.patient.mobile_number }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Father's Name:</td>
+                        <td class="fw-semibold text-dark text-end">{{ admission.patient.father_name|default:"N/A" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted ps-0">Address:</td>
+                        <td class="text-dark text-end small">{{ admission.patient.address }}</td>
+                    </tr>
+                </table>
+            </div>
+        </article>
+    </div>
+
+    <!-- Right Column: Detailed Admission & Deposit Info -->
+    <div class="col-md-8">
+        <article class="clinic-card mb-4">
+            <div class="card-header border-bottom py-3">
+                <h4 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-hospital text-primary me-2"></i> Inpatient Admission Information
+                </h4>
+            </div>
+            <div class="card-body py-4">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block mb-1">Admission ID</label>
+                        <div class="fw-bold text-dark"><code>{{ admission.id }}</code></div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block mb-1">Admitting Doctor</label>
+                        <div class="fw-semibold text-dark">
+                            {% if admission.admitting_doctor %}
+                                Dr. {{ admission.admitting_doctor.get_full_name|default:admission.admitting_doctor.username }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="text-muted small d-block mb-1">Ward Type</label>
+                        <div class="fw-bold text-primary">{{ admission.ward_type }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="text-muted small d-block mb-1">Room Number</label>
+                        <div class="fw-semibold text-dark">{{ admission.room_number|default:"N/A" }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="text-muted small d-block mb-1">Bed Number</label>
+                        <div class="fw-semibold text-dark">{{ admission.bed_number|default:"N/A" }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="text-muted small d-block mb-1">Admission Date</label>
+                        <div class="fw-semibold text-dark">{{ admission.admission_date|date:"d-m-Y" }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="text-muted small d-block mb-1">Admission Time</label>
+                        <div class="fw-semibold text-dark">{{ admission.admission_time|time:"h:i A" }}</div>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="text-muted small d-block mb-1">Diagnosis / Reason for Admission</label>
+                        <div class="p-3 bg-light rounded text-dark" style="min-height: 80px; white-space: pre-wrap;">{{ admission.diagnosis }}</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="clinic-card">
+            <div class="card-header border-bottom py-3">
+                <h4 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-shield-check text-success me-2"></i> Security Deposit / Caution Money
+                </h4>
+            </div>
+            <div class="card-body py-4">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block mb-1">Deposit Amount Status</label>
+                        <div class="fs-4 fw-bold text-success">₹{{ admission.deposit_amount|floatformat:2 }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block mb-1">Receipt Number</label>
+                        <div class="fw-bold text-dark"><code>{{ admission.receipt_number|default:"Pending" }}</code></div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block mb-1">Receipt Date</label>
+                        <div class="fw-semibold text-dark">{{ admission.receipt_date|date:"d-m-Y"|default:"N/A" }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small d-block mb-1">Receipt Time</label>
+                        <div class="fw-semibold text-dark">{{ admission.receipt_time|time:"h:i A"|default:"N/A" }}</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+</div>
+{% endblock %}

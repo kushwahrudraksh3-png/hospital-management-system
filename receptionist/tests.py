@@ -917,4 +917,101 @@ class OPDValidityBusinessRulesTest(TestCase):
         self.assertEqual(visit.visit_type, OPDVisit.VisitTypeChoices.NEW_VISIT)
         self.assertRedirects(response, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': self.patient.id})}?visit_id={visit.id}")
 
+    def test_followup_workflow_button(self):
+        url = reverse('receptionist:create_opd_visit', kwargs={'patient_id': self.patient.id})
+        
+        # 1. First Follow-up creation should succeed when visit_type is passed in POST
+        response = self.client.post(url, {'payment_mode': 'CASH', 'visit_type': 'Follow-up'})
+        self.assertEqual(OPDVisit.objects.filter(patient=self.patient, visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP).count(), 1)
+        self.assertRedirects(response, reverse('receptionist:patient_list'))
+        
+        # 2. Subsequent Follow-up creation via this workflow should fail / redirect
+        response2 = self.client.post(url, {'payment_mode': 'UPI', 'visit_type': 'Follow-up'})
+        self.assertEqual(OPDVisit.objects.filter(patient=self.patient, visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP).count(), 1)
+        self.assertRedirects(response2, reverse('receptionist:patient_list'))
+
+    def test_followup_button_annotation(self):
+        # Verify the followup_count annotation is correct for patient list
+        list_url = reverse('receptionist:patient_list')
+        
+        # Initially, followup_count should be 0
+        response = self.client.get(list_url)
+        self.assertEqual(response.status_code, 200)
+        # Find the patient in context
+        patient_in_context = None
+        for p in response.context['page_obj']:
+            if p.id == self.patient.id:
+                patient_in_context = p
+                break
+        self.assertIsNotNone(patient_in_context)
+        self.assertEqual(patient_in_context.followup_count, 0)
+        
+        # Create a Follow-up visit
+        OPDVisit.objects.create(
+            patient=self.patient,
+            visit_date=date.today(),
+            visit_time="10:00:00",
+            visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP,
+            status=OPDVisit.StatusChoices.WAITING
+        )
+        
+        # Now, followup_count should be 1
+        response = self.client.get(list_url)
+        self.assertEqual(response.status_code, 200)
+        for p in response.context['page_obj']:
+            if p.id == self.patient.id:
+                patient_in_context = p
+                break
+        self.assertEqual(patient_in_context.followup_count, 1)
+
+    def test_dashboard_total_opd_excludes_followups(self):
+        # Clear existing visits
+        OPDVisit.objects.all().delete()
+        
+        # Create a patient
+        patient = Patient.objects.create(
+            full_name="Dash Patient",
+            date_of_birth=date(2015, 1, 1),
+            gender=Patient.GenderChoices.MALE,
+            mobile_number="9998887779",
+            created_by=self.user,
+            updated_by=self.user
+        )
+        
+        # Create 1 "New Visit" and 2 "Follow-up" visits today
+        OPDVisit.objects.create(
+            patient=patient,
+            visit_date=date.today(),
+            visit_time="10:00:00",
+            visit_type=OPDVisit.VisitTypeChoices.NEW_VISIT,
+            status=OPDVisit.StatusChoices.WAITING,
+            created_by=self.user,
+            updated_by=self.user
+        )
+        OPDVisit.objects.create(
+            patient=patient,
+            visit_date=date.today(),
+            visit_time="11:00:00",
+            visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP,
+            status=OPDVisit.StatusChoices.WAITING,
+            created_by=self.user,
+            updated_by=self.user
+        )
+        OPDVisit.objects.create(
+            patient=patient,
+            visit_date=date.today(),
+            visit_time="12:00:00",
+            visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP,
+            status=OPDVisit.StatusChoices.WAITING,
+            created_by=self.user,
+            updated_by=self.user
+        )
+
+        self.client.login(email="receptionist_rule@vatsalyashree.com", password="password123")
+        response = self.client.get(reverse('receptionist:dashboard'))
+        self.assertEqual(response.status_code, 200)
+        # today_opd_count should count only the New Visit (1), not the Follow-ups
+        self.assertEqual(response.context['today_opd_count'], 1)
+
+
 

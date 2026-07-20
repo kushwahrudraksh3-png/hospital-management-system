@@ -3,7 +3,7 @@
 
 {% block extra_css %}
 <style>
-    /* Container styling for on-screen */
+    /* Container styling for on-screen receipt */
     .receipt-paper {
         width: 148mm;
         max-width: 148mm;
@@ -35,7 +35,7 @@
 
     .receipt-header-grid {
         display: grid;
-        grid-template-columns: 75px 1fr 85px;
+        grid-template-columns: 75px 1fr 100px;
         align-items: center;
         gap: 12px;
         margin-top: 10px;
@@ -82,12 +82,13 @@
     .receipt-badge {
         background-color: #d1fae5;
         color: #065f46;
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 700;
         padding: 4px 8px;
         border-radius: 9999px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        text-align: center;
     }
 
     .receipt-divider {
@@ -137,7 +138,7 @@
     .details-label {
         color: #6b7280;
         font-weight: 500;
-        width: 100px;
+        width: 110px;
         flex-shrink: 0;
     }
 
@@ -212,7 +213,7 @@
         font-weight: 600;
     }
 
-    /* Printing CSS Optimization */
+    /* Printing styles */
     @media print {
         @page {
             size: A5 portrait;
@@ -228,12 +229,10 @@
             padding: 0 !important;
         }
 
-        /* Hide layouts not required in print */
         .sidebar,
         .top-navbar,
         .receipt-actions,
         .breadcrumb,
-        .page-heading-screen,
         nav[aria-label="breadcrumb"],
         .btn,
         .mobile-toggle,
@@ -273,7 +272,7 @@
 </style>
 {% endblock %}
 
-{% block title %}OPD Receipt | {{ hospital.hospital_name }}{% endblock %}
+{% block title %}IPD Deposit Receipt | {% if hospital %}{{ hospital.hospital_name }}{% else %}Vatsalya Children Hospital{% endif %}{% endblock %}
 
 {% block content %}
 <nav aria-label="breadcrumb">
@@ -282,29 +281,26 @@
             <a href="{% url 'receptionist:dashboard' %}">Home</a>
         </li>
         <li class="breadcrumb-item">
-            <a href="{% url 'receptionist:patient_list' %}">Patients</a>
+            <a href="{% url 'receptionist:ipd_patients' %}">IPD Patients</a>
         </li>
         <li class="breadcrumb-item active" aria-current="page">
-            OPD Receipt
+            IPD Deposit Receipt
         </li>
     </ol>
 </nav>
 
 <!-- Screen-only action header -->
-<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4 page-heading-screen receipt-actions">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 page-heading-screen receipt-actions">
     <div>
-        <h1 class="page-title">OPD Receipt</h1>
-        <p class="text-muted mb-0 mt-1">
-            Generate and print OPD visit receipts.
-        </p>
+        <h1 class="page-title mb-0">IPD Deposit Receipt</h1>
     </div>
     <div class="d-flex gap-2">
-        <a href="{% url 'receptionist:patient_registration' %}" class="btn btn-light">
-            <i class="bi bi-person-plus-fill"></i> New Registration
-        </a>
         <button class="btn btn-primary" onclick="window.print()">
-            <i class="bi bi-printer-fill"></i> Print Receipt
+            <i class="bi bi-printer-fill me-1"></i> Print Receipt
         </button>
+        <a href="{% url 'receptionist:ipd_registration' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
     </div>
 </div>
 
@@ -312,27 +308,33 @@
 <div class="receipt-paper">
     <!-- Top Section -->
     <div class="receipt-top-section">
-        <span>Date & Time: <strong>{{ current_datetime|date:"d-m-Y h:i A" }}</strong></span>
-        <span>OPD No: <strong>{{ visit.opd_number }}</strong></span>
+        <span>Date & Time: <strong>{{ admission.receipt_date|date:"d-m-Y" }} {{ admission.receipt_time|time:"h:i A" }}</strong></span>
+        <span>Receipt No: <strong>{{ admission.receipt_number }}</strong></span>
     </div>
 
     <!-- Header Grid -->
     <div class="receipt-header-grid">
         <div class="receipt-logo-container">
-            {% if hospital.hospital_logo %}
+            {% if hospital and hospital.hospital_logo %}
                 <img src="{{ hospital.hospital_logo.url }}" alt="Hospital Logo" class="receipt-logo">
+            {% else %}
+                <img src="{% static 'images/logo.png' %}" alt="Hospital Logo" class="receipt-logo">
             {% endif %}
         </div>
         <div class="receipt-clinic-info">
-            <h1 class="receipt-clinic-name">{{ hospital.hospital_name }}</h1>
+            <h1 class="receipt-clinic-name">{% if hospital %}{{ hospital.hospital_name }}{% else %}Vatsalya Shree Hospital{% endif %}</h1>
             <p class="receipt-meta">
-                <i class="bi bi-geo-alt-fill me-1"></i> Ward-1 Old A.B. Road Guljhara (Dhamnod) Dist Dhar, 454552<br>
-                <i class="bi bi-telephone-fill me-1"></i> {{ hospital.phone_number }} &nbsp;|&nbsp; <i class="bi bi-envelope-fill me-1"></i> vatsalyashreehospital@gmail.com<br>
-                Reg. No : NH/7245/MAY-2026
+                {% if hospital %}
+                    <i class="bi bi-geo-alt-fill me-1"></i> {{ hospital.address }}<br>
+                    <i class="bi bi-telephone-fill me-1"></i> {{ hospital.phone_number }} &nbsp;|&nbsp; <i class="bi bi-envelope-fill me-1"></i> {{ hospital.email }}
+                {% else %}
+                    <i class="bi bi-geo-alt-fill me-1"></i> Ward-1 Old A.B. Road Guljhara (Dhamnod), Dist. Dhar, 454552<br>
+                    <i class="bi bi-telephone-fill me-1"></i> Mob. 92438-43338
+                {% endif %}
             </p>
         </div>
         <div class="receipt-badge-container">
-            <span class="receipt-badge">OPD Receipt</span>
+            <span class="receipt-badge">IPD Security<br>Deposit</span>
         </div>
     </div>
 
@@ -344,31 +346,62 @@
         <div class="details-grid">
             <div class="details-item">
                 <span class="details-label">Patient Name:</span>
-                <span class="details-value">{{ patient.full_name }}</span>
+                <span class="details-value">{{ admission.patient.full_name }}</span>
             </div>
             <div class="details-item">
                 <span class="details-label">UHID (Patient ID):</span>
-                <span class="details-value">{{ patient.uhid }}</span>
+                <span class="details-value">{{ admission.patient.uhid }}</span>
             </div>
             <div class="details-item">
                 <span class="details-label">Age / Gender:</span>
-                <span class="details-value">{{ patient.age }} / {{ patient.gender }}</span>
-            </div>
-            <div class="details-item">
-                <span class="details-label">Visit Date:</span>
-                <span class="details-value">{{ visit.visit_date|date:"d-m-Y" }} at {{ visit.visit_time|time:"h:i A" }}</span>
-            </div>
-            <div class="details-item">
-                <span class="details-label">Father's Name:</span>
-                <span class="details-value">{{ patient.father_name|default:"N/A" }}</span>
+                <span class="details-value">{{ admission.patient.age }} / {{ admission.patient.get_gender_display }}</span>
             </div>
             <div class="details-item">
                 <span class="details-label">Mobile Number:</span>
-                <span class="details-value">+91 {{ patient.mobile_number }}</span>
+                <span class="details-value">{{ admission.patient.mobile_number }}</span>
             </div>
+            {% if admission.patient.guardian_name %}
+            <div class="details-item">
+                <span class="details-label">Guardian Name:</span>
+                <span class="details-value">{{ admission.patient.guardian_name }}</span>
+            </div>
+            {% endif %}
+            {% if admission.patient.address %}
             <div class="details-item full-width">
                 <span class="details-label">Address:</span>
-                <span class="details-value">{{ patient.address }}</span>
+                <span class="details-value">{{ admission.patient.address }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Admission Details -->
+    <div class="patient-details-box">
+        <h3 class="details-heading">Admission Details</h3>
+        <div class="details-grid">
+            <div class="details-item">
+                <span class="details-label">Admission No:</span>
+                <span class="details-value">{{ admission.receipt_number|default:admission.id }}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Consultant Doctor:</span>
+                <span class="details-value">{% if admission.admitting_doctor %}Dr. {{ admission.admitting_doctor.first_name }} {{ admission.admitting_doctor.last_name }}{% else %}Dr. Kalpesh Manager{% endif %}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Ward Name:</span>
+                <span class="details-value">{{ admission.ward_type }}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Room Number:</span>
+                <span class="details-value">{{ admission.room_number|default:"N/A" }}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Bed Number:</span>
+                <span class="details-value">{{ admission.bed_number|default:"N/A" }}</span>
+            </div>
+            <div class="details-item">
+                <span class="details-label">Admission Date:</span>
+                <span class="details-value">{{ admission.admission_date|date:"d-m-Y" }} {{ admission.admission_time|time:"h:i A" }}</span>
             </div>
         </div>
     </div>
@@ -378,22 +411,20 @@
         <table class="receipt-payment-table">
             <thead>
                 <tr>
-                    <th class="text-start">Service Description</th>
+                    <th class="text-start">Description</th>
+                    <th class="text-center">Payment Mode</th>
                     <th class="text-end">Amount (₹)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td class="text-start fw-semibold">OPD Consultation Fee ({{ visit.visit_type }})</td>
-                    <td class="text-end fw-semibold">₹{{ hospital.consultation_fee }}</td>
-                </tr>
-                <tr>
-                    <td class="text-start fw-semibold">Payment Mode</td>
-                    <td class="text-end fw-bold text-success">{{ visit.payment_mode }}</td>
+                    <td class="text-start fw-semibold">IPD Security Deposit / Caution Money</td>
+                    <td class="text-center fw-semibold">{{ admission.payment_mode|default:"Cash" }}</td>
+                    <td class="text-end fw-semibold">₹{{ admission.deposit_amount|floatformat:2 }}</td>
                 </tr>
                 <tr class="total-row">
-                    <td class="text-start fw-bold text-uppercase">Total Paid Amount</td>
-                    <td class="text-end fw-bold text-primary">₹{{ hospital.consultation_fee }}</td>
+                    <td class="text-start fw-bold text-uppercase" colspan="2">Total Received Amount</td>
+                    <td class="text-end fw-bold text-primary">₹{{ admission.deposit_amount|floatformat:2 }}</td>
                 </tr>
             </tbody>
         </table>
@@ -402,11 +433,11 @@
     <!-- Bottom Section -->
     <div class="receipt-footer-section">
         <div class="receipt-footer-notes">
-            <p class="mb-0">Thank you for visiting. Please keep this receipt safe.</p>
+            <p class="mb-0"><strong>Note:</strong> This is a security deposit receipt. This amount will be adjusted in the Final IPD Bill at the time of discharge.</p>
         </div>
         <div class="receipt-signature-block">
             <div class="signature-line">__________________________</div>
-            <div class="signature-label">Receptionist Signature</div>
+            <div class="signature-label">Received By: {{ received_by }}</div>
         </div>
     </div>
 </div>

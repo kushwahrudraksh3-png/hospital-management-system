@@ -1,0 +1,663 @@
+{% extends "receptionist/base.html" %}
+
+{% block title %}Generate IPD Bill | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            {% if admission.status == 'Closed' %}
+                <a href="{% url 'receptionist:discharged_patients' %}">Discharged Patients</a>
+            {% else %}
+                <a href="{% url 'receptionist:ready_for_billing' %}">Ready for Billing</a>
+            {% endif %}
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Generate Bill
+        </li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">Generate IPD Bill</h1>
+        <p class="text-muted mb-0">Select ward parameters and review applicable hospital charges.</p>
+    </div>
+    {% if admission.status == 'Closed' %}
+        <a href="{% url 'receptionist:discharged_patients' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to History
+        </a>
+    {% else %}
+        <a href="{% url 'receptionist:ready_for_billing' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Queue
+        </a>
+    {% endif %}
+</div>
+
+<!-- Alert messages -->
+<div id="ajaxMessageContainer"></div>
+{% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<!-- SECTION 1: Patient Information Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="card-title text-dark mb-0 fw-bold">
+            <i class="bi bi-person-badge text-primary me-2"></i> Patient Information
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <span class="text-muted d-block small">Patient Name</span>
+                <strong class="text-dark fs-6">{{ admission.patient.full_name }}</strong>
+            </div>
+            <div class="col-md-3">
+                <span class="text-muted d-block small">UHID</span>
+                <code class="text-dark fw-bold">{{ admission.patient.uhid }}</code>
+            </div>
+            <div class="col-md-2">
+                <span class="text-muted d-block small">Gender</span>
+                <span class="text-dark">{{ admission.patient.gender }}</span>
+            </div>
+            <div class="col-md-2">
+                <span class="text-muted d-block small">Age</span>
+                <span class="text-dark">{{ admission.patient.age }}</span>
+            </div>
+            <div class="col-md-2">
+                <span class="text-muted d-block small">Mobile Number</span>
+                <span class="text-dark">{{ admission.patient.mobile_number }}</span>
+            </div>
+            <div class="col-md-3">
+                <span class="text-muted d-block small">Guardian / Father Name</span>
+                <span class="text-dark">{{ admission.patient.father_name|default:"N/A" }}</span>
+            </div>
+            <div class="col-md-9">
+                <span class="text-muted d-block small">Address</span>
+                <span class="text-dark">{{ admission.patient.address }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 2: Admission Information Card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <h5 class="card-title text-dark mb-0 fw-bold">
+            <i class="bi bi-hospital text-primary me-2"></i> Admission Information
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <span class="text-muted d-block small">Admission Number</span>
+                <code class="text-dark fw-bold">{{ admission.id }}</code>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted d-block small">Admission Date & Time</span>
+                <span class="text-dark fw-semibold">{{ admission.admission_date|date:"d M Y" }} {{ admission.admission_time }}</span>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted d-block small">Admitted Ward</span>
+                <span class="badge bg-primary px-3 py-1.5 fs-6">{{ admission.ward_type }}</span>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted d-block small">Room Number</span>
+                <span class="text-dark fw-semibold">Room {{ admission.room_number|default:"N/A" }}</span>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted d-block small">Bed Number</span>
+                <span class="text-dark fw-semibold">Bed {{ admission.bed_number|default:"N/A" }}</span>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted d-block small">Consultant Doctor</span>
+                <span class="text-dark fw-semibold">{% if admission.admitting_doctor %}Dr. {{ admission.admitting_doctor.get_full_name|default:admission.admitting_doctor.username }}{% else %}N/A{% endif %}</span>
+            </div>
+            <div class="col-md-4">
+                <span class="text-muted d-block small">Payment Mode</span>
+                <span class="badge bg-secondary px-3 py-1.5 fs-6">{{ admission.payment_mode|default:"Cash" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SECTION 3: Billing Input Form -->
+<form method="POST" id="billingForm">
+    {% csrf_token %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="card-title text-dark mb-0 fw-bold">
+                <i class="bi bi-sliders text-primary me-2"></i> Billing Input Parameters
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="days_admitted" class="form-label fw-bold">Days Admitted</label>
+                    <input type="number" name="days_admitted" id="days_admitted" class="form-control" min="1" placeholder="Default: 1 Day" value="{{ days_admitted|default:1 }}" {% if is_read_only %}disabled{% endif %}>
+                </div>
+                <div class="col-md-4">
+                    <label for="oxygen_hours" class="form-label fw-bold">Oxygen Total Hours</label>
+                    <input type="number" name="oxygen_hours" id="oxygen_hours" class="form-control" min="0" placeholder="Default: 0" value="{{ oxygen_hours|default:0 }}" {% if is_read_only %}disabled{% endif %}>
+                </div>
+                <div class="col-md-4">
+                    <label for="oxygen_charges" class="form-label fw-bold">Total Oxygen Charge (₹)</label>
+                    <input type="number" step="0.01" name="oxygen_charges" id="oxygen_charges" class="form-control" min="0" placeholder="Default: 0.00" value="{{ oxygen_charges|default:0 }}" {% if is_read_only %}disabled{% endif %}>
+                </div>
+                <div class="col-md-4">
+                    <label for="phototherapy_hours" class="form-label fw-bold">Phototherapy Total Hours</label>
+                    <input type="number" name="phototherapy_hours" id="phototherapy_hours" class="form-control" min="0" placeholder="Default: 0" value="{{ phototherapy_hours|default:0 }}" {% if is_read_only %}disabled{% endif %}>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="total_doctor_visits" class="form-label fw-bold">Total Doctor Visits</label>
+                    <input type="number" name="total_doctor_visits" id="total_doctor_visits" class="form-control" min="0" placeholder="Default: 0" value="{{ total_doctor_visits|default:0 }}" {% if is_read_only %}disabled{% endif %}>
+                </div>
+                <div class="col-md-4">
+                    <label for="total_nebulizer_uses" class="form-label fw-bold">Total Nebulizer Uses</label>
+                    <input type="number" name="total_nebulizer_uses" id="total_nebulizer_uses" class="form-control" min="0" placeholder="Default: 0" value="{{ total_nebulizer_uses|default:0 }}" {% if is_read_only %}disabled{% endif %}>
+                </div>
+                <div class="col-md-4">
+                    <label for="emergency_charges" class="form-label fw-bold">Emergency Charge (₹)</label>
+                    <input type="number" step="0.01" name="emergency_charges" id="emergency_charges" class="form-control" min="0" placeholder="Default: 0.00" value="{{ emergency_charges|default:0 }}" {% if is_read_only %}disabled{% endif %}>
+                </div>
+                <div class="col-md-4">
+                    <label for="payment_mode" class="form-label fw-bold">Payment Mode</label>
+                    <select name="payment_mode" id="payment_mode" class="form-select" {% if is_read_only %}disabled{% endif %}>
+                        <option value="">Select Payment Mode</option>
+                        <option value="Cash" {% if payment_mode == 'Cash' %}selected{% endif %}>Cash</option>
+                        <option value="UPI" {% if payment_mode == 'UPI' %}selected{% endif %}>UPI</option>
+                    </select>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 4: Applicable Charges Preview -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+            <h5 class="card-title text-dark mb-0 fw-bold">
+                <i class="bi bi-receipt-cutoff text-primary me-2"></i> All Charges
+            </h5>
+            <span class="badge bg-light text-primary border border-primary px-3 py-1.5">
+                Ward Rules: {{ rules_engine_data.ward_category|default:admission.ward_type }}
+            </span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped align-middle mb-0" id="billingTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 text-center" style="width: 5%;">✓ Include</th>
+                            <th>Particular</th>
+                            <th>Unit</th>
+                            <th>Duration</th>
+                            <th>Rate</th>
+                            <th class="text-center">Quantity</th>
+                            <th class="text-end pe-4">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in rules_engine_data.applicable_charges %}
+                        <tr data-code="{{ item.code }}" data-name="{{ item.name }}" data-type="{{ item.charge_type }}" data-unit="{{ item.unit|default:item.charge_type }}" data-rate="{{ item.rate }}">
+                            <td class="ps-4 text-center">
+                                <input type="checkbox" name="included_charges" value="{{ item.code }}" class="form-check-input charge-checkbox" checked {% if is_read_only %}disabled{% endif %}>
+                            </td>
+                            <td class="fw-bold text-dark">{{ item.name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ item.unit|default:item.charge_type }}</span></td>
+                            <td class="text-muted duration-cell">-</td>
+                            <td class="fw-semibold text-dark">₹{{ item.rate|floatformat:2 }}</td>
+                            <td class="text-center fw-bold quantity-cell">-</td>
+                            <td class="text-end pe-4 fw-bold amount-cell text-primary">₹0.00</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No applicable charges configured for this ward.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 5: Financial Billing Summary Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="card-title text-dark mb-0 fw-bold">
+                <i class="bi bi-calculator text-primary me-2"></i> Financial Billing Summary
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-4">
+                <!-- Left Side: Inputs for Discount -->
+                <div class="col-md-6 border-end">
+                    <h6 class="fw-bold text-dark mb-3">Adjustments & Discounts</h6>
+
+                    <div class="mb-3">
+                        <label for="discount" class="form-label fw-bold">Discount (₹)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" step="0.01" min="0" name="discount" id="discount" class="form-control" value="{{ discount|default:'0.00' }}" placeholder="0.00">
+                        </div>
+                        <span class="form-text small text-muted" id="discountHelpText">Discount reduces net payable. Cannot exceed Gross Total.</span>
+                    </div>
+                </div>
+
+                <!-- Right Side: Live Financial Summary Breakdown -->
+                <div class="col-md-6">
+                    <h6 class="fw-bold text-dark mb-3">Billing Summary</h6>
+                    
+                    <ul class="list-group list-group-flush border rounded-3 overflow-hidden">
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-2.5">
+                            <span class="text-secondary fw-semibold">Gross Total</span>
+                            <span class="fw-bold text-dark fs-6" id="summaryGrossTotal">₹0.00</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-2.5">
+                            <span class="text-secondary fw-semibold">Discount</span>
+                            <span class="fw-semibold text-danger" id="summaryDiscount">- ₹0.00</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-2.5 bg-light">
+                            <span class="fw-bold text-dark">Net Payable</span>
+                            <strong class="fw-bold text-primary fs-5" id="summaryNetPayable">₹0.00</strong>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-2.5">
+                            <span class="text-secondary fw-semibold">Deposit Received (Saved)</span>
+                            <span class="fw-semibold text-success" id="summaryDeposit" data-deposit="{{ security_deposit|default:admission.deposit_amount|default:0 }}">₹{{ security_deposit|default:admission.deposit_amount|default:0|floatformat:2 }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3 bg-dark text-white" id="balanceItem">
+                            <span class="fw-bold fs-6" id="summaryBalanceLabel">Balance Due</span>
+                            <strong class="fw-bold fs-4 text-warning" id="summaryBalanceDue">₹0.00</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Read-Only Banner -->
+{% if is_read_only %}
+    <div class="alert alert-dark d-flex align-items-center shadow-sm border-2 border-primary mb-4 p-3" role="alert">
+        <i class="bi bi-shield-lock-fill fs-2 me-3 text-warning"></i>
+        <div>
+            <h5 class="alert-heading mb-1 text-white fw-bold">🔒 BILL FINALIZED – READ ONLY MODE</h5>
+            <p class="mb-0 text-light small">
+                Bill <strong>#{{ saved_bill.bill_number }}</strong> has been finalized. Financial records are locked for audit compliance. Editing and saving are disabled.
+            </p>
+        </div>
+        <a href="{% url 'receptionist:ipd_bill' %}?admission_id={{ admission.id }}" class="btn btn-warning ms-auto fw-bold text-dark">
+            <i class="bi bi-printer-fill me-1"></i> Print Final Bill
+        </a>
+    </div>
+{% endif %}
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-end align-items-center gap-2 mb-4">
+        {% if is_read_only %}
+            <span class="badge bg-secondary p-3 fs-6"><i class="bi bi-lock-fill me-1"></i> Bill Locked (Finalized)</span>
+            <a href="{% url 'receptionist:ipd_bill' %}?admission_id={{ admission.id }}" class="btn btn-dark px-4 py-2.5 fs-6 fw-bold shadow-sm">
+                <i class="bi bi-printer me-1"></i> Print / View Bill
+            </a>
+        {% else %}
+            <button type="submit" name="action" value="save_draft" class="btn btn-secondary px-4 py-2.5 fs-6 fw-bold shadow-sm" id="btnSaveBilling">
+                <i class="bi bi-save me-1"></i> Save Draft
+            </button>
+            <button type="submit" name="action" value="finalize" class="btn btn-warning px-4 py-2.5 fs-6 fw-bold shadow-sm" id="btnFinalizeBilling">
+                <i class="bi bi-check-circle-fill me-1"></i> Finalize Bill
+            </button>
+            <button type="submit" name="action" value="generate_final" class="btn btn-primary px-4 py-2.5 fs-6 fw-bold shadow-sm" id="btnGenerateFinalBill">
+                Generate & Print Bill <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+        {% endif %}
+    </div>
+</form>
+
+<!-- Billing History & Audit Information -->
+{% if saved_bill or bill_history %}
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0 fw-bold text-dark"><i class="bi bi-clock-history me-2 text-primary"></i> Billing History & Audit Log</h5>
+        {% if saved_bill %}
+            <span class="badge {% if saved_bill.status == 'Final' %}bg-success{% elif saved_bill.status == 'Paid' %}bg-primary{% else %}bg-warning text-dark{% endif %} px-3 py-2 fs-6">
+                Status: {{ saved_bill.status }} ({{ saved_bill.payment_status }})
+            </span>
+        {% endif %}
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Bill No</th>
+                        <th>Created Date</th>
+                        <th>Gross Total</th>
+                        <th>Net Amount</th>
+                        <th>Bill Status</th>
+                        <th>Payment Status</th>
+                        <th>Created By</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in bill_history %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ b.bill_number }}</td>
+                        <td>{{ b.created_at|date:"d/m/Y h:i A" }}</td>
+                        <td class="fw-semibold">₹{{ b.gross_total|floatformat:2 }}</td>
+                        <td class="fw-bold text-dark">₹{{ b.net_amount|floatformat:2 }}</td>
+                        <td>
+                            <span class="badge {% if b.status == 'Final' %}bg-success{% elif b.status == 'Paid' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                {{ b.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if b.payment_status == 'Paid' %}bg-success{% elif b.payment_status == 'Partial' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">
+                                {{ b.payment_status }}
+                            </span>
+                        </td>
+                        <td>{{ b.created_by.get_full_name|default:"Receptionist" }}</td>
+                        <td>
+                            <a href="{% url 'receptionist:ipd_bill' %}?admission_id={{ b.admission.id }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View / Reprint
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-3">No bill history found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if saved_bill %}
+    <div class="card-footer bg-light py-2 text-muted small d-flex justify-content-between">
+        <span><strong>Created:</strong> {{ saved_bill.created_by.get_full_name|default:"Receptionist" }} ({{ saved_bill.created_at|date:"d/m/Y h:i A" }})</span>
+        {% if saved_bill.finalized_at %}
+            <span><strong>Finalized:</strong> {{ saved_bill.finalized_by.get_full_name|default:"Receptionist" }} ({{ saved_bill.finalized_at|date:"d/m/Y h:i A" }})</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const daysInput = document.getElementById("days_admitted");
+    const oxygenInput = document.getElementById("oxygen_hours");
+    const oxygenChargeInput = document.getElementById("oxygen_charges");
+    const photoInput = document.getElementById("phototherapy_hours");
+    const docVisitsInput = document.getElementById("total_doctor_visits");
+    const nebulizerInput = document.getElementById("total_nebulizer_uses");
+    const emergencyInput = document.getElementById("emergency_charges");
+    const discountInput = document.getElementById("discount");
+    const discountHelpText = document.getElementById("discountHelpText");
+
+    function validateAndClamp(input, minVal, defaultVal) {
+        if (!input) return defaultVal;
+        let val = parseFloat(input.value);
+        if (isNaN(val) || val < minVal) {
+            val = defaultVal;
+        }
+        return val;
+    }
+
+    function calculateAmounts() {
+        // Enforce safe inputs
+        const days = validateAndClamp(daysInput, 1, 1);
+        const oxygenHrs = validateAndClamp(oxygenInput, 0, 0);
+        const oxygenChargesVal = validateAndClamp(oxygenChargeInput, 0, 0);
+        const photoHrs = validateAndClamp(photoInput, 0, 0);
+        const docVisits = validateAndClamp(docVisitsInput, 0, 0);
+        const nebulizerUses = validateAndClamp(nebulizerInput, 0, 0);
+        const emergencyVal = validateAndClamp(emergencyInput, 0, 0);
+
+        const rows = document.querySelectorAll("#billingTable tbody tr[data-code]");
+        rows.forEach(row => {
+            const chk = row.querySelector(".charge-checkbox");
+            const isChecked = chk ? chk.checked : true;
+
+            const name = (row.getAttribute("data-name") || "").toLowerCase();
+            const code = row.getAttribute("data-code") || "";
+            const chargeType = (row.getAttribute("data-type") || "").toLowerCase();
+            const unit = (row.getAttribute("data-unit") || "").toLowerCase();
+            const rate = parseFloat(row.getAttribute("data-rate")) || 0;
+
+            const durCell = row.querySelector(".duration-cell");
+            const qtyCell = row.querySelector(".quantity-cell");
+            const amtCell = row.querySelector(".amount-cell");
+
+            let durationDisplay = "-";
+            let qtyDisplay = "1";
+            let amount = 0;
+
+            if (name.includes("registration")) {
+                durationDisplay = "One Time";
+                qtyDisplay = "1";
+                amount = rate * 1;
+            } else if (name.includes("doctor") || code.includes("DOC_VISIT")) {
+                if (unit.includes("visit") || chargeType.includes("visit")) {
+                    durationDisplay = docVisits + " Visits";
+                    qtyDisplay = docVisits.toString();
+                    amount = rate * docVisits;
+                } else {
+                    durationDisplay = days + " Days";
+                    qtyDisplay = days.toString();
+                    amount = rate * days;
+                }
+            } else if (name.includes("oxygen")) {
+                durationDisplay = oxygenHrs + " Hours";
+                qtyDisplay = "1";
+                amount = oxygenChargesVal;
+            } else if (name.includes("phototherapy") || name.includes("photo")) {
+                durationDisplay = photoHrs + " Hours";
+                qtyDisplay = photoHrs.toString();
+                amount = rate * photoHrs;
+            } else if (name.includes("nebulizer") || code.toLowerCase().includes("nebulizer")) {
+                if (nebulizerUses > 0) {
+                    if (rate > 0 && nebulizerUses <= 20) {
+                        durationDisplay = nebulizerUses + " Uses";
+                        qtyDisplay = nebulizerUses.toString();
+                        amount = rate * nebulizerUses;
+                    } else {
+                        durationDisplay = "Per Use / Charges";
+                        qtyDisplay = "1";
+                        amount = nebulizerUses;
+                    }
+                } else {
+                    durationDisplay = "-";
+                    qtyDisplay = "-";
+                    amount = 0;
+                }
+            } else if (name.includes("emergency") || code.toLowerCase().includes("emergency")) {
+                durationDisplay = "One Time";
+                qtyDisplay = "1";
+                amount = emergencyVal > 0 ? emergencyVal : rate;
+            } else if (name.includes("rbs")) {
+                durationDisplay = "One Test";
+                qtyDisplay = "1";
+                amount = rate * 1;
+            } else {
+                durationDisplay = days + " Days";
+                qtyDisplay = days.toString();
+                amount = rate * days;
+            }
+
+            if (durCell) durCell.innerText = durationDisplay;
+            if (qtyCell) qtyCell.innerText = qtyDisplay;
+
+            if (!isChecked) {
+                row.classList.add("text-muted", "bg-light");
+                row.style.opacity = "0.45";
+                if (amtCell) {
+                    amtCell.innerText = "₹0.00";
+                    amtCell.classList.remove("text-primary");
+                    amtCell.classList.add("text-muted");
+                }
+            } else {
+                row.classList.remove("text-muted", "bg-light");
+                row.style.opacity = "1";
+                if (amtCell) {
+                    amtCell.innerText = "₹" + amount.toFixed(2);
+                    amtCell.classList.add("text-primary");
+                    amtCell.classList.remove("text-muted");
+                }
+            }
+        });
+
+        updateFinancialSummary();
+    }
+
+    function updateFinancialSummary() {
+        let grossTotal = 0;
+        const rows = document.querySelectorAll("#billingTable tbody tr[data-code]");
+        rows.forEach(row => {
+            const chk = row.querySelector(".charge-checkbox");
+            if (chk && !chk.checked) return; // Skip unchecked charges from financial totals
+
+            const amtCell = row.querySelector(".amount-cell");
+            if (amtCell) {
+                const txt = amtCell.innerText.replace(/[^0-9.-]+/g, "");
+                const val = parseFloat(txt) || 0;
+                grossTotal += val;
+            }
+        });
+
+        let discount = validateAndClamp(discountInput, 0, 0);
+        if (discount > grossTotal) {
+            discount = grossTotal;
+            if (discountInput) discountInput.value = grossTotal.toFixed(2);
+            if (discountHelpText) {
+                discountHelpText.innerText = "Discount capped at Gross Total (₹" + grossTotal.toFixed(2) + ")";
+                discountHelpText.classList.add("text-warning");
+            }
+        } else {
+            if (discountHelpText) {
+                discountHelpText.innerText = "Discount reduces net payable. Cannot exceed Gross Total.";
+                discountHelpText.classList.remove("text-warning");
+            }
+        }
+
+        const depositSpan = document.getElementById("summaryDeposit");
+        const depositReceived = parseFloat(depositSpan ? depositSpan.getAttribute("data-deposit") : 0) || 0;
+
+        const netPayable = Math.max(0, grossTotal - discount);
+        const rawBalance = netPayable - depositReceived;
+
+        const summaryGross = document.getElementById("summaryGrossTotal");
+        const summaryDiscount = document.getElementById("summaryDiscount");
+        const summaryNet = document.getElementById("summaryNetPayable");
+        const summaryBalLabel = document.getElementById("summaryBalanceLabel");
+        const summaryBalDue = document.getElementById("summaryBalanceDue");
+        const balanceItem = document.getElementById("balanceItem");
+
+        if (summaryGross) summaryGross.innerText = "₹" + grossTotal.toFixed(2);
+        if (summaryDiscount) summaryDiscount.innerText = "- ₹" + discount.toFixed(2);
+        if (summaryNet) summaryNet.innerText = "₹" + netPayable.toFixed(2);
+
+        if (rawBalance < 0) {
+            const advanceBal = Math.abs(rawBalance);
+            if (summaryBalLabel) summaryBalLabel.innerText = "Advance Balance";
+            if (summaryBalDue) summaryBalDue.innerText = "₹" + advanceBal.toFixed(2);
+            if (balanceItem) {
+                balanceItem.className = "list-group-item d-flex justify-content-between align-items-center py-3 bg-success text-white";
+            }
+        } else {
+            if (summaryBalLabel) summaryBalLabel.innerText = "Balance Due";
+            if (summaryBalDue) summaryBalDue.innerText = "₹" + rawBalance.toFixed(2);
+            if (balanceItem) {
+                balanceItem.className = "list-group-item d-flex justify-content-between align-items-center py-3 bg-dark text-white";
+            }
+        }
+    }
+
+    [daysInput, oxygenInput, oxygenChargeInput, photoInput, docVisitsInput, nebulizerInput, emergencyInput, discountInput].forEach(input => {
+        if (input) {
+            input.addEventListener("input", calculateAmounts);
+            input.addEventListener("change", calculateAmounts);
+        }
+    });
+
+    document.querySelectorAll(".charge-checkbox").forEach(chk => {
+        chk.addEventListener("change", calculateAmounts);
+    });
+
+    calculateAmounts();
+
+    const btnSaveBilling = document.getElementById("btnSaveBilling");
+    const billingForm = document.getElementById("billingForm");
+    const ajaxMessageContainer = document.getElementById("ajaxMessageContainer");
+
+    if (btnSaveBilling && billingForm) {
+        btnSaveBilling.addEventListener("click", function(e) {
+            e.preventDefault();
+
+            const originalText = btnSaveBilling.innerHTML;
+            btnSaveBilling.disabled = true;
+            btnSaveBilling.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Saving...';
+
+            const formData = new FormData(billingForm);
+            formData.append("action", "save_draft");
+
+            fetch(window.location.href, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest"
+                }
+            })
+            .then(response => response.json().then(data => ({ status: response.status, body: data })))
+            .then(res => {
+                btnSaveBilling.disabled = false;
+                btnSaveBilling.innerHTML = originalText;
+
+                if (ajaxMessageContainer) {
+                    if (res.body.status === "success" || res.status === 200) {
+                        ajaxMessageContainer.innerHTML = `
+                            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                                <i class="bi bi-check-circle-fill me-2"></i>${res.body.message || "IPD Bill saved successfully."}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
+                    } else {
+                        ajaxMessageContainer.innerHTML = `
+                            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>${res.body.message || "Failed to save draft."}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        `;
+                    }
+                    ajaxMessageContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            })
+            .catch(err => {
+                btnSaveBilling.disabled = false;
+                btnSaveBilling.innerHTML = originalText;
+                if (ajaxMessageContainer) {
+                    ajaxMessageContainer.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>An error occurred while saving the draft.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    `;
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

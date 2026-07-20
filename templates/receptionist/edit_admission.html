@@ -1,0 +1,214 @@
+{% extends "receptionist/base.html" %}
+
+{% block title %}Edit Admission | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:admitted_patients' %}">Admitted Patients</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Edit Admission
+        </li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="page-title">Edit Admission</h1>
+        <p class="text-muted mb-0 mt-1">
+            Update inpatient admission records for {{ admission.patient.full_name }}.
+        </p>
+    </div>
+</div>
+
+<form method="POST">
+    {% csrf_token %}
+    <div class="row g-4">
+        <!-- Patient Summary Card -->
+        <div class="col-md-4">
+            <article class="clinic-card">
+                <div class="card-header border-bottom py-3 bg-light">
+                    <h5 class="fw-bold text-dark mb-0">Patient Info</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">Patient Name</label>
+                        <span class="fw-bold text-dark">{{ admission.patient.full_name }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">UHID (Patient ID)</label>
+                        <span class="fw-bold text-dark"><code>{{ admission.patient.uhid }}</code></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">Age / Gender</label>
+                        <span class="fw-semibold text-dark">{{ admission.patient.age }} / {{ admission.patient.get_gender_display }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">Mobile Number</label>
+                        <span class="fw-semibold text-dark">+91 {{ admission.patient.mobile_number }}</span>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- Admission Form Fields -->
+        <div class="col-md-8">
+            <article class="clinic-card">
+                <div class="card-header border-bottom py-3">
+                    <h5 class="fw-bold text-dark mb-0">Admission Information</h5>
+                </div>
+                <div class="card-body py-4">
+                    <div class="row g-3">
+                        <!-- Ward Category -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="wardCategory">Ward Category <span class="required-mark">*</span></label>
+                            <select id="wardCategory" name="ward_type" class="form-select" required>
+                                <option value="" disabled>Select Ward Type</option>
+                                <option value="General Ward 1" {% if admission.ward_type == "General Ward 1" %}selected{% endif %}>General Ward 1</option>
+                                <option value="General Ward 2" {% if admission.ward_type == "General Ward 2" %}selected{% endif %}>General Ward 2</option>
+                                <option value="Private Ward" {% if admission.ward_type == "Private Ward" %}selected{% endif %}>Private Ward</option>
+                                <option value="Deluxe Ward" {% if admission.ward_type == "Deluxe Ward" %}selected{% endif %}>Deluxe Ward</option>
+                                <option value="PICU" {% if admission.ward_type == "PICU" %}selected{% endif %}>PICU</option>
+                                <option value="NICU" {% if admission.ward_type == "NICU" %}selected{% endif %}>NICU</option>
+                            </select>
+                        </div>
+
+                        <!-- Room Number (Dynamic Private/Deluxe) -->
+                        <div class="col-md-6" id="roomContainer" style="display: none;">
+                            <label class="form-label fw-bold" for="roomNumber">Room Number <span class="required-mark">*</span></label>
+                            <select id="roomNumber" name="room_number" class="form-select">
+                                <option value="" disabled selected>Select Room Number</option>
+                            </select>
+                        </div>
+
+                        <!-- Bed Number (Dynamic PICU/NICU) -->
+                        <div class="col-md-6" id="bedDropdownContainer" style="display: none;">
+                            <label class="form-label fw-bold" for="bedDropdown">Bed Number <span class="required-mark">*</span></label>
+                            <select id="bedDropdown" name="bed_number" class="form-select">
+                                <option value="" disabled selected>Select Bed Number</option>
+                            </select>
+                        </div>
+
+                        <!-- Bed Number (General Wards - Free Text) -->
+                        <div class="col-md-6" id="bedInputContainer" style="display: none;">
+                            <label class="form-label fw-bold" for="bedNumberInput">Bed Number <span class="required-mark">*</span></label>
+                            <input type="text" id="bedNumberInput" name="bed_number" class="form-control" placeholder="Enter Bed Number" value="{{ admission.bed_number|default:'' }}">
+                        </div>
+
+                        <!-- Date & Time -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="admissionDate">Admission Date <span class="required-mark">*</span></label>
+                            <input type="date" id="admissionDate" name="admission_date" class="form-control" value="{{ admission.admission_date|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold" for="admissionTime">Admission Time <span class="required-mark">*</span></label>
+                            <input type="time" id="admissionTime" name="admission_time" class="form-control" value="{{ admission.admission_time|time:'H:i' }}" required>
+                        </div>
+
+                        <!-- Diagnosis -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold" for="diagnosis">Diagnosis / Admission Reason <span class="required-mark">*</span></label>
+                            <textarea id="diagnosis" name="diagnosis" class="form-control" rows="3" required>{{ admission.diagnosis }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-white d-flex justify-content-end gap-2 py-3">
+                    <a class="btn btn-light border" href="{% url 'receptionist:admitted_patients' %}">
+                        <i class="bi bi-x-lg me-1"></i>Cancel
+                    </a>
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-save me-1"></i>Save Changes
+                    </button>
+                </div>
+            </article>
+        </div>
+    </div>
+</form>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const wardCategory = document.getElementById('wardCategory');
+        const roomContainer = document.getElementById('roomContainer');
+        const bedDropdownContainer = document.getElementById('bedDropdownContainer');
+        const bedInputContainer = document.getElementById('bedInputContainer');
+
+        const roomNumber = document.getElementById('roomNumber');
+        const bedDropdown = document.getElementById('bedDropdown');
+        const bedNumberInput = document.getElementById('bedNumberInput');
+
+        // Stored initial values from backend
+        const initialWard = "{{ admission.ward_type }}";
+        const initialRoom = "{{ admission.room_number|default:'' }}";
+        const initialBed = "{{ admission.bed_number|default:'' }}";
+
+        function updateFields(ward, selectedVal) {
+            // Hide and disable all dynamic inputs by default
+            roomContainer.style.display = 'none';
+            bedDropdownContainer.style.display = 'none';
+            bedInputContainer.style.display = 'none';
+
+            roomNumber.removeAttribute('required');
+            roomNumber.disabled = true;
+            bedDropdown.removeAttribute('required');
+            bedDropdown.disabled = true;
+            bedNumberInput.removeAttribute('required');
+            bedNumberInput.disabled = true;
+
+            if (ward === 'Private Ward') {
+                roomContainer.style.display = 'block';
+                roomNumber.disabled = false;
+                roomNumber.setAttribute('required', 'required');
+                populateSelect(roomNumber, ['101', '102', '103', '104', '105', '201'], selectedVal);
+            } else if (ward === 'Deluxe Ward') {
+                roomContainer.style.display = 'block';
+                roomNumber.disabled = false;
+                roomNumber.setAttribute('required', 'required');
+                populateSelect(roomNumber, ['202', '203', '204'], selectedVal);
+            } else if (ward === 'PICU' || ward === 'NICU') {
+                bedDropdownContainer.style.display = 'block';
+                bedDropdown.disabled = false;
+                bedDropdown.setAttribute('required', 'required');
+                populateSelect(bedDropdown, ['1', '2', '3', '4', '5'], selectedVal);
+            } else if (ward === 'General Ward 1' || ward === 'General Ward 2') {
+                bedInputContainer.style.display = 'block';
+                bedNumberInput.disabled = false;
+                bedNumberInput.setAttribute('required', 'required');
+                if (selectedVal) {
+                    bedNumberInput.value = selectedVal;
+                }
+            }
+        }
+
+        wardCategory.addEventListener('change', function() {
+            updateFields(this.value, '');
+        });
+
+        function populateSelect(selectEl, options, selectedVal) {
+            selectEl.innerHTML = '<option value="" disabled>Select option</option>';
+            options.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt;
+                el.textContent = opt;
+                if (opt === selectedVal) {
+                    el.selected = true;
+                }
+                selectEl.appendChild(el);
+            });
+            if (!selectedVal) {
+                selectEl.selectedIndex = 0;
+            }
+        }
+
+        // Initialize fields on load
+        if (initialWard) {
+            const initialVal = (initialWard === 'Private Ward' || initialWard === 'Deluxe Ward') ? initialRoom : initialBed;
+            updateFields(initialWard, initialVal);
+        }
+    });
+</script>
+{% endblock %}

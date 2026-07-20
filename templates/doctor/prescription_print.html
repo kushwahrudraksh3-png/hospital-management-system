@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
             margin: 0;
             padding: 0;
         }
+
         .print-action-bar {
             display: flex;
             align-items: center;
@@ -25,12 +27,14 @@
             top: 0;
             z-index: 100;
         }
+
         .print-action-bar .bar-title {
             color: #e2e8f0;
             font-size: 0.95rem;
             font-weight: 600;
             flex: 1;
         }
+
         .print-wrapper {
             display: flex;
             justify-content: center;
@@ -43,21 +47,33 @@
                 size: A4 portrait;
                 margin: 0;
             }
+
             /* Hide absolutely everything except the prescription */
-            body * { visibility: hidden; }
+            body * {
+                visibility: hidden;
+            }
+
             .prescription-pad,
-            .prescription-pad * { visibility: visible; }
+            .prescription-pad * {
+                visibility: visible;
+            }
 
             /* Reset body so no dark background bleeds in */
-            html, body {
+            html,
+            body {
                 background: #ffffff !important;
                 margin: 0 !important;
                 padding: 0 !important;
             }
 
             /* Position prescription precisely */
-            .print-action-bar { display: none !important; }
-            .print-wrapper { padding: 0 !important; }
+            .print-action-bar {
+                display: none !important;
+            }
+
+            .print-wrapper {
+                padding: 0 !important;
+            }
 
             .prescription-pad {
                 position: fixed !important;
@@ -72,6 +88,7 @@
                 background: #ffffff !important;
                 overflow: hidden !important;
             }
+
             .prescription-pad img {
                 width: 210mm !important;
                 height: 297mm !important;
@@ -81,6 +98,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Action bar — hidden during print -->
     <div class="print-action-bar">
@@ -98,21 +116,24 @@
     <!-- Prescription content -->
     <div class="print-wrapper">
         {% if saved_image_url %}
-        <div class="prescription-pad" style="padding: 0 !important; overflow: hidden; position: relative; background: #ffffff;">
-            <img src="{{ saved_image_url }}" alt="Prescription" style="width: 100%; height: 100%; object-fit: contain; display: block;">
+        <div class="prescription-pad"
+            style="padding: 0 !important; overflow: hidden; position: relative; background: #ffffff;">
+            <img src="{{ saved_image_url }}" alt="Prescription"
+                style="width: 100%; height: 100%; object-fit: contain; display: block;">
         </div>
         {% else %}
         <div class="prescription-pad">
             <!-- Header -->
             <div class="prescription-header">
-                <img src="{% static 'images/vatsalya_logo.png' %}" alt="Vatsalya Hospital logo" class="header-logo-left">
+                <img src="{% static 'images/vatsalya_logo.png' %}" alt="Vatsalya Hospital logo"
+                    class="header-logo-left">
                 <div class="header-title-container">
                     <h1>वात्सल्य श्री हॉस्पिटल</h1>
                 </div>
                 <img src="{% static 'images/caduceus.png' %}" alt="Medical caduceus" class="header-logo-right">
             </div>
             <!-- Registration Bar -->
-            <div class="reg-bar">Reg. No. : NH-6886-MAR-2018</div>
+            <div class="reg-bar">Reg. No. : NH/7245/MAY-2026</div>
             <!-- Doctor Details -->
             <div class="doctor-info-section">
                 <div class="doc-details-left">
@@ -120,7 +141,7 @@
                     <div class="doc-degrees">M.B.B.S., M.D. (Pediatrics)</div>
                     <div>Reg. No. : MP-17921</div>
                     <div class="fw-semibold">बाल्य एवं नवजात शिशु रोग विशेषज्ञ</div>
-                    <div>Mob. : 96300 37055</div>
+                    <div>Mob. : 9630037055</div>
                 </div>
                 <div class="doc-details-center">
                     <img src="{% static 'images/sleeping_baby.png' %}" alt="Baby cradle illustration">
@@ -146,13 +167,15 @@
                 <div class="footer-address-bar">
                     <div class="swachh-logo-container">
                         <img src="{% static 'images/swachh_bharat.png' %}" alt="Swachh Bharat">
-                        <span>एक कदम स्वच्छता की ओर</span>
+                        <span>एक कदम स्वस्थता की ओर</span>
                     </div>
-                    <div>ओल्ड ए.बी. रोड, गुलझारा (धामनोद), तहसील धरमपुरी, जिला धार (म.प्र.) – 454552, मो: 9630037055</div>
+                    <div>ओल्ड ए.बी. रोड, गुलझारा (धामनोद), तहसील धरमपुरी, जिला धार (म.प्र.) – 454552, मो: 9630037055
+                    </div>
                 </div>
             </div>
         </div>
         {% endif %}
     </div>
 </body>
+
 </html>

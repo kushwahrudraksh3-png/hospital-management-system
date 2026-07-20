@@ -14,6 +14,4 @@ urlpatterns = [
     path("report-entry/save/", views.report_save, name="report_save"),
     path("report-preview/", views.report_preview, name="report_preview"),
     path("doctor-prescription/", views.doctor_prescription, name="doctor_prescription"),
-    path("xray-bill/generate/", views.xray_bill_generate, name="xray_bill_generate"),
-    path("xray-bill/receipt/", views.xray_bill_receipt, name="xray_bill_receipt"),
 ]

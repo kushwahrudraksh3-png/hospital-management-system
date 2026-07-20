@@ -1,0 +1,109 @@
+{% extends "receptionist/base.html" %}
+
+{% block title %}Ready for Billing | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:ipd_patients' %}">IPD Patients</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Ready for Billing
+        </li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="page-title">Ready for Billing</h1>
+        <p class="text-muted mb-0 mt-1">
+            Patients whose treatment is completed, awaiting final bill generation.
+        </p>
+    </div>
+</div>
+
+<!-- Filters & Search -->
+<section class="clinic-card mb-4">
+    <div class="card-header border-bottom py-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <h5 class="fw-bold text-dark mb-0">Billing Queue</h5>
+            <!-- Search field -->
+            <form method="GET" class="d-flex gap-2" style="min-width: 300px;">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search billing queue...">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if search_query %}
+                        <a href="{% url 'receptionist:ready_for_billing' %}" class="btn btn-light border">Reset</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="min-width: 1100px;">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Status</th>
+                    <th scope="col">Patient Name</th>
+                    <th scope="col">UHID</th>
+                    <th scope="col">Admission ID</th>
+                    <th scope="col">Ward</th>
+                    <th scope="col">Room</th>
+                    <th scope="col">Bed</th>
+                    <th scope="col" class="text-center">Admission Date</th>
+                    <th scope="col" class="text-end">Deposit</th>
+                    <th scope="col" class="text-center">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adm in admissions %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-warning text-dark py-1 px-2.5">
+                                🟠 {{ adm.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ adm.patient.full_name }}</div>
+                            <small class="text-muted">{{ adm.patient.mobile_number }}</small>
+                        </td>
+                        <td><code>{{ adm.patient.uhid }}</code></td>
+                        <td>
+                            <small class="text-muted" title="{{ adm.id }}">{{ adm.id|stringformat:"s"|slice:":8" }}...</small>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ adm.ward_type }}</span></td>
+                        <td>{{ adm.room_number|default:"-" }}</td>
+                        <td>{{ adm.bed_number|default:"-" }}</td>
+                        <td class="text-center">{{ adm.admission_date|date:"d-m-Y" }}</td>
+                        <td class="text-end fw-bold text-dark">₹{{ adm.deposit_amount|floatformat:2 }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'receptionist:ipd_billing_page' adm.id %}" class="btn btn-sm btn-primary">
+                                <i class="bi bi-receipt me-1"></i> Generate Final Bill
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center py-5">
+                            <div class="text-muted mb-2">
+                                <i class="bi bi-receipt-cutoff text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5 class="fw-semibold text-dark">No Patients Ready for Billing</h5>
+                            <p class="text-muted mb-0 small">There are no patients currently awaiting final bill generation.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,5 +1,78 @@
 from django.contrib import admin
-from .models import Patient, OPDVisit, HospitalSettings, Vitals
+from .models import Patient, OPDVisit, HospitalSettings, Vitals, IPDAdmission, WardMaster, RoomMaster, BedMaster, IPDChargeMaster, IPDBill, IPDBillItem
+
+
+class IPDBillItemInline(admin.TabularInline):
+    model = IPDBillItem
+    extra = 0
+    fields = ('display_order', 'particular', 'duration', 'unit', 'rate', 'quantity', 'amount')
+
+
+@admin.register(IPDBill)
+class IPDBillAdmin(admin.ModelAdmin):
+    list_display = ('bill_number', 'patient', 'admission', 'gross_total', 'discount', 'deposit_received', 'net_amount', 'balance_due', 'status', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('bill_number', 'patient__full_name', 'patient__uhid', 'admission__admission_number')
+    readonly_fields = ('created_at', 'updated_at')
+    inlines = [IPDBillItemInline]
+
+
+@admin.register(WardMaster)
+class WardMasterAdmin(admin.ModelAdmin):
+    list_display = ("name", "description")
+    search_fields = ("name",)
+
+
+@admin.register(RoomMaster)
+class RoomMasterAdmin(admin.ModelAdmin):
+    list_display = ("room_number", "ward", "room_type", "capacity")
+    list_filter = ("ward", "room_type")
+    search_fields = ("room_number", "ward__name")
+
+
+@admin.register(BedMaster)
+class BedMasterAdmin(admin.ModelAdmin):
+    list_display = ("bed_number", "room", "is_occupied")
+    list_filter = ("room__ward", "is_occupied")
+    search_fields = ("bed_number", "room__room_number")
+
+
+@admin.register(IPDChargeMaster)
+class IPDChargeMasterAdmin(admin.ModelAdmin):
+    list_display = ("ward", "name", "charge_type", "amount", "unit", "is_active", "code")
+    list_filter = ("ward", "charge_type", "is_active")
+    search_fields = ("code", "name", "ward")
+    list_editable = ("amount", "charge_type", "is_active")
+
+
+
+@admin.register(IPDAdmission)
+class IPDAdmissionAdmin(admin.ModelAdmin):
+    list_display = (
+        "patient",
+        "visit",
+        "admission_date",
+        "admission_time",
+        "admitting_doctor",
+        "ward_type",
+        "room_number",
+        "bed_number",
+        "created_at",
+    )
+    search_fields = (
+        "patient__full_name",
+        "patient__uhid",
+        "visit__opd_number",
+    )
+    list_filter = (
+        "ward_type",
+        "admission_date",
+    )
+    readonly_fields = (
+        "created_at",
+        "updated_at",
+    )
+
 
 
 @admin.register(Patient)

@@ -36,7 +36,6 @@
         {% if base_template == 'receptionist/base.html' %}
         <div class="filter-tabs">
             <a href="?status=recommended" class="filter-tab{% if status_filter != 'discharged' %} active{% endif %}" style="text-decoration: none;">IPD Recommended Patients</a>
-            <a href="?status=discharged" class="filter-tab{% if status_filter == 'discharged' %} active{% endif %}" style="text-decoration: none;">Discharged Patients</a>
         </div>
         {% endif %}
     </div>
@@ -68,6 +67,8 @@
                         <td>
                             {% if visit.status == 'IPD Recommended' %}
                             <span class="badge badge-soft-warning">🟠 IPD Recommended</span>
+                            {% elif visit.status == 'Admitted' %}
+                            <span class="badge badge-soft-success">🟢 Admitted</span>
                             {% elif visit.status == 'Discharged' %}
                             <span class="badge badge-soft-success">🟢 Discharged</span>
                             {% else %}
@@ -90,17 +91,29 @@
                                         <i class="bi bi-person"></i> Profile
                                     </a>
                                     {% endif %}
+                                    {% if base_template == 'receptionist/base.html' %}
+                                    <a href="{% url 'doctor:prescription_print' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}&from=receptionist" class="btn btn-light btn-sm text-success" title="View Prescription">
+                                        <i class="bi bi-prescription"></i> Rx
+                                    </a>
+                                    {% else %}
                                     <a href="{% url 'doctor:prescription_preview' %}?visit_id={{ visit.id }}&patient_id={{ visit.patient.id }}" class="btn btn-light btn-sm text-success" title="View Prescription">
                                         <i class="bi bi-prescription"></i> Rx
                                     </a>
+                                    {% endif %}
                                     {% if visit.status == 'IPD Recommended' %}
                                         {% if base_template == 'receptionist/base.html' %}
-                                        <a href="{% url 'receptionist:ipd_registration' %}?patient_id={{ visit.patient.id }}&visit_id={{ visit.id }}" class="btn btn-primary btn-sm" title="Proceed to Reception IPD">
-                                            <i class="bi bi-hospital"></i> Admit
+                                        <a href="{% url 'receptionist:ipd_registration' %}?patient_id={{ visit.patient.id }}&visit_id={{ visit.id }}" class="btn btn-primary btn-sm" title="Continue to IPD">
+                                            <i class="bi bi-hospital"></i> Continue to IPD
                                         </a>
                                         {% else %}
                                         <a href="{% url 'doctor:discharge_patient' %}?visit_id={{ visit.id }}" class="btn btn-primary btn-sm" title="Discharge Patient">
                                             <i class="bi bi-hospital"></i> Discharge
+                                        </a>
+                                        {% endif %}
+                                    {% elif visit.status == 'Admitted' %}
+                                        {% if base_template != 'receptionist/base.html' %}
+                                        <a href="{% url 'doctor:discharge_patient' %}?visit_id={{ visit.id }}" class="btn btn-danger btn-sm" title="Discharge Patient">
+                                            <i class="bi bi-x-circle"></i> Discharge Patient
                                         </a>
                                         {% endif %}
                                     {% endif %}

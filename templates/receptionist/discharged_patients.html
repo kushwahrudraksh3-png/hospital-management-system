@@ -1,0 +1,173 @@
+{% extends "receptionist/base.html" %}
+
+{% block title %}Discharged Patients History | Vatsalya Shree Hospital{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+            <a href="{% url 'receptionist:dashboard' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">
+            Discharged Patients History
+        </li>
+    </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h1 class="page-title">Discharged Patients History</h1>
+        <p class="text-muted mb-0 mt-1">
+            Master registry of all inpatient discharges and finalized billing receipts.
+        </p>
+    </div>
+</div>
+
+<!-- Summary Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm p-3 bg-white rounded-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small d-block fw-semibold">Total Discharged Patients</span>
+                    <h3 class="fw-bold text-dark mt-1 mb-0">{{ total_discharged_count|default:0 }}</h3>
+                </div>
+                <div class="bg-primary bg-opacity-10 p-3 rounded-3">
+                    <i class="bi bi-person-check fs-4 text-primary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card border-0 shadow-sm p-3 bg-white rounded-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small d-block fw-semibold">Today's Discharges</span>
+                    <h3 class="fw-bold text-success mt-1 mb-0">{{ today_discharges_count|default:0 }}</h3>
+                </div>
+                <div class="bg-success bg-opacity-10 p-3 rounded-3">
+                    <i class="bi bi-calendar-check fs-4 text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs & Filters -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-white border-bottom py-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <!-- Cohort Tabs -->
+            <div class="btn-group" role="group">
+                <a href="{% url 'receptionist:discharged_patients' %}?cohort=all&q={{ search_query }}" class="btn btn-outline-primary {% if cohort == 'all' or not cohort %}active{% endif %}">
+                    All Discharges <span class="badge bg-secondary ms-1">{{ total_discharged_count|default:0 }}</span>
+                </a>
+                <a href="{% url 'receptionist:discharged_patients' %}?cohort=today&q={{ search_query }}" class="btn btn-outline-primary {% if cohort == 'today' %}active{% endif %}">
+                    Today's Discharges <span class="badge bg-secondary ms-1">{{ today_discharges_count|default:0 }}</span>
+                </a>
+            </div>
+
+            <!-- Search Form -->
+            <form method="GET" class="d-flex gap-2" style="min-width: 350px;">
+                <input type="hidden" name="cohort" value="{{ cohort }}">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search history...">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                    {% if search_query or cohort != 'all' %}
+                        <a href="{% url 'receptionist:discharged_patients' %}" class="btn btn-light border">Reset</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="min-width: 1200px;">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Status</th>
+                    <th scope="col">Patient Details</th>
+                    <th scope="col">UHID</th>
+                    <th scope="col">Bill Number</th>
+                    <th scope="col">Ward Info</th>
+                    <th scope="col" class="text-center">Dates (Adm & Disch)</th>
+                    <th scope="col">Doctor</th>
+                    <th scope="col" class="text-end">Final Amount</th>
+                    <th scope="col" class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for adm in admissions %}
+                    {% with bill=adm.ipd_bills.first %}
+                    <tr>
+                        <td>
+                            <span class="badge bg-success py-1.5 px-2.5">
+                                ✅ Discharged
+                            </span>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ adm.patient.full_name }}</div>
+                            <small class="text-muted">{{ adm.patient.mobile_number }}</small>
+                        </td>
+                        <td><code>{{ adm.patient.uhid }}</code></td>
+                        <td>
+                            {% if bill %}
+                                <span class="fw-semibold text-dark">{{ bill.bill_number }}</span>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">{{ adm.ward_type }}</span>
+                            <div class="small text-muted mt-0.5">Room {{ adm.room_number|default:"-" }} / Bed {{ adm.bed_number|default:"-" }}</div>
+                        </td>
+                        <td class="text-center small">
+                            <div><strong>Adm:</strong> {{ adm.admission_date|date:"d-m-Y" }}</div>
+                            <div><strong>Dis:</strong> {{ adm.discharge_date|date:"d-m-Y" }}</div>
+                        </td>
+                        <td>
+                            {% if adm.admitting_doctor %}
+                                Dr. {{ adm.admitting_doctor.get_full_name|default:adm.admitting_doctor.username }}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end fw-bold text-dark">
+                            {% if bill %}
+                                ₹{{ bill.net_amount|floatformat:2 }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <a href="{% url 'receptionist:ipd_billing_page' adm.id %}" class="btn btn-sm btn-outline-primary" title="View Saved Bill">
+                                    <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="{% url 'receptionist:view_admission' adm.id %}" class="btn btn-sm btn-outline-secondary" title="View Admission Details">
+                                    <i class="bi bi-journal-text"></i> Details
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endwith %}
+                {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center py-5">
+                            <div class="text-muted mb-2">
+                                <i class="bi bi-archive text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5 class="fw-semibold text-dark">No Discharged Patients Found</h5>
+                            <p class="text-muted mb-0 small">No patient records match the selected filters or search queries.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

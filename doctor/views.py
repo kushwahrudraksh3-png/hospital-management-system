@@ -67,15 +67,19 @@ def dashboard(request):
 @login_required
 def queue(request):
     today = timezone.localdate()
+    from django.db.models import Q
     today_visits = OPDVisit.objects.filter(
-        visit_date=today,
-        status__in=[
-            OPDVisit.StatusChoices.READY_FOR_DOCTOR,
-            OPDVisit.StatusChoices.PENDING_LAB,
-            OPDVisit.StatusChoices.COMPLETED,
-            OPDVisit.StatusChoices.IPD_RECOMMENDED
-        ],
-        vitals__isnull=False
+        Q(visit_date=today) & (
+            Q(visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP) |
+            (
+                Q(status__in=[
+                    OPDVisit.StatusChoices.READY_FOR_DOCTOR,
+                    OPDVisit.StatusChoices.PENDING_LAB,
+                    OPDVisit.StatusChoices.COMPLETED,
+                    OPDVisit.StatusChoices.IPD_RECOMMENDED
+                ]) & Q(vitals__isnull=False)
+            )
+        )
     ).select_related('patient', 'handwritten_prescription').order_by('visit_time')
     
     # Get active LaboratoryRequest IDs for today
@@ -90,6 +94,7 @@ def queue(request):
         "active_nav": "queue",
         "today_visits": today_visits,
         "lab_request_ids": lab_request_ids,
+        "today": today,
     }
     return render(request, "doctor/queue.html", context)
 
@@ -504,7 +509,7 @@ def recommend_ipd(request):
 @login_required
 def ipd_patients(request):
     ipd_visits = OPDVisit.objects.filter(
-        status=OPDVisit.StatusChoices.IPD_RECOMMENDED
+        status__in=[OPDVisit.StatusChoices.IPD_RECOMMENDED, OPDVisit.StatusChoices.ADMITTED]
     ).select_related('patient', 'vitals').order_by('-updated_at')
     
     context = {
@@ -520,8 +525,17 @@ def discharge_patient(request):
     visit_id = request.GET.get('visit_id')
     if visit_id:
         visit = get_object_or_404(OPDVisit, id=visit_id)
-        visit.status = OPDVisit.StatusChoices.DISCHARGED
-        visit.save()
+        from receptionist.models import IPDAdmission
+        admission = IPDAdmission.objects.filter(visit=visit, status='Admitted').first()
+        if admission:
+            admission.status = 'Ready for Billing'
+            admission.save()
+            visit.status = OPDVisit.StatusChoices.READY_FOR_BILLING
+            visit.save()
+            return redirect(reverse('doctor:ipd_patients'))
+        else:
+            visit.status = OPDVisit.StatusChoices.DISCHARGED
+            visit.save()
     
     # Redirect to doctor's todays patients page (doctor:queue)
     return redirect(reverse('doctor:queue'))

@@ -196,17 +196,28 @@
                     <td class="text-end">
                         <div class="d-flex gap-2 justify-content-end">
                             <a class="btn btn-light btn-sm" href="{% url 'receptionist:patient_summary_detail' patient.id %}">View</a>
+                            {% if patient.followup_count > 0 %}
                             <button
                                 type="button"
-                                class="btn btn-outline-primary btn-sm"
-                                data-bs-toggle="modal"
-                                data-bs-target="#newOpdModal"
-                                data-patient-id="{{ patient.id }}"
-                                data-patient-name="{{ patient.full_name }}"
-                                data-patient-uhid="{{ patient.uhid }}"
+                                class="btn btn-danger btn-sm"
+                                disabled
+                                style="background-color: #dc3545; border-color: #dc3545; color: white; cursor: not-allowed;"
                             >
-                                New OPD
+                                Follow-up Done
                             </button>
+                            {% else %}
+                            <form method="POST" action="{% url 'receptionist:create_opd_visit' patient.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="visit_type" value="Follow-up">
+                                <input type="hidden" name="payment_mode" value="CASH">
+                                <button
+                                    type="submit"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    Follow-up
+                                </button>
+                            </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -304,60 +315,4 @@
     {% endif %}
 </section>
 
-<!-- New OPD Modal -->
-<div class="modal fade" id="newOpdModal" tabindex="-1" aria-labelledby="newOpdModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="newOpdModalLabel">New OPD Visit</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form method="POST" id="newOpdForm" action="">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold mb-0">Patient Name</label>
-                        <input type="text" id="modalPatientName" class="form-control-plaintext fw-bold text-primary py-0" readonly value="">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold mb-0">UHID</label>
-                        <input type="text" id="modalPatientUHID" class="form-control-plaintext text-muted py-0" readonly value="">
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_payment_mode" class="form-label fw-semibold">Payment Mode <span class="text-danger">*</span></label>
-                        <select name="payment_mode" id="id_payment_mode" class="form-select" required>
-                            <option value="" disabled selected>Select Payment Mode</option>
-                            <option value="CASH">Cash</option>
-                            <option value="UPI">UPI</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create OPD Visit</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var newOpdModal = document.getElementById('newOpdModal');
-        if (newOpdModal) {
-            newOpdModal.addEventListener('show.bs.modal', function(event) {
-                var button = event.relatedTarget;
-                var patientId = button.getAttribute('data-patient-id');
-                var patientName = button.getAttribute('data-patient-name');
-                var patientUhid = button.getAttribute('data-patient-uhid');
-                
-                var form = newOpdModal.querySelector('#newOpdForm');
-                form.action = "{% url 'receptionist:create_opd_visit' '00000000-0000-0000-0000-000000000000' %}".replace('00000000-0000-0000-0000-000000000000', patientId);
-                
-                newOpdModal.querySelector('#modalPatientName').value = patientName;
-                newOpdModal.querySelector('#modalPatientUHID').value = patientUhid;
-            });
-        }
-    });
-</script>
 {% endblock %}

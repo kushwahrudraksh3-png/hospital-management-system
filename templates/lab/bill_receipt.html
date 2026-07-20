@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,8 +9,10 @@
     <!-- Google Fonts for premium typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:bold&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Courier+Prime:bold&family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;700&display=swap"
+        rel="stylesheet">
+
     <style>
         /* -------------------------------------------------------------
            PATHOLOGY BILL - VATSALYA CHILDREN HOSPITAL - STYLESHEET
@@ -58,6 +61,43 @@
         .controls-panel {
             margin-top: 15px;
             z-index: 10;
+        }
+
+        /* Top Toolbar - Screen Only (Above the bill) */
+        .top-toolbar {
+            width: 148mm;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            margin-bottom: 15px;
+            z-index: 10;
+        }
+
+        .back-button {
+            background-color: #6c757d;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .back-button:active {
+            transform: translateY(1px);
         }
 
         .print-button {
@@ -287,10 +327,11 @@
             table-layout: fixed;
         }
 
-        .investigation-table th, 
+        .investigation-table th,
         .investigation-table td {
             border: 0.8px solid var(--border-color);
-            height: 8mm; /* Fixed row height to fit precisely 9 rows in A5 */
+            height: 8mm;
+            /* Fixed row height to fit precisely 9 rows in A5 */
             font-size: 12px;
         }
 
@@ -359,7 +400,8 @@
 
         /* Footer styling */
         .bill-footer {
-            margin-top: auto; /* Push to the very bottom */
+            margin-top: auto;
+            /* Push to the very bottom */
             display: flex;
             justify-content: flex-end;
             align-items: flex-end;
@@ -390,7 +432,8 @@
         .regards-title {
             font-size: 11px;
             font-weight: 700;
-            margin-bottom: 12px; /* Space for signature */
+            margin-bottom: 12px;
+            /* Space for signature */
             letter-spacing: 0.5px;
         }
 
@@ -421,6 +464,7 @@
                 display: block !important;
             }
 
+            .top-toolbar,
             .controls-panel {
                 display: none !important;
             }
@@ -446,27 +490,40 @@
         }
     </style>
 </head>
+
 <body>
+
+    <!-- Top Toolbar - Screen Only (Above Receipt) -->
+    <div class="top-toolbar">
+        <a href="{% url 'lab:lab_billing' %}" class="back-button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            ← Back
+        </a>
+    </div>
 
     <!-- Main Bill Container (A5 Portrait Size) -->
     <div class="bill-container" id="billPage">
-        
+
         <!-- Top Registration Row -->
         <div class="reg-number-row">
-            <span>Reg. No. NH/6886/MAR-2018</span>
+            <span>Reg. No. NH/7245/MAY-2026</span>
         </div>
 
         <!-- Header Section (Logo & Hospital Info) -->
         <header class="bill-header">
             <!-- Logo Left -->
             <div class="logo-container">
-                <img src="{% static 'images/logo.png' %}" alt="Hospital Logo" class="hospital-logo-img">
+                <img src="{% static 'images/vatsalya_logo.png' %}" alt="Hospital Logo" class="hospital-logo-img">
             </div>
 
             <!-- Hospital Info Center -->
             <div class="hospital-info">
                 <h1 class="hospital-name">Vatsalya Shree Hospital</h1>
-                <p class="hospital-address">Old A.B. Road Guljhara (Dhamnod), Dist. Dhar, 454552</p>
+                <p class="hospital-address">Ward-1 Old A.B. Road Guljhara (Dhamnod), Dist. Dhar, 454552</p>
                 <p class="hospital-phone">Mob.: 96300 37055</p>
             </div>
 
@@ -507,7 +564,7 @@
                 </div>
                 <div class="info-group group-age-sex">
                     <span class="info-label">Age/Sex</span>
-                    <span class="info-value">{{ patient.age|cut:" 0 Months"|default:"N/A" }} / {{ patient.get_gender_display|slice:":1"|default:"N/A" }}</span>
+                    <span class="info-value">{% if patient %}{{ patient.age|cut:" 0 Months"|default:"N/A" }} / {{ patient.get_gender_display|default:"N/A" }}{% else %}N/A{% endif %}</span>
                 </div>
             </div>
 
@@ -515,13 +572,7 @@
             <div class="info-row row-doctor">
                 <div class="info-group group-doctor">
                     <span class="info-label">Ref. By :</span>
-                    <span class="info-value">
-                        {% if bill.visit.handwritten_prescription.doctor %}
-                            Dr. {{ bill.visit.handwritten_prescription.doctor.first_name }} {{ bill.visit.handwritten_prescription.doctor.last_name }}
-                        {% else %}
-                            Dr. KALPESH PATIDAR (MANAGER)
-                        {% endif %}
-                    </span>
+                    <span class="info-value">{% if bill.visit.handwritten_prescription.doctor %}{% if bill.visit.handwritten_prescription.doctor.first_name or bill.visit.handwritten_prescription.doctor.last_name %}Dr. {{ bill.visit.handwritten_prescription.doctor.first_name }} {{ bill.visit.handwritten_prescription.doctor.last_name }}{% else %}Dr. {{ bill.visit.handwritten_prescription.doctor.username }}{% endif %}{% else %}Dr. KALPESH PATIDAR (MANAGER){% endif %}</span>
                 </div>
             </div>
         </section>
@@ -601,4 +652,5 @@
         });
     </script>
 </body>
+
 </html>

@@ -227,7 +227,7 @@
 
                 <!-- Registration Bar -->
                 <div class="reg-bar">
-                    Reg. No. : NH-6886-MAR-2018
+                    Reg. No : NH/7245/MAY-2026
                 </div>
 
                 <!-- Doctor Details -->
@@ -237,7 +237,7 @@
                         <div class="doc-degrees">M.B.B.S., M.D. (Pediatrics)</div>
                         <div>Reg. No. : MP-17921</div>
                         <div class="fw-semibold">Pediatrician</div>
-                        <div>Mob. : {{ request.user.phone_number|default:"-" }}</div>
+                        <div>Mob. : 9630037055</div>
                     </div>
                     <div class="doc-details-center">
                         <img src="{% static 'images/sleeping_baby.png' %}" alt="Baby cradle illustration">
@@ -328,7 +328,7 @@
                     <div class="footer-slogan-row"><div class="footer-slogan">Towards Better Child Health</div></div>
                     <div class="footer-timing-bar">परामर्श समय : सुबह 10 से दोपहर 2 बजे तक एवं सायंकाल 5 से रात्रि 8 बजे तक (सोमवार अवकाश)</div>
                     <div class="footer-address-bar">
-                        <div class="swachh-logo-container"><img src="{% static 'images/swachh_bharat.png' %}" alt="Swachh Bharat spectacles"><span>एक कदम स्वच्छता की ओर</span></div>
+                        <div class="swachh-logo-container"><img src="{% static 'images/swachh_bharat.png' %}" alt="Swachh Bharat spectacles"><span>एक कदम स्वस्थता की ओर</span></div>
                         <div>ओल्ड ए.बी. रोड, गुलझारा (धामनोद), तहसील धरमपुरी, जिला धार (म.प्र.) – 454552, मो: 9630037055</div>
                     </div>
                 </div>
@@ -351,12 +351,12 @@
                 </button>
             </div>
             <div class="col-md-3">
-                <a href="{% url 'doctor:report_list' %}?visit_id={{ visit.id }}&patient_id={{ patient.id }}" class="btn btn-success w-100 justify-content-center py-2">
+                <a href="{% url 'doctor:report_list' %}?visit_id={{ visit.id }}&patient_id={{ patient.id }}" class="btn btn-success w-100 justify-content-center py-2" id="proceedToLabBtn" data-visit-id="{{ visit.id }}" data-patient-id="{{ patient.id }}">
                     <i class="bi bi-arrow-right-circle"></i> Proceed to Lab
                 </a>
             </div>
             <div class="col-md-3">
-                <a href="{% url 'doctor:recommend_ipd' %}?patient_id={{ patient.id }}&visit_id={{ visit.id }}" class="btn btn-info w-100 justify-content-center py-2">
+                <a href="{% url 'doctor:recommend_ipd' %}?patient_id={{ patient.id }}&visit_id={{ visit.id }}" class="btn btn-info w-100 justify-content-center py-2" id="proceedToIpdBtn" data-visit-id="{{ visit.id }}" data-patient-id="{{ patient.id }}">
                     <i class="bi bi-hospital"></i> Proceed to IPD
                 </a>
             </div>

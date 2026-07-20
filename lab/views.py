@@ -33,32 +33,40 @@ def dashboard(request):
             pass
             
     # Calculate metric card counts
-    todays_patients_count = LaboratoryRequest.objects.filter(
-        visit_date=selected_date,
-        status=OPDVisit.StatusChoices.PENDING_LAB
+    from receptionist.models import Patient
+    from lab.models import LaboratoryReport
+    from django.db.models import Q
+    
+    # Helper to retrieve lab visits for a specific date (referred, billed, or cased)
+    def get_lab_patients_query(date):
+        return OPDVisit.objects.filter(
+            visit_date=date
+        ).filter(
+            Q(status=OPDVisit.StatusChoices.PENDING_LAB) |
+            Q(laboratory_bill__isnull=False) |
+            Q(laboratory_case__isnull=False)
+        ).distinct()
+
+    todays_patients_count = get_lab_patients_query(selected_date).count()
+    
+    pending_billing_count = get_lab_patients_query(selected_date).filter(
+        laboratory_bill__isnull=True
     ).count()
     
-    pending_billing_count = LaboratoryRequest.objects.filter(
-        visit_date=selected_date,
-        status=OPDVisit.StatusChoices.PENDING_LAB
+    reports_completed_count = LaboratoryReport.objects.filter(
+        visit__visit_date=today,
+        status__in=['COMPLETED', 'SENT']
     ).count()
     
-    # For future compatibility: when LaboratoryReport model/status is implemented,
-    # count completed reports using that model/status.
-    # Since the report entry feature is not yet built, this defaults to 0.
-    reports_completed_count = 0
-    
-    all_patients_count = LaboratoryRequest.objects.filter(
-        visit_date__lte=selected_date,
-        status=OPDVisit.StatusChoices.PENDING_LAB
-    ).count()
+    all_patients_count = Patient.objects.filter(
+        Q(visits__status=OPDVisit.StatusChoices.PENDING_LAB) |
+        Q(laboratory_bills__isnull=False) |
+        Q(laboratory_cases__isnull=False)
+    ).distinct().count()
     
     # Calculate patient percentage change compared to the previous day
     previous_day = selected_date - timedelta(days=1)
-    previous_patients_count = LaboratoryRequest.objects.filter(
-        visit_date=previous_day,
-        status=OPDVisit.StatusChoices.PENDING_LAB
-    ).count()
+    previous_patients_count = get_lab_patients_query(previous_day).count()
     
     if previous_patients_count > 0:
         patient_percent_change = int(((todays_patients_count - previous_patients_count) / previous_patients_count) * 100)
@@ -285,9 +293,9 @@ def bill_receipt(request):
     bill_id = request.GET.get('bill_id')
     bill = None
     if bill_id:
-        bill = LaboratoryBill.objects.filter(id=bill_id).select_related('patient', 'visit').prefetch_related('items').first()
+        bill = LaboratoryBill.objects.filter(id=bill_id).select_related('patient', 'visit__handwritten_prescription__doctor').prefetch_related('items').first()
     if not bill:
-        bill = LaboratoryBill.objects.all().select_related('patient', 'visit').prefetch_related('items').first()
+        bill = LaboratoryBill.objects.all().select_related('patient', 'visit__handwritten_prescription__doctor').prefetch_related('items').first()
         
     items = bill.items.all() if bill else []
     remaining_rows_count = max(0, 9 - len(items))
@@ -753,81 +761,4 @@ def doctor_prescription(request):
     }
     return render(request, "lab/doctor_prescription.html", context)
 
-@lab_required
-def xray_bill_generate(request):
-    from django.shortcuts import redirect
-    from django.urls import reverse
-    from django.db import transaction
-    from .models import LabTest, LaboratoryBill, LaboratoryBillItem
-    
-    visit_id = request.GET.get('visit_id')
-    patient_id = request.GET.get('patient_id')
-    
-    if not visit_id:
-        return redirect('lab:todays_patients')
-        
-    visit = OPDVisit.objects.filter(id=visit_id).select_related('patient').first()
-    if not visit:
-        return redirect('lab:todays_patients')
-        
-    with transaction.atomic():
-        # Check if a bill already exists for this visit
-        bill = LaboratoryBill.objects.filter(visit=visit).first()
-        if not bill:
-            # Create a new LaboratoryBill
-            bill = LaboratoryBill.objects.create(
-                visit=visit,
-                patient=visit.patient,
-                grand_total=0.00
-            )
-            
-        # Get the X-Ray (Per Film) test
-        xray_test = LabTest.objects.filter(name="X-Ray (Per Film)").first()
-        xray_price = xray_test.price if xray_test else 400.00
-        
-        # Check if the X-Ray item is already added to this bill to prevent duplicate items
-        xray_item_exists = LaboratoryBillItem.objects.filter(bill=bill, name="X-Ray (Per Film)").exists()
-        if not xray_item_exists:
-            # If the test doesn't exist in DB but we default to 400.00, we should ensure the LabTest object is in the DB
-            if not xray_test:
-                xray_test = LabTest.objects.create(name="X-Ray (Per Film)", price=400.00)
-            
-            # Add X-Ray (Per Film) item to the bill
-            LaboratoryBillItem.objects.create(
-                bill=bill,
-                test=xray_test,
-                name="X-Ray (Per Film)",
-                price=xray_price
-            )
-            
-            # Recalculate bill grand_total
-            total = sum(item.price for item in bill.items.all())
-            bill.grand_total = total
-            bill.save()
-            
-    return redirect(f"{reverse('lab:xray_bill_receipt')}?bill_id={bill.id}")
 
-@lab_required
-def xray_bill_receipt(request):
-    from .models import LaboratoryBill
-    
-    bill_id = request.GET.get('bill_id')
-    bill = None
-    if bill_id:
-        bill = LaboratoryBill.objects.filter(id=bill_id).select_related('patient', 'visit__handwritten_prescription__doctor').prefetch_related('items').first()
-    
-    if not bill:
-        # Fallback to the latest bill if no bill_id is provided
-        bill = LaboratoryBill.objects.all().select_related('patient', 'visit__handwritten_prescription__doctor').prefetch_related('items').first()
-        
-    xray_items = bill.items.filter(name__icontains="X-Ray") if bill else []
-    xray_total = sum(item.price for item in xray_items)
-    
-    context = {
-        "bill": bill,
-        "patient": bill.patient if bill else None,
-        "visit": bill.visit if bill else None,
-        "items": xray_items,
-        "xray_total": xray_total,
-    }
-    return render(request, "lab/xray_bill.html", context)

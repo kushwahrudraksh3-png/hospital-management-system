@@ -234,12 +234,14 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             text-align: center;
         }
 
         .logo-box img {
-            width: 55px;
-            height: 55px;
+            width: 75px;
+            height: auto;
+            max-height: 65px;
             object-fit: contain;
         }
 
@@ -294,8 +296,8 @@
         }
 
         .emblem-circle {
-            width: 52px;
-            height: 52px;
+            width: 62px;
+            height: 62px;
             border-radius: 50%;
             background-color: #fbf5e6;
             border: 1.5px solid var(--hosp-red);
@@ -305,8 +307,8 @@
         }
 
         .emblem-circle svg {
-            width: 32px;
-            height: 32px;
+            width: 38px;
+            height: 38px;
             color: var(--hosp-red);
         }
 
@@ -903,8 +905,7 @@
                 <header class="report-header">
                     <!-- Left: Vatsalya Lotus logo -->
                     <div class="logo-box">
-                        <img src="{% static 'images/logo.png' %}" alt="Vatsalya Logo" />
-                        <div class="logo-text">Vatsalya</div>
+                        <img src="{% static 'images/vatsalya_child_logo.png' %}" alt="Vatsalya Logo" />
                     </div>
 
                     <!-- Center: Hospital Title -->
@@ -926,7 +927,7 @@
 
                 <!-- Blue Registration Number Banner -->
                 <div class="reg-banner">
-                    Reg. No. : <span id="pt-reg-display" contenteditable="true">{% if report.report_number %}{{ report.report_number }}{% else %}NH-6886-MAR-2018{% endif %}</span>
+                    Report. No : <span id="pt-reg-display" contenteditable="true">{% if report.report_number %}{{ report.report_number }}{% else %}NH-6886-MAR-2018{% endif %}</span>
                 </div>
  
                 <!-- Patient Information Grid Box -->
@@ -957,7 +958,7 @@
                         </div>
                         <div class="patient-field date">
                             <span class="field-label">DATE :</span>
-                            <span class="field-value" id="pt-date-display" contenteditable="true">{{ report.generated_date|date:"d/m/Y"|default:visit.visit_date|date:"d/m/Y" }}</span>
+                            <span class="field-value" id="pt-date-display" contenteditable="true">{% if report.generated_date %}{{ report.generated_date|date:"d/m/Y" }}{% else %}{{ visit.visit_date|date:"d/m/Y"|default:"N/A" }}{% endif %}</span>
                         </div>
                     </div>
  
@@ -1039,7 +1040,7 @@
 
                         <!-- Center: Address details -->
                         <div class="footer-center-address">
-                            <div class="address-line">ए.बी. रोड, धामनोद, तह. धरमपुरी, जिला-धार (म.प्र.) 454552</div>
+                            <div class="address-line">वार्ड-1 ओल्ड ए.बी. रोड, गुलझारा (धामनोद), तहसील धरमपुरी, जिला धार (म.प्र.) – 454552,</div>
                             <div class="phone-line">मो. 94251-37055</div>
                         </div>
                     </div>

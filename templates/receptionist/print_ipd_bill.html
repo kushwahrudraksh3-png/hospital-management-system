@@ -1,0 +1,603 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Vatsalya Shree Hospital - Invoice</title>
+  <style>
+    /* Reset & General Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #000;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Screen Styles */
+    @media screen {
+      body {
+        background-color: #f0f2f5;
+        padding: 15px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .print-btn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #1e3a8a;
+        color: #ffffff;
+        border: none;
+        padding: 10px 24px;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        transition: background-color 0.2s, transform 0.1s;
+      }
+
+      .print-btn:hover {
+        background-color: #172554;
+      }
+
+      .print-btn:active {
+        transform: scale(0.97);
+      }
+
+      .page {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid #d1d5db;
+      }
+    }
+
+    /* Print Styles */
+    @media print {
+      body {
+        background-color: #ffffff;
+        padding: 0;
+        margin: 0;
+      }
+
+      .print-btn {
+        display: none;
+      }
+
+      @page {
+        size: A4 portrait;
+        margin: 0;
+      }
+
+      .page {
+        box-shadow: none;
+        border: none;
+        margin: 0;
+        page-break-after: avoid;
+        page-break-before: avoid;
+        page-break-inside: avoid;
+      }
+    }
+
+    /* A4 Layout Dimensions */
+    .page {
+      width: 210mm;
+      height: 297mm;
+      background-color: #ffffff;
+      padding: 8mm 10mm;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Outer Boundary of Bill Book Page */
+    .bill-box {
+      border: 1.5px solid #000000;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background-color: #ffffff;
+      padding: 10px;
+      box-sizing: border-box;
+      justify-content: space-between;
+    }
+
+    /* Header Container */
+    .header-container {
+      border-bottom: 1.5px solid #000000;
+      padding: 5px 10px 8px 10px;
+      position: relative;
+      width: 100%;
+      text-align: center;
+    }
+
+    .reg-no {
+      position: absolute;
+      top: 2px;
+      right: 10px;
+      font-size: 9px;
+      font-weight: bold;
+      color: #000000;
+    }
+
+    .header-main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin-top: 5px;
+      gap: 3px;
+    }
+
+    .logo-area {
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none !important;
+      background-color: transparent !important;
+      margin-bottom: 2px;
+    }
+
+    #hospitalLogo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+    }
+
+    .hospital-info {
+      width: 100%;
+      text-align: center;
+    }
+
+    .hospital-info h1 {
+      font-size: 15px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .hospital-info .address {
+      font-size: 10px;
+      font-weight: bold;
+      margin-bottom: 1px;
+      line-height: 1.2;
+    }
+
+    .hospital-info .phone {
+      font-size: 9px;
+      font-weight: bold;
+      line-height: 1.2;
+    }
+
+    /* Patient Details Section */
+    .patient-details {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin-bottom: 5px;
+    }
+
+    .detail-row {
+      display: flex;
+      align-items: flex-end;
+      height: 24px;
+      padding: 0 10px 2px 10px;
+      border-bottom: 1px solid #000000;
+    }
+
+    .sr-invoice-row {
+      height: 28px;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0;
+    }
+
+    .sr-no-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .detail-row .label {
+      font-size: 10px;
+      font-weight: bold;
+      white-space: nowrap;
+      margin-right: 5px;
+    }
+
+    .sr-no-container .label {
+      font-size: 11px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    /* Red stamped text for serial number */
+    .sr-no-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 13px;
+      font-weight: bold;
+      color: #b91c1c;
+      width: 100px;
+      font-family: inherit;
+    }
+
+    .invoice-title {
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .input-field {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 10px;
+      font-family: Arial, sans-serif;
+      flex-grow: 1;
+      height: 100%;
+      padding: 0 4px;
+      margin-bottom: -1px;
+    }
+
+    .flex-field {
+      display: flex;
+      align-items: flex-end;
+      height: 100%;
+    }
+
+    /* Table Component */
+    .table-container {
+      width: 100%;
+      margin-bottom: 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th {
+      border: 1px solid #000000;
+      border-top: none;
+      height: 25px;
+      font-size: 10px;
+      font-weight: bold;
+      text-align: center;
+      background-color: transparent;
+    }
+
+    /* Specific Column Alignments and Borders */
+    th:first-child,
+    td:first-child {
+      border-left: none;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: none;
+    }
+
+    td {
+      border: 1px solid #000000;
+      height: 20px;
+      font-size: 9px;
+      padding: 0;
+      background-color: transparent;
+    }
+
+    .particular-cell {
+      padding-left: 10px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    /* Form Inputs in Tables */
+    .table-input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 9px;
+      font-family: Arial, sans-serif;
+      text-align: right;
+      padding: 0 8px;
+    }
+
+    /* Hide spinners in number inputs */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* Total Row */
+    .total-label-cell {
+      text-align: center;
+      font-weight: bold;
+      font-size: 11px;
+      height: 24px;
+    }
+
+    .total-amount-cell {
+      height: 24px;
+    }
+
+    .total-input {
+      font-weight: bold;
+    }
+
+    /* Footer & Signature Section */
+    .footer-section {
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-end;
+      padding: 5px 15px 5px 15px;
+    }
+
+    .doctor-signature {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 5px;
+    }
+
+    #doctorSignature {
+      width: 100px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      margin-bottom: 4px;
+      mix-blend-mode: multiply;
+      filter: grayscale(1) contrast(2.2) brightness(1.3);
+    }
+
+    .doctor-name {
+      font-size: 10px;
+      font-weight: bold;
+      white-space: nowrap;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Single Print Button -->
+  <button class="print-btn" onclick="window.print()">Print</button>
+
+  <!-- A4 Page Container -->
+  <div class="page">
+    <div class="bill-box">
+
+      <!-- Header -->
+      <div class="header-container">
+        <div class="reg-no">Reg.No.NH/7245/MAY2026</div>
+        <div class="header-main">
+          <div class="logo-area">
+            <img id="hospitalLogo" src="{% if hospital and hospital.hospital_logo %}{{ hospital.hospital_logo.url }}{% else %}{% static 'images/logo.png' %}{% endif %}" alt="Hospital Logo">
+          </div>
+          <div class="hospital-info">
+            <h1>{{ hospital.hospital_name|default:"VATSALYA SHREE HOSPITAL" }}</h1>
+            <p class="address">{{ hospital.address|default:"Ward-1,Old A.B.Road,Guljhara (Dist-Dhar) M.P.454552" }}</p>
+            <p class="phone">{{ hospital.phone_number|default:"Mob.96300 37055, 88788 37055" }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Patient Details Form -->
+      <div class="patient-details">
+
+        <!-- Sr. No. & Invoice -->
+        <div class="detail-row sr-invoice-row">
+          <div class="sr-no-container">
+            <span class="label">Sr.No.</span>
+            <input type="text" class="sr-no-input" id="sr-no" placeholder="" value="{{ bill.bill_number }}" readonly>
+          </div>
+          <div class="invoice-title">INVOICE</div>
+        </div>
+
+        <!-- Name of Patient -->
+        <div class="detail-row">
+          <span class="label">Name of Patient</span>
+          <input type="text" class="input-field" id="patient-name" value="{{ patient.full_name }}" readonly>
+        </div>
+
+        <!-- Age/Sex & Mobile -->
+        <div class="detail-row">
+          <div class="flex-field" style="width: 55%;">
+            <span class="label">Age./Sex :</span>
+            <input type="text" class="input-field" id="age-sex" value="{{ patient.age }} / {{ patient.get_gender_display }}" readonly>
+          </div>
+          <div class="flex-field" style="width: 45%; padding-left: 20px;">
+            <span class="label">Mob.</span>
+            <input type="text" class="input-field" id="mobile" value="{{ patient.mobile_number }}" readonly>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="detail-row">
+          <span class="label">Address</span>
+          <input type="text" class="input-field" id="address" value="{{ patient.address }}" readonly>
+        </div>
+
+        <!-- Date of Admission & Date of Discharge -->
+        <div class="detail-row">
+          <div class="flex-field" style="width: 55%;">
+            <span class="label">Date of Admission</span>
+            <input type="text" class="input-field" id="date-admission" value="{{ admission.admission_date|date:'d-m-Y' }}" readonly>
+          </div>
+          <div class="flex-field" style="width: 45%; padding-left: 20px;">
+            <span class="label">Date of Discharge</span>
+            <input type="text" class="input-field" id="date-discharge" value="{{ bill.discharge_date|date:'d-m-Y' }}" readonly>
+          </div>
+        </div>
+
+        <!-- Payment Mode -->
+        <div class="detail-row">
+          <span class="label">Payment Mode :</span>
+          <input type="text" class="input-field" id="payment-mode" value="{{ admission.payment_mode|default:bill.admission.payment_mode|default:'Cash' }}" readonly>
+        </div>
+
+      </div>
+
+      <!-- Bill Particulars Table -->
+      <div class="table-container">
+        <table>
+          <colgroup>
+            <col style="width: 65%;">
+            <col style="width: 17.5%;">
+            <col style="width: 17.5%;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Particulars</th>
+              <th>Rate</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="particular-cell">Registration</td>
+              <td><input type="number" class="table-input rate-input" id="rate-registration" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-registration" value="" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Oxygen Charges</td>
+              <td><input type="number" class="table-input rate-input" id="rate-oxygen" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-oxygen" value="{% if bill.oxygen_charges %}{{ bill.oxygen_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Photo therapy</td>
+              <td><input type="number" class="table-input rate-input" id="rate-photo" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-photo" value="{% if bill.physiotherapy_charges %}{{ bill.physiotherapy_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Nursing Charges</td>
+              <td><input type="number" class="table-input rate-input" id="rate-nursing" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-nursing" value="{% if bill.nursing_charges %}{{ bill.nursing_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Warmer Charges</td>
+              <td><input type="number" class="table-input rate-input" id="rate-warmer" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-warmer" value="{% if bill.other_daily_charges %}{{ bill.other_daily_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Bed Charges General Ward</td>
+              <td><input type="number" class="table-input rate-input" id="rate-bed-general" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-bed-general" value="{% if admission.ward_type == 'General Ward 1' or admission.ward_type == 'General Ward 2' %}{{ bill.room_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Bed Charge PICU/NICU</td>
+              <td><input type="number" class="table-input rate-input" id="rate-bed-picu" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-bed-picu" value="{% if admission.ward_type == 'PICU' or admission.ward_type == 'NICU' %}{{ bill.room_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Bed Charge Private /Deluxe Room</td>
+              <td><input type="number" class="table-input rate-input" id="rate-bed-private" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-bed-private" value="{% if admission.ward_type == 'Private Ward' or admission.ward_type == 'Deluxe Ward' %}{{ bill.room_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Hospital Doctor's Visit Fees</td>
+              <td><input type="number" class="table-input rate-input" id="rate-doctor" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-doctor" value="{% if bill.doctor_visit_charges %}{{ bill.doctor_visit_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Nebulizer Charges</td>
+              <td><input type="number" class="table-input rate-input" id="rate-nebulizer" value="{{ charges_map.NEBULIZER.rate|default:'' }}" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-nebulizer" value="{% if charges_map.NEBULIZER %}{{ charges_map.NEBULIZER.amount|floatformat:0 }}{% elif bill.injection_charges %}{{ bill.injection_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Emergency Charges</td>
+              <td><input type="number" class="table-input rate-input" id="rate-emergency" value="{{ charges_map.EMERGENCY.rate|default:'' }}" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-emergency" value="{% if charges_map.EMERGENCY %}{{ charges_map.EMERGENCY.amount|floatformat:0 }}{% elif bill.emergency_charges %}{{ bill.emergency_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Service Charges</td>
+              <td><input type="number" class="table-input rate-input" id="rate-service" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-service" value="{% if bill.service_charges %}{{ bill.service_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">Biomedical waste Charges</td>
+              <td><input type="number" class="table-input rate-input" id="rate-waste" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-waste" value="{% if bill.biomedical_waste_charges %}{{ bill.biomedical_waste_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <tr>
+              <td class="particular-cell">HFNC/VENTILATOR/CPAP</td>
+              <td><input type="number" class="table-input rate-input" id="rate-hfnc" value="" readonly></td>
+              <td><input type="number" class="table-input amount-input" id="amount-hfnc" value="{% if bill.visiting_doctor_charges %}{{ bill.visiting_doctor_charges|floatformat:0 }}{% endif %}" readonly></td>
+            </tr>
+            <!-- Total Row -->
+            <tr>
+              <td colspan="2" class="total-label-cell">Total</td>
+              <td class="total-amount-cell">
+                <input type="number" class="table-input total-input" id="total-amount" value="{{ bill.gross_amount|floatformat:0 }}" readonly>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Blank Space and Footer -->
+      <div class="footer-section">
+        <div class="doctor-signature">
+          <img src="{% static 'images/signature.png' %}" alt="Doctor Signature" id="doctorSignature">
+          <div class="doctor-name">
+            {% if doctor %}Dr. {{ doctor.first_name }} {{ doctor.last_name }}{% else %}Dr. Kalpesh Manager (Patidar){% endif %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Auto-calculate script -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const amountInputs = document.querySelectorAll('.amount-input');
+      const totalInput = document.getElementById('total-amount');
+
+      const calculateTotal = () => {
+        let sum = 0;
+        amountInputs.forEach(input => {
+          const val = parseFloat(input.value);
+          if (!isNaN(val)) {
+            sum += val;
+          }
+        });
+        totalInput.value = sum > 0 ? sum : '';
+      };
+
+      amountInputs.forEach(input => {
+        input.addEventListener('input', calculateTotal);
+      });
+    });
+  </script>
+</body>
+
+</html>
