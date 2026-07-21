@@ -32,8 +32,8 @@ def login_view(request):
                 else:
                     request.session.set_expiry(0)     # Expires on browser close
 
-                if user.role == "ADMIN":
-                    return redirect("admin:index")
+                if user.role == "ADMIN" or user.is_staff:
+                    return redirect("adminpanel:dashboard")
                 elif user.role == "RECEPTIONIST":
                     return redirect("receptionist:dashboard")
                 elif user.role == "DOCTOR":
@@ -49,46 +49,8 @@ def login_view(request):
 
 
 def signup_view(request):
-    form = SignupForm(request.POST or None)
-
-    if request.method == "POST":
-        if form.is_valid():
-            full_name = form.cleaned_data["full_name"]
-            email = form.cleaned_data["email"]
-            phone_number = form.cleaned_data["phone_number"]
-            role = form.cleaned_data["role"]
-            password = form.cleaned_data["password"]
-
-            # Split full_name into first_name and last_name
-            name_parts = full_name.strip().split(" ", 1)
-            first_name = name_parts[0]
-            last_name = name_parts[1] if len(name_parts) > 1 else ""
-
-            # Generate a unique username from email
-            base_username = email.split("@")[0]
-            username = base_username
-            counter = 1
-            while User.objects.filter(username=username).exists():
-                username = f"{base_username}{counter}"
-                counter += 1
-
-            user = User(
-                email=email,
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                phone_number=phone_number,
-                role=role,
-                is_active=True,
-                is_staff=False,
-            )
-            user.set_password(password)
-            user.save()
-
-            messages.success(request, "Account created successfully. Please login.")
-            return redirect("accounts:login")
-
-    return render(request, "accounts/signup.html", {"form": form})
+    messages.error(request, "Public registration is disabled. Please contact the administrator to get an account.")
+    return redirect("accounts:login")
 
 
 def forgot_password_view(request):

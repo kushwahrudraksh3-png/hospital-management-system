@@ -26,6 +26,7 @@ urlpatterns = [
     path("receptionist/", include("receptionist.urls")),
     path("doctor/", include("doctor.urls")),
     path("lab/", include("lab.urls")),
+    path("adminpanel/", include("adminpanel.urls")),
 ]
 
 if settings.DEBUG:

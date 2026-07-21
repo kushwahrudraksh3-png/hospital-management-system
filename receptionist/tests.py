@@ -272,47 +272,35 @@ class PatientRegistrationViewTest(TestCase):
         # Verify redirect to opd receipt page with query param
         self.assertRedirects(response, f"{reverse('receptionist:opd_receipt', kwargs={'patient_id': patient.id})}?visit_id={visit.id}")
 
-    def test_post_registration_reuse_patient(self):
-        # Create an existing patient first
+    def test_post_registration_shared_mobile_number(self):
+        # Create an existing patient first (Father)
         existing_patient = Patient.objects.create(
-            full_name="Existing Patient",
-            date_of_birth=date(1990, 1, 1),
-            gender=Patient.GenderChoices.FEMALE,
+            full_name="Father Patient",
+            date_of_birth=date(1980, 1, 1),
+            gender=Patient.GenderChoices.MALE,
             mobile_number="9876543219",
-            address="Old Address"
-        )
-        # Create a prior paid visit to trigger follow-up logic
-        OPDVisit.objects.create(
-            patient=existing_patient,
-            visit_date=date.today(),
-            visit_time="10:00:00",
-            visit_type=OPDVisit.VisitTypeChoices.NEW_VISIT,
-            status=OPDVisit.StatusChoices.COMPLETED
+            address="Family Address"
         )
         self.client.login(email="receptionist_test@vatsalyashree.com", password="password123")
         post_data = {
-            'full_name': 'Existing Patient',
-            'date_of_birth': '1990-01-01',
+            'full_name': 'Child Patient',
+            'date_of_birth': '2012-05-15',
             'gender': Patient.GenderChoices.FEMALE,
             'mobile_number': '9876543219',
-            'address': 'Old Address',
-            'visit_type': OPDVisit.VisitTypeChoices.FOLLOW_UP,
+            'address': 'Family Address',
             'status': OPDVisit.StatusChoices.WAITING,
-            'payment_mode': OPDVisit.PaymentModeChoices.UPI
+            'payment_mode': OPDVisit.PaymentModeChoices.CASH
         }
         response = self.client.post(self.url, data=post_data)
         
-        # Verify visit was created for this patient
-        visit = OPDVisit.objects.filter(patient=existing_patient, visit_type=OPDVisit.VisitTypeChoices.FOLLOW_UP).first()
-        self.assertIsNotNone(visit)
-        self.assertEqual(visit.visit_type, OPDVisit.VisitTypeChoices.FOLLOW_UP)
-        
-        # Verify redirect to vitals entry page
-        self.assertRedirects(response, f"{reverse('receptionist:vitals_entry_detail', kwargs={'patient_id': existing_patient.id})}?visit_id={visit.id}")
-        
-        # Verify that no duplicate patient was created
+        # Verify that 2 distinct patients now exist with the same mobile number
         patients_count = Patient.objects.filter(mobile_number='9876543219').count()
-        self.assertEqual(patients_count, 1)
+        self.assertEqual(patients_count, 2)
+        
+        child_patient = Patient.objects.filter(full_name='Child Patient').first()
+        self.assertIsNotNone(child_patient)
+        self.assertNotEqual(existing_patient.id, child_patient.id)
+        self.assertNotEqual(existing_patient.uhid, child_patient.uhid)
 
 
 class ReceiptViewTest(TestCase):
@@ -845,6 +833,33 @@ class DashboardTests(TestCase):
         self.assertContains(response, 'Aarav Sharma')
         self.assertContains(response, 'Waiting')
         self.assertContains(response, '9876543210')
+
+    def test_pending_lab_reports_counter_decreases_when_completed_or_sent(self):
+        from lab.models import LaboratoryReport, LabTest
+        from django.utils import timezone
+        
+        # Set visit status to Pending Lab
+        self.visit.status = "Pending Lab"
+        self.visit.save()
+        
+        self.client.login(email="receptionist_dash@vatsalyashree.com", password="password123")
+        
+        # With pending report or status Pending Lab, count should be 1
+        res1 = self.client.get(reverse('receptionist:dashboard'))
+        self.assertEqual(res1.context['pending_lab_reports'], 1)
+        
+        # Create a lab test and report with status SENT
+        lab_test = LabTest.objects.create(name="CBC Test", price=200)
+        report = LaboratoryReport.objects.create(
+            patient=self.patient,
+            visit=self.visit,
+            lab_test=lab_test,
+            status='SENT'
+        )
+        
+        # After report status is SENT, pending count should decrease to 0
+        res2 = self.client.get(reverse('receptionist:dashboard'))
+        self.assertEqual(res2.context['pending_lab_reports'], 0)
 
 
 class OPDValidityBusinessRulesTest(TestCase):

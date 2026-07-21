@@ -92,12 +92,17 @@ def dashboard(request):
 @lab_required
 def todays_patients(request):
     from lab.models import LaboratoryBill, LaboratoryCase, LaboratoryReport
+    from django.db.models import Q
     today = timezone.localdate()
     
-    # Query LaboratoryRequest (proxy for OPDVisit) for today's visits
+    # Query LaboratoryRequest (proxy for OPDVisit) for today's visits sent to lab by doctor
     raw_requests = LaboratoryRequest.objects.filter(
         visit_date=today
-    ).select_related(
+    ).filter(
+        Q(status=OPDVisit.StatusChoices.PENDING_LAB) |
+        Q(laboratory_bill__isnull=False) |
+        Q(laboratory_case__isnull=False)
+    ).distinct().select_related(
         'patient', 
         'handwritten_prescription__doctor',
         'laboratory_bill'
@@ -139,13 +144,10 @@ def todays_patients(request):
         case_reports = LaboratoryReport.objects.filter(case=case).exclude(lab_test__name__icontains="x-ray")
         
         # Determine status code, text, and bootstrap badge class
-        all_sent = True
-        for report in case_reports:
-            if report.status != 'SENT':
-                all_sent = False
-                break
-                
-        if all_sent and case_reports.exists():
+        has_reports = case_reports.exists()
+        is_pending = case_reports.filter(status__in=['PENDING', 'IN_PROGRESS']).exists()
+        
+        if has_reports and not is_pending:
             req.status_code = 'sent'
             req.status_text = 'Sent to Doctor'
             req.status_class = 'badge bg-success'
@@ -362,8 +364,11 @@ def report_entry(request):
     report_id = request.GET.get('report_id')
     
     # Handle "Save & Send to Doctor" action from preview page
-    if action == 'send_to_doctor' and report_id:
-        LaboratoryReport.objects.filter(id=report_id).update(status='SENT')
+    if action == 'send_to_doctor':
+        if report_id:
+            LaboratoryReport.objects.filter(id=report_id).update(status='SENT')
+        elif visit_id:
+            LaboratoryReport.objects.filter(visit_id=visit_id).update(status='SENT')
         messages.success(request, "Report successfully saved and sent to doctor.")
         return redirect("lab:report_entry")
         
@@ -479,12 +484,15 @@ def report_entry(request):
             # Fetch all reports associated with this case (excluding X-Rays)
             case_reports = [r for r in case.reports.all() if "x-ray" not in r.lab_test.name.lower()]
             
-            # A patient remains in the pending queue until all investigations are marked 'SENT'
+            # A patient remains in the pending queue until all investigations are completed or sent
             is_pending = False
-            for report in case_reports:
-                if report.status != 'SENT':
-                    is_pending = True
-                    break
+            if not case_reports:
+                is_pending = True
+            else:
+                for report in case_reports:
+                    if report.status in ['PENDING', 'IN_PROGRESS']:
+                        is_pending = True
+                        break
             
             # Attach the bill object and report count to the case for the template to render
             case.bill = bill

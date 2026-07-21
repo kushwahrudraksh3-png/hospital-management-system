@@ -1,0 +1,666 @@
+{% extends "adminpanel/base.html" %}
+{% load static %}
+
+{% block title %}Reports Dashboard - Vatsalya Shree Hospital ERP{% endblock %}
+
+{% block breadcrumb %}Reports{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Stat Cards */
+    .erp-stat-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px 24px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .erp-stat-card:hover {
+        transform: translateY(-3px);
+        border-color: #cbd5e1;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .erp-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .erp-card-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    .erp-card-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.2;
+    }
+
+    /* Tabs Styling */
+    .master-nav-tabs {
+        border-bottom: 1px solid #e2e8f0;
+        gap: 6px;
+    }
+
+    .master-nav-tabs .nav-link {
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        padding: 10px 18px;
+        border-radius: 0;
+        background: transparent;
+        transition: all 0.15s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .master-nav-tabs .nav-link:hover {
+        color: #1e293b;
+        border-bottom-color: #cbd5e1;
+    }
+
+    .master-nav-tabs .nav-link.active {
+        color: #2563eb;
+        border-bottom: 2px solid #2563eb;
+        background: transparent;
+    }
+
+    /* Master Table Styles */
+    .master-table-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        overflow: hidden;
+    }
+
+    .master-table {
+        margin-bottom: 0;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .master-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    .master-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        font-size: 0.875rem;
+    }
+
+    .master-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .master-table tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    /* Action Buttons */
+    .action-btn-view {
+        background-color: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .action-btn-view:hover {
+        background-color: #475569;
+        color: #ffffff;
+        border-color: #475569;
+    }
+
+    .action-btn-pdf {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .action-btn-pdf:hover {
+        background-color: #dc2626;
+        color: #ffffff;
+        border-color: #dc2626;
+    }
+
+    .action-btn-excel {
+        background-color: #f0fdf4;
+        color: #16a34a;
+        border: 1px solid #bbf7d0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .action-btn-excel:hover {
+        background-color: #16a34a;
+        color: #ffffff;
+        border-color: #16a34a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Title Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="h4 fw-bold text-dark mb-1">Reports Dashboard</h2>
+        <p class="text-muted small mb-0">Centralized reporting module for OPD visits, IPD admissions, laboratory investigations, and revenue billing.</p>
+    </div>
+</div>
+
+<!-- 1. TOP STATISTICS CARDS (ONLY 4 CARDS) -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total OPD Reports -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total OPD Reports</div>
+                <div class="erp-icon-wrapper" style="background-color: #eff6ff; color: #2563eb;">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_opd_reports }}</div>
+        </div>
+    </div>
+
+    <!-- Card 2: Total IPD Reports -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total IPD Reports</div>
+                <div class="erp-icon-wrapper" style="background-color: #f0fdf4; color: #16a34a;">
+                    <i class="bi bi-hospital-fill"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_ipd_reports }}</div>
+        </div>
+    </div>
+
+    <!-- Card 3: Total Laboratory Reports -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total Laboratory Reports</div>
+                <div class="erp-icon-wrapper" style="background-color: #fef3c7; color: #d97706;">
+                    <i class="bi bi-flask-fill"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_lab_reports }}</div>
+        </div>
+    </div>
+
+    <!-- Card 4: Total Billing Reports -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total Billing Reports</div>
+                <div class="erp-icon-wrapper" style="background-color: #f3e8ff; color: #9333ea;">
+                    <i class="bi bi-receipt-cutoff"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_billing_reports }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. SEARCH & FILTER TABS SECTION -->
+<div class="card border-0 shadow-sm rounded-3 p-3 mb-4" style="background: #ffffff; border: 1px solid #e5e7eb;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3 border-bottom pb-3">
+        <!-- Filter Tabs (4 TABS) -->
+        <ul class="nav master-nav-tabs" id="reportsTabs" role="tablist">
+            <li class="nav-item">
+                <a href="?tab=opd{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="nav-link {% if active_tab == 'opd' %}active{% endif %}">OPD Reports</a>
+            </li>
+            <li class="nav-item">
+                <a href="?tab=ipd{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="nav-link {% if active_tab == 'ipd' %}active{% endif %}">IPD Reports</a>
+            </li>
+            <li class="nav-item">
+                <a href="?tab=lab{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="nav-link {% if active_tab == 'lab' %}active{% endif %}">Laboratory Reports</a>
+            </li>
+            <li class="nav-item">
+                <a href="?tab=billing{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="nav-link {% if active_tab == 'billing' %}active{% endif %}">Billing Reports</a>
+            </li>
+        </ul>
+
+        <!-- Top Right Action Controls -->
+        <div class="d-flex align-items-center gap-2">
+            <a href="?tab={{ active_tab }}&export=excel{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if billing_type_filter %}&billing_type={{ billing_type_filter }}{% endif %}" class="btn btn-sm btn-outline-success d-inline-flex align-items-center gap-1">
+                <i class="bi bi-file-earmark-excel"></i> Export Excel
+            </a>
+            <a href="?tab={{ active_tab }}&export=csv{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if billing_type_filter %}&billing_type={{ billing_type_filter }}{% endif %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+            </a>
+            <button type="button" onclick="window.location.reload();" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" title="Refresh Page Data">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+            <button type="button" onclick="window.print();" class="btn btn-sm btn-outline-dark d-inline-flex align-items-center gap-1" title="Print Report">
+                <i class="bi bi-printer"></i> Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Form Controls -->
+    <form method="GET" action="{% url 'adminpanel:reports_dashboard' %}" class="row g-2 align-items-end mb-3">
+        <input type="hidden" name="tab" value="{{ active_tab }}">
+        
+        <!-- Search Box -->
+        <div class="col-12 col-md-4 col-lg-3">
+            <label class="form-label small fw-semibold text-muted mb-1">Search</label>
+            <div class="position-relative">
+                <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control ps-5 border-1" placeholder="Name, UHID, Bill #..." style="border-radius: 8px; font-size: 0.84rem; background: #f8fafc;">
+            </div>
+        </div>
+
+        <!-- Date Range: Start Date -->
+        <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label small fw-semibold text-muted mb-1">From Date</label>
+            <input type="date" name="start_date" value="{{ start_date }}" class="form-control border-1" style="border-radius: 8px; font-size: 0.84rem; background: #f8fafc;">
+        </div>
+
+        <!-- Date Range: End Date -->
+        <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label small fw-semibold text-muted mb-1">To Date</label>
+            <input type="date" name="end_date" value="{{ end_date }}" class="form-control border-1" style="border-radius: 8px; font-size: 0.84rem; background: #f8fafc;">
+        </div>
+
+        <!-- Status Filter -->
+        <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label small fw-semibold text-muted mb-1">Status Filter</label>
+            <select name="status" class="form-select border-1" style="border-radius: 8px; font-size: 0.84rem; background: #f8fafc;">
+                <option value="all" {% if not status_filter or status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                {% if active_tab == 'opd' %}
+                    <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                {% elif active_tab == 'ipd' %}
+                    <option value="Admitted" {% if status_filter == 'Admitted' %}selected{% endif %}>Admitted</option>
+                    <option value="Discharged" {% if status_filter == 'Discharged' %}selected{% endif %}>Discharged</option>
+                {% elif active_tab == 'lab' %}
+                    <option value="COMPLETED" {% if status_filter == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                    <option value="SENT" {% if status_filter == 'SENT' %}selected{% endif %}>Sent</option>
+                    <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>Pending</option>
+                {% elif active_tab == 'billing' %}
+                    <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>Paid</option>
+                    <option value="Unpaid" {% if status_filter == 'Unpaid' %}selected{% endif %}>Unpaid</option>
+                    <option value="Partial" {% if status_filter == 'Partial' %}selected{% endif %}>Partial</option>
+                {% endif %}
+            </select>
+        </div>
+
+        {% if active_tab == 'billing' %}
+        <!-- Billing Type Filter -->
+        <div class="col-6 col-md-3 col-lg-2">
+            <label class="form-label small fw-semibold text-muted mb-1">Billing Type</label>
+            <select name="billing_type" class="form-select border-1" style="border-radius: 8px; font-size: 0.84rem; background: #f8fafc;">
+                <option value="all">All Types</option>
+                <option value="opd" {% if billing_type_filter == 'opd' %}selected{% endif %}>OPD</option>
+                <option value="ipd" {% if billing_type_filter == 'ipd' %}selected{% endif %}>IPD</option>
+                <option value="lab" {% if billing_type_filter == 'lab' or billing_type_filter == 'laboratory' %}selected{% endif %}>Laboratory</option>
+            </select>
+        </div>
+        {% endif %}
+
+        <!-- Filter Action Buttons -->
+        <div class="col-6 col-md-3 col-lg-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary btn-sm flex-fill d-inline-flex align-items-center justify-content-center gap-1" style="border-radius: 8px;">
+                <i class="bi bi-funnel-fill"></i> Filter
+            </button>
+            <a href="?tab={{ active_tab }}" class="btn btn-outline-secondary btn-sm flex-fill d-inline-flex align-items-center justify-content-center gap-1" style="border-radius: 8px;" title="Clear All Filters">
+                <i class="bi bi-x-circle"></i> Reset
+            </a>
+        </div>
+    </form>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="reportsTabContent">
+        <!-- TAB 1: OPD REPORTS -->
+        {% if active_tab == 'opd' %}
+        <div class="tab-pane fade show active" id="opd-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Report ID</th>
+                                <th>Patient Name</th>
+                                <th>UHID</th>
+                                <th>Doctor</th>
+                                <th>Visit Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in opd_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ v.opd_number }}</td>
+                                <td class="fw-semibold text-dark">{{ v.patient.full_name }}</td>
+                                <td>{{ v.patient.uhid }}</td>
+                                <td>Dr. {{ v.created_by.get_full_name|default:v.created_by.username|default:"N/A" }}</td>
+                                <td>{{ v.visit_date|date:"d M Y" }}</td>
+                                <td>
+                                    {% if v.status == 'Completed' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 Completed</span>
+                                    {% elif v.status == 'Cancelled' %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-medium px-2 py-1">🔴 Cancelled</span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium px-2 py-1">🟡 {{ v.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">No OPD reports found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if opd_page.has_other_pages or opd_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ opd_page.start_index|default:0 }} - {{ opd_page.end_index|default:0 }}</strong> of <strong>{{ opd_page.paginator.count }}</strong> OPD reports</div>
+                    {% if opd_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if opd_page.has_previous %}
+                            <a href="?tab=opd&page={{ opd_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in opd_page.paginator.page_range %}
+                            {% if opd_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=opd&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if opd_page.has_next %}
+                            <a href="?tab=opd&page={{ opd_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 2: IPD REPORTS -->
+        {% if active_tab == 'ipd' %}
+        <div class="tab-pane fade show active" id="ipd-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Admission ID</th>
+                                <th>Patient Name</th>
+                                <th>Ward</th>
+                                <th>Admission Date</th>
+                                <th>Discharge Date</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for adm in ipd_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ adm.receipt_number|default:"IPD-ADM" }}</td>
+                                <td class="fw-semibold text-dark">{{ adm.patient.full_name }}</td>
+                                <td>{{ adm.ward_type }}</td>
+                                <td>{{ adm.admission_date|date:"d M Y" }}</td>
+                                <td>{{ adm.discharge_date|date:"d M Y"|default:"--" }}</td>
+                                <td>
+                                    {% if adm.status == 'Discharged' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 Discharged</span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium px-2 py-1">🟡 {{ adm.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="{% url 'receptionist:view_admission' adm.id %}" target="_blank" class="btn action-btn-view text-decoration-none">👁 View</a>
+                                        <a href="{% url 'receptionist:ipd_deposit_receipt' adm.id %}" target="_blank" class="btn action-btn-pdf text-decoration-none">📄 Deposit Receipt</a>
+                                        <a href="?tab=ipd&export=excel{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn action-btn-excel text-decoration-none">📊 Export Excel</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">No IPD reports found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if ipd_page.has_other_pages or ipd_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ ipd_page.start_index|default:0 }} - {{ ipd_page.end_index|default:0 }}</strong> of <strong>{{ ipd_page.paginator.count }}</strong> IPD reports</div>
+                    {% if ipd_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if ipd_page.has_previous %}
+                            <a href="?tab=ipd&page={{ ipd_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in ipd_page.paginator.page_range %}
+                            {% if ipd_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=ipd&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if ipd_page.has_next %}
+                            <a href="?tab=ipd&page={{ ipd_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 3: LABORATORY REPORTS -->
+        {% if active_tab == 'lab' %}
+        <div class="tab-pane fade show active" id="lab-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Report ID</th>
+                                <th>Patient Name</th>
+                                <th>Test Name</th>
+                                <th>Report Date</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rep in lab_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ rep.report_number }}</td>
+                                <td class="fw-semibold text-dark">{{ rep.patient.full_name }}</td>
+                                <td>{{ rep.lab_test.name }}</td>
+                                <td>{{ rep.generated_date|date:"d M Y" }}</td>
+                                <td>
+                                    {% if rep.status == 'COMPLETED' or rep.status == 'SENT' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 {{ rep.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium px-2 py-1">🟡 {{ rep.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-inline-flex gap-1">
+                                        <a href="{% url 'lab:report_preview' %}?report_id={{ rep.id }}" target="_blank" class="btn action-btn-view text-decoration-none">👁 View</a>
+                                        <a href="{% url 'lab:report_preview' %}?report_id={{ rep.id }}" target="_blank" class="btn action-btn-pdf text-decoration-none">📄 Export PDF</a>
+                                        <a href="?tab=lab&export=excel{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn action-btn-excel text-decoration-none">📊 Export Excel</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">No laboratory reports found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if lab_page.has_other_pages or lab_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ lab_page.start_index|default:0 }} - {{ lab_page.end_index|default:0 }}</strong> of <strong>{{ lab_page.paginator.count }}</strong> laboratory reports</div>
+                    {% if lab_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if lab_page.has_previous %}
+                            <a href="?tab=lab&page={{ lab_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in lab_page.paginator.page_range %}
+                            {% if lab_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=lab&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if lab_page.has_next %}
+                            <a href="?tab=lab&page={{ lab_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 4: BILLING REPORTS -->
+        {% if active_tab == 'billing' %}
+        <div class="tab-pane fade show active" id="billing-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Bill Number</th>
+                                <th>Patient Name</th>
+                                <th>Bill Type</th>
+                                <th>Amount</th>
+                                <th>Payment Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in billing_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ b.bill_number }}</td>
+                                <td class="fw-semibold text-dark">{{ b.patient_name }}</td>
+                                <td>
+                                    <span class="badge {% if b.is_opd %}bg-info-subtle text-info-emphasis border border-info-subtle{% elif b.is_ipd %}bg-primary-subtle text-primary border border-primary-subtle{% else %}bg-secondary-subtle text-secondary border border-secondary-subtle{% endif %} px-2 py-1">
+                                        {{ b.bill_type }}
+                                    </span>
+                                </td>
+                                <td class="fw-bold text-primary">₹ {{ b.amount }}</td>
+                                <td>
+                                    {% if b.status == 'Paid' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 Paid</span>
+                                    {% elif b.status == 'Partial' %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium px-2 py-1">🟡 Partial</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-medium px-2 py-1">🔴 {{ b.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ b.date|date:"d M Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">No billing reports found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if billing_page.has_other_pages or billing_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ billing_page.start_index|default:0 }} - {{ billing_page.end_index|default:0 }}</strong> of <strong>{{ billing_page.paginator.count }}</strong> billing reports</div>
+                    {% if billing_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if billing_page.has_previous %}
+                            <a href="?tab=billing&page={{ billing_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if billing_type_filter %}&billing_type={{ billing_type_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in billing_page.paginator.page_range %}
+                            {% if billing_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=billing&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if billing_type_filter %}&billing_type={{ billing_type_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if billing_page.has_next %}
+                            <a href="?tab=billing&page={{ billing_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if billing_type_filter %}&billing_type={{ billing_type_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

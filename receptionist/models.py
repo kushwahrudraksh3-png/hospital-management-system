@@ -45,7 +45,6 @@ class Patient(models.Model):
     )
     mobile_number = models.CharField(
         max_length=15,
-        unique=True,
         validators=[mobile_validator],
         db_index=True
     )

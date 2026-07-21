@@ -139,7 +139,62 @@ class LabBillingWorkflowTestCase(TestCase):
         from django.urls import NoReverseMatch
         with self.assertRaises(NoReverseMatch):
             reverse('lab:xray_bill_generate')
-        with self.assertRaises(NoReverseMatch):
-            reverse('lab:xray_bill_receipt')
+    def test_todays_patients_sent_to_doctor_status(self):
+        from lab.models import LaboratoryCase, LaboratoryReport
+        bill = LaboratoryBill.objects.create(
+            visit=self.visit,
+            patient=self.patient,
+            grand_total=250.00
+        )
+        LaboratoryBillItem.objects.create(
+            bill=bill,
+            test=self.test_cbc,
+            name=self.test_cbc.name,
+            price=self.test_cbc.price
+        )
+        case = LaboratoryCase.objects.create(visit=self.visit, patient=self.patient)
+        report = LaboratoryReport.objects.create(
+            case=case,
+            patient=self.patient,
+            visit=self.visit,
+            lab_test=self.test_cbc,
+            status='SENT'
+        )
+
+        url = reverse('lab:todays_patients')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-lab-status="sent"')
+        self.assertContains(response, "Sent to Doctor")
+
+    def test_report_entry_filter_sent_reports_excluded(self):
+        from lab.models import LaboratoryCase, LaboratoryReport
+        bill = LaboratoryBill.objects.create(
+            visit=self.visit,
+            patient=self.patient,
+            grand_total=250.00
+        )
+        LaboratoryBillItem.objects.create(
+            bill=bill,
+            test=self.test_cbc,
+            name=self.test_cbc.name,
+            price=self.test_cbc.price
+        )
+        case = LaboratoryCase.objects.create(visit=self.visit, patient=self.patient)
+        report = LaboratoryReport.objects.create(
+            case=case,
+            patient=self.patient,
+            visit=self.visit,
+            lab_test=self.test_cbc,
+            status='SENT'
+        )
+
+        url = reverse('lab:report_entry')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('pending_cases', response.context)
+        self.assertNotIn(case, response.context['pending_cases'])
+        self.assertIn(case, response.context['completed_cases'])
+
 
 

@@ -1,0 +1,856 @@
+{% extends "adminpanel/base.html" %}
+{% load static %}
+
+{% block title %}Lab Master - Vatsalya Shree Hospital ERP{% endblock %}
+
+{% block breadcrumb %}Lab Master{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Stat Cards */
+    .erp-stat-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px 24px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .erp-stat-card:hover {
+        transform: translateY(-3px);
+        border-color: #cbd5e1;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .erp-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .erp-card-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    .erp-card-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.2;
+    }
+
+    /* Quick Action Cards */
+    .quick-action-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        text-decoration: none;
+        width: 100%;
+    }
+
+    .quick-action-card:hover {
+        border-color: #2563eb;
+        background: #f8fafc;
+        color: #2563eb;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        transform: translateY(-2px);
+    }
+
+    /* Tabs Styling */
+    .master-nav-tabs {
+        border-bottom: 1px solid #e2e8f0;
+        gap: 6px;
+    }
+
+    .master-nav-tabs .nav-link {
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        padding: 10px 18px;
+        border-radius: 0;
+        background: transparent;
+        transition: all 0.15s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .master-nav-tabs .nav-link:hover {
+        color: #1e293b;
+        border-bottom-color: #cbd5e1;
+    }
+
+    .master-nav-tabs .nav-link.active {
+        color: #2563eb;
+        border-bottom: 2px solid #2563eb;
+        background: transparent;
+    }
+
+    /* Master Table Styles */
+    .master-table-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        overflow: hidden;
+    }
+
+    .master-table {
+        margin-bottom: 0;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .master-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    .master-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        font-size: 0.875rem;
+    }
+
+    .master-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .master-table tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    /* Action Buttons */
+    .action-btn-view {
+        background-color: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .action-btn-view:hover {
+        background-color: #475569;
+        color: #ffffff;
+        border-color: #475569;
+    }
+
+    .action-btn-edit {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .action-btn-edit:hover {
+        background-color: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+    }
+
+    .action-btn-delete {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .action-btn-delete:hover {
+        background-color: #dc2626;
+        color: #ffffff;
+        border-color: #dc2626;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Django Messages Alert Container -->
+{% if messages %}
+<div class="mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Page Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="h4 fw-bold text-dark mb-1">Lab Master Dashboard</h2>
+        <p class="text-muted small mb-0">Central configuration dashboard for laboratory investigation tests, diagnostic parameters, and reports.</p>
+    </div>
+</div>
+
+<!-- 1. TOP STATISTICS CARDS (3 CARDS) -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Lab Tests -->
+    <div class="col-12 col-md-4">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total Lab Tests</div>
+                <div class="erp-icon-wrapper" style="background-color: #eff6ff; color: #2563eb;">
+                    <i class="bi bi-flask"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_lab_tests }}</div>
+        </div>
+    </div>
+
+    <!-- Card 2: Total Test Parameters -->
+    <div class="col-12 col-md-4">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total Test Parameters</div>
+                <div class="erp-icon-wrapper" style="background-color: #f0fdf4; color: #16a34a;">
+                    <i class="bi bi-sliders"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_test_parameters }}</div>
+        </div>
+    </div>
+
+    <!-- Card 3: All Lab Reports -->
+    <div class="col-12 col-md-4">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">All Lab Reports</div>
+                <div class="erp-icon-wrapper" style="background-color: #fef3c7; color: #d97706;">
+                    <i class="bi bi-file-earmark-medical"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ all_lab_reports }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. QUICK ACTION SECTION -->
+<div class="card border-0 shadow-sm rounded-3 p-3 mb-4" style="background: #ffffff; border: 1px solid #e5e7eb;">
+    <h6 class="fw-bold text-dark mb-3" style="font-size: 0.84rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Quick Actions</h6>
+    <div class="row g-3">
+        <div class="col-12 col-sm-6">
+            <button type="button" class="quick-action-card border-0" data-bs-toggle="modal" data-bs-target="#addTestModal">
+                <div class="rounded-2 p-2" style="background: #eff6ff; color: #2563eb;">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <span>Add Lab Test</span>
+            </button>
+        </div>
+        <div class="col-12 col-sm-6">
+            <button type="button" class="quick-action-card border-0" data-bs-toggle="modal" data-bs-target="#addParameterModal">
+                <div class="rounded-2 p-2" style="background: #f0fdf4; color: #16a34a;">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <span>Add Test Parameter</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. MASTER DATA SECTION & FILTER TABS -->
+<div class="card border-0 shadow-sm rounded-3 p-3 mb-4" style="background: #ffffff; border: 1px solid #e5e7eb;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <!-- Filter Tabs (3 TABS) -->
+        <ul class="nav master-nav-tabs" id="labMasterTabs" role="tablist">
+            <li class="nav-item">
+                <a href="?tab=tests{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if active_tab == 'tests' %}active{% endif %}">Laboratory Tests</a>
+            </li>
+            <li class="nav-item">
+                <a href="?tab=parameters{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if active_tab == 'parameters' %}active{% endif %}">Test Parameters</a>
+            </li>
+            <li class="nav-item">
+                <a href="?tab=reports{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if active_tab == 'reports' %}active{% endif %}">All Lab Reports</a>
+            </li>
+        </ul>
+
+        <!-- Search Box -->
+        <form method="GET" action="{% url 'adminpanel:lab_master' %}" class="search-field position-relative" style="min-width: 250px; max-width: 320px; width: 100%;">
+            <input type="hidden" name="tab" value="{{ active_tab }}">
+            <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
+            <input type="text" name="q" value="{{ search_query }}" class="form-control ps-5 border-1" placeholder="Search {{ active_tab|title }}..." style="border-radius: 8px; font-size: 0.84rem; background: #f8fafc;">
+        </form>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="labMasterTabContent">
+        <!-- TAB 1: LABORATORY TESTS -->
+        {% if active_tab == 'tests' %}
+        <div class="tab-pane fade show active" id="tests-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Test Name</th>
+                                <th>Test Code</th>
+                                <th>Test Rate</th>
+                                <th>Parameters</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for test in tests_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ test.name }}</td>
+                                <td>LAB-{{ test.id }}</td>
+                                <td class="fw-semibold text-primary">₹ {{ test.price }}</td>
+                                <td>{{ test.param_count }} parameters</td>
+                                <td>
+                                    {% if test.is_active %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-medium px-2 py-1">🔴 Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-inline-flex gap-2">
+                                        <button type="button" class="btn action-btn-edit" onclick="openEditTestModal('{{ test.id }}', '{{ test.name|escapejs }}', '{{ test.price }}', '{{ test.is_active|yesno:'true,false' }}')">✏ Edit</button>
+                                        <form method="POST" action="{% url 'adminpanel:lab_master' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete Lab Test \'{{ test.name|escapejs }}\'?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="delete_test">
+                                            <input type="hidden" name="test_id" value="{{ test.id }}">
+                                            <button type="submit" class="btn action-btn-delete">🗑 Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">No laboratory tests found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if tests_page.has_other_pages or tests_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ tests_page.start_index|default:0 }} - {{ tests_page.end_index|default:0 }}</strong> of <strong>{{ tests_page.paginator.count }}</strong> lab tests</div>
+                    {% if tests_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if tests_page.has_previous %}
+                            <a href="?tab=tests&page={{ tests_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in tests_page.paginator.page_range %}
+                            {% if tests_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=tests&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if tests_page.has_next %}
+                            <a href="?tab=tests&page={{ tests_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 2: TEST PARAMETERS -->
+        {% if active_tab == 'parameters' %}
+        <div class="tab-pane fade show active" id="parameters-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter Name</th>
+                                <th>Lab Test</th>
+                                <th>Unit</th>
+                                <th>Reference Range</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for param in params_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ param.parameter_name }}</td>
+                                <td>{{ param.lab_test.name }}</td>
+                                <td>{{ param.unit|default:"-" }}</td>
+                                <td>{{ param.common_reference_range|default:param.male_reference_range|default:"Standard" }}</td>
+                                <td>
+                                    {% if param.is_active %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-medium px-2 py-1">🔴 Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="d-inline-flex gap-2">
+                                        <button type="button" class="btn action-btn-edit" onclick="openEditParamModal('{{ param.id }}', '{{ param.lab_test.id }}', '{{ param.parameter_name|escapejs }}', '{{ param.unit|escapejs }}', '{{ param.common_reference_range|escapejs }}', '{{ param.male_reference_range|escapejs }}', '{{ param.female_reference_range|escapejs }}', '{{ param.display_order }}', '{{ param.is_active|yesno:'true,false' }}')">✏ Edit</button>
+                                        <form method="POST" action="{% url 'adminpanel:lab_master' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete parameter \'{{ param.parameter_name|escapejs }}\'?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="delete_parameter">
+                                            <input type="hidden" name="param_id" value="{{ param.id }}">
+                                            <button type="submit" class="btn action-btn-delete">🗑 Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">No test parameters found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if params_page.has_other_pages or params_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ params_page.start_index|default:0 }} - {{ params_page.end_index|default:0 }}</strong> of <strong>{{ params_page.paginator.count }}</strong> parameters</div>
+                    {% if params_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if params_page.has_previous %}
+                            <a href="?tab=parameters&page={{ params_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in params_page.paginator.page_range %}
+                            {% if params_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=parameters&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if params_page.has_next %}
+                            <a href="?tab=parameters&page={{ params_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 3: ALL LAB REPORTS -->
+        {% if active_tab == 'reports' %}
+        <div class="tab-pane fade show active" id="reports-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Report ID</th>
+                                <th>UHID / Patient ID</th>
+                                <th>Patient Name</th>
+                                <th>Test Name</th>
+                                <th>Report Date</th>
+                                <th>Report Status</th>
+                                <th>Doctor Name</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ report.report_number }}</td>
+                                <td>{{ report.patient.uhid }}</td>
+                                <td class="fw-semibold text-dark">{{ report.patient.full_name }}</td>
+                                <td>{{ report.lab_test.name }}</td>
+                                <td>{{ report.generated_date|date:"d M Y" }}</td>
+                                <td>
+                                    {% if report.status == 'COMPLETED' or report.status == 'SENT' %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 {{ report.get_status_display }}</span>
+                                    {% elif report.status == 'IN_PROGRESS' or report.status == 'PENDING' %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium px-2 py-1">🟡 {{ report.get_status_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-medium px-2 py-1">🔴 {{ report.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>Dr. {{ report.visit.created_by.get_full_name|default:report.visit.created_by.username|default:"N/A" }}</td>
+                                <td class="text-end pe-4">
+                                    <div class="d-inline-flex gap-2">
+                                        <a href="{% url 'lab:report_preview' report.id %}" target="_blank" class="btn action-btn-view">👁 View Report</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">No laboratory reports found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if reports_page.has_other_pages or reports_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ reports_page.start_index|default:0 }} - {{ reports_page.end_index|default:0 }}</strong> of <strong>{{ reports_page.paginator.count }}</strong> reports</div>
+                    {% if reports_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if reports_page.has_previous %}
+                            <a href="?tab=reports&page={{ reports_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in reports_page.paginator.page_range %}
+                            {% if reports_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=reports&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if reports_page.has_next %}
+                            <a href="?tab=reports&page={{ reports_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- 1. Add Lab Test Modal -->
+<div class="modal fade" id="addTestModal" tabindex="-1" aria-labelledby="addTestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark fs-6" id="addTestModalLabel">
+                    <i class="bi bi-flask text-primary me-2"></i>Add New Laboratory Test
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel:lab_master' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_test">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Test Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Complete Blood Count (CBC), Lipid Profile" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Price / Rate (₹) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="price" class="form-control" placeholder="e.g. 350.00" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Status</label>
+                        <select name="is_active" class="form-select">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-semibold">Save Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Edit Lab Test Modal -->
+<div class="modal fade" id="editTestModal" tabindex="-1" aria-labelledby="editTestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark fs-6" id="editTestModalLabel">
+                    <i class="bi bi-pencil-square text-primary me-2"></i>Edit Laboratory Test
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel:lab_master' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_test">
+                <input type="hidden" name="test_id" id="editTestId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Test Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="editTestName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Price / Rate (₹) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="price" id="editTestPrice" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Status</label>
+                        <select name="is_active" id="editTestActive" class="form-select">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-semibold">Update Test</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Add Test Parameter Modal -->
+<div class="modal fade" id="addParameterModal" tabindex="-1" aria-labelledby="addParameterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark fs-6" id="addParameterModalLabel">
+                    <i class="bi bi-sliders text-success me-2"></i>Add Test Parameter
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel:lab_master' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_parameter">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Select Laboratory Test <span class="text-danger">*</span></label>
+                        <select name="lab_test_id" class="form-select" required>
+                            <option value="">-- Choose Lab Test --</option>
+                            {% for test in all_tests_list %}
+                            <option value="{{ test.id }}">{{ test.name }} (₹{{ test.price }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Parameter Name <span class="text-danger">*</span></label>
+                        <input type="text" name="parameter_name" class="form-control" placeholder="e.g. Hemoglobin, SGOT, WBC" required>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Unit</label>
+                            <input type="text" name="unit" class="form-control" placeholder="e.g. g/dL, U/L, %">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Display Order</label>
+                            <input type="number" name="display_order" class="form-control" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Reference Range Type</label>
+                        <select name="range_type" class="form-select" id="addParamRangeType" onchange="toggleParamRangeFields('add')">
+                            <option value="common">Common Reference Range</option>
+                            <option value="gender">Gender Specific (Male & Female)</option>
+                        </select>
+                    </div>
+                    <div id="addParamCommonDiv" class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Common Reference Range</label>
+                        <input type="text" name="common_reference_range" class="form-control" placeholder="e.g. 12.0 - 16.0 or < 200">
+                    </div>
+                    <div id="addParamGenderDiv" class="row g-3 mb-3 d-none">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Male Reference Range</label>
+                            <input type="text" name="male_reference_range" class="form-control" placeholder="e.g. 13.5 - 17.5">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Female Reference Range</label>
+                            <input type="text" name="female_reference_range" class="form-control" placeholder="e.g. 12.0 - 15.5">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Status</label>
+                        <select name="is_active" class="form-select">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm px-3 fw-semibold">Save Parameter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Edit Test Parameter Modal -->
+<div class="modal fade" id="editParameterModal" tabindex="-1" aria-labelledby="editParameterModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark fs-6" id="editParameterModalLabel">
+                    <i class="bi bi-sliders text-success me-2"></i>Edit Test Parameter
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel:lab_master' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_parameter">
+                <input type="hidden" name="param_id" id="editParamId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Select Laboratory Test <span class="text-danger">*</span></label>
+                        <select name="lab_test_id" id="editParamTestId" class="form-select" required>
+                            <option value="">-- Choose Lab Test --</option>
+                            {% for test in all_tests_list %}
+                            <option value="{{ test.id }}">{{ test.name }} (₹{{ test.price }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Parameter Name <span class="text-danger">*</span></label>
+                        <input type="text" name="parameter_name" id="editParamName" class="form-control" required>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Unit</label>
+                            <input type="text" name="unit" id="editParamUnit" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Display Order</label>
+                            <input type="number" name="display_order" id="editParamOrder" class="form-control" min="0">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Reference Range Type</label>
+                        <select name="range_type" id="editParamRangeType" class="form-select" onchange="toggleParamRangeFields('edit')">
+                            <option value="common">Common Reference Range</option>
+                            <option value="gender">Gender Specific (Male & Female)</option>
+                        </select>
+                    </div>
+                    <div id="editParamCommonDiv" class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Common Reference Range</label>
+                        <input type="text" name="common_reference_range" id="editParamCommonRef" class="form-control">
+                    </div>
+                    <div id="editParamGenderDiv" class="row g-3 mb-3 d-none">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Male Reference Range</label>
+                            <input type="text" name="male_reference_range" id="editParamMaleRef" class="form-control">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Female Reference Range</label>
+                            <input type="text" name="female_reference_range" id="editParamFemaleRef" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Status</label>
+                        <select name="is_active" id="editParamActive" class="form-select">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm px-3 fw-semibold">Update Parameter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleParamRangeFields(mode) {
+    const rangeType = document.getElementById(mode + 'ParamRangeType').value;
+    const commonDiv = document.getElementById(mode + 'ParamCommonDiv');
+    const genderDiv = document.getElementById(mode + 'ParamGenderDiv');
+
+    if (rangeType === 'gender') {
+        commonDiv.classList.add('d-none');
+        genderDiv.classList.remove('d-none');
+    } else {
+        commonDiv.classList.remove('d-none');
+        genderDiv.classList.add('d-none');
+    }
+}
+
+function openEditTestModal(id, name, price, is_active) {
+    document.getElementById('editTestId').value = id;
+    document.getElementById('editTestName').value = name;
+    document.getElementById('editTestPrice').value = price;
+    document.getElementById('editTestActive').value = is_active;
+
+    const modalElem = document.getElementById('editTestModal');
+    if (modalElem) {
+        const modal = new bootstrap.Modal(modalElem);
+        modal.show();
+    }
+}
+
+function openEditParamModal(id, testId, name, unit, commonRef, maleRef, femaleRef, order, is_active) {
+    document.getElementById('editParamId').value = id;
+    document.getElementById('editParamTestId').value = testId;
+    document.getElementById('editParamName').value = name;
+    document.getElementById('editParamUnit').value = unit;
+    document.getElementById('editParamCommonRef').value = commonRef;
+    document.getElementById('editParamMaleRef').value = maleRef;
+    document.getElementById('editParamFemaleRef').value = femaleRef;
+    document.getElementById('editParamOrder').value = order;
+    document.getElementById('editParamActive').value = is_active;
+
+    if (maleRef && femaleRef && !commonRef) {
+        document.getElementById('editParamRangeType').value = 'gender';
+    } else {
+        document.getElementById('editParamRangeType').value = 'common';
+    }
+    toggleParamRangeFields('edit');
+
+    const modalElem = document.getElementById('editParameterModal');
+    if (modalElem) {
+        const modal = new bootstrap.Modal(modalElem);
+        modal.show();
+    }
+}
+</script>
+{% endblock %}

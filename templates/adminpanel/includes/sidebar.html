@@ -1,0 +1,83 @@
+{% load static %}
+<!-- Left Light Fixed Sidebar -->
+<aside id="sidebar" class="sidebar">
+    <!-- SECTION 1: FIXED HEADER (ALWAYS VISIBLE, NEVER SCROLLS) -->
+    <div class="sidebar-brand">
+        <div class="brand-mark">
+            <i class="bi bi-hospital-fill"></i>
+        </div>
+        <div class="brand-info">
+            <h1 class="brand-title">Vatsalya Shree Hospital</h1>
+            <span class="brand-subtitle">Hospital Management System</span>
+        </div>
+    </div>
+    
+    <!-- SECTION 2: SCROLLABLE MENU -->
+    <nav class="sidebar-nav">
+        <ul class="nav-list list-unstyled m-0 p-0">
+            <!-- 1. Dashboard -->
+            <li class="nav-item mb-1">
+                <a href="{% url 'adminpanel:dashboard' %}" class="nav-link">
+                    <i class="bi bi-grid-1x2-fill me-2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <!-- 2. Admin Users -->
+            <li class="nav-item mb-1">
+                <a href="{% url 'adminpanel:users_admin' %}" class="nav-link">
+                    <i class="bi bi-shield-lock-fill me-2"></i>
+                    <span>Admin Users</span>
+                </a>
+            </li>
+
+            <!-- 3. All Patients -->
+            <li class="nav-item mb-1">
+                <a href="{% url 'adminpanel:patients_all' %}" class="nav-link">
+                    <i class="bi bi-people-fill me-2"></i>
+                    <span>All Patients</span>
+                </a>
+            </li>
+
+            <!-- 4. IPD Master -->
+            <li class="nav-item mb-1">
+                <a href="{% url 'adminpanel:ipd_master' %}" class="nav-link">
+                    <i class="bi bi-layers-fill me-2"></i>
+                    <span>IPD Master</span>
+                </a>
+            </li>
+
+            <!-- 5. Lab Master -->
+            <li class="nav-item mb-1">
+                <a href="{% url 'adminpanel:lab_master' %}" class="nav-link">
+                    <i class="bi bi-flask-fill me-2"></i>
+                    <span>Lab Master</span>
+                </a>
+            </li>
+
+            <!-- 6. Reports -->
+            <li class="nav-item mb-1">
+                <a href="{% url 'adminpanel:reports_dashboard' %}" class="nav-link">
+                    <i class="bi bi-file-bar-graph-fill me-2"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+
+            <!-- 7. Logout -->
+            <li class="nav-item mb-1">
+                <a href="{% url 'accounts:login' %}" class="nav-link text-danger">
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <div class="sidebar-avatar">SA</div>
+        <div class="sidebar-user-details">
+            <span class="sidebar-user-name">Super Admin</span>
+            <span class="sidebar-user-role">Administrator</span>
+        </div>
+    </div>
+</aside>

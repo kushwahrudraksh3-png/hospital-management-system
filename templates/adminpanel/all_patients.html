@@ -1,0 +1,375 @@
+{% extends "adminpanel/base.html" %}
+{% load static %}
+
+{% block title %}All Patients - Vatsalya Shree Hospital ERP{% endblock %}
+
+{% block breadcrumb %}All Patients{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Stat Cards */
+    .erp-stat-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px 24px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .erp-stat-card:hover {
+        transform: translateY(-3px);
+        border-color: #cbd5e1;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .erp-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background-color: #eff6ff;
+        color: #2563eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .erp-card-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    .erp-card-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.2;
+    }
+
+    /* Filter Pill Buttons */
+    .filter-btn-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 7px 16px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        color: #475569;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .filter-btn:hover {
+        background: #f8fafc;
+        color: #1e293b;
+        border-color: #cbd5e1;
+    }
+
+    .filter-btn.active {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    }
+
+    /* Patient Table Styles */
+    .patient-table-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        overflow: hidden;
+    }
+
+    .patient-table {
+        margin-bottom: 0;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .patient-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    .patient-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        font-size: 0.875rem;
+    }
+
+    .patient-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .patient-table tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    /* Action Buttons */
+    .action-btn-view {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .action-btn-view:hover {
+        background-color: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+    }
+
+    .action-btn-edit {
+        background-color: #f8fafc;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .action-btn-edit:hover {
+        background-color: #475569;
+        color: #ffffff;
+        border-color: #475569;
+    }
+
+    .export-btn {
+        background-color: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        padding: 7px 14px;
+        border-radius: 8px;
+        transition: all 0.15s ease;
+    }
+
+    .export-btn:hover {
+        background-color: #f1f5f9;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header & Export Buttons -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="h4 fw-bold text-dark mb-1">All Patients</h2>
+        <p class="text-muted small mb-0">Overview and directory of all registered hospital patients across OPD and IPD departments.</p>
+    </div>
+    <!-- Top Right Export Buttons -->
+    <div class="d-flex gap-2">
+        <a href="{% url 'adminpanel:export_patients_excel' %}?filter={{ selected_filter|default:'all' }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn export-btn d-inline-flex align-items-center gap-2 shadow-sm">
+            <i class="bi bi-file-earmark-excel text-success fs-6"></i>
+            <span>Export Excel</span>
+        </a>
+        <a href="{% url 'adminpanel:export_patients_csv' %}?filter={{ selected_filter|default:'all' }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn export-btn d-inline-flex align-items-center gap-2 shadow-sm">
+            <i class="bi bi-file-earmark-text text-primary fs-6"></i>
+            <span>Export CSV</span>
+        </a>
+    </div>
+</div>
+
+<!-- 1. TOP STATISTICS CARDS (EXACTLY 4 CARDS) -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Patients -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total Patients</div>
+                <div class="erp-icon-wrapper" style="background-color: #eff6ff; color: #2563eb;">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_patients }}</div>
+        </div>
+    </div>
+
+    <!-- Card 2: New Patients -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">New Patients</div>
+                <div class="erp-icon-wrapper" style="background-color: #f0fdf4; color: #16a34a;">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ new_patients }}</div>
+        </div>
+    </div>
+
+    <!-- Card 3: OPD Patients -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">OPD Patients</div>
+                <div class="erp-icon-wrapper" style="background-color: #fef3c7; color: #d97706;">
+                    <i class="bi bi-person-heart"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ opd_patients }}</div>
+        </div>
+    </div>
+
+    <!-- Card 4: IPD Patients -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">IPD Patients</div>
+                <div class="erp-icon-wrapper" style="background-color: #f3e8ff; color: #9333ea;">
+                    <i class="bi bi-hospital-fill"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ ipd_patients }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. CONTROLS CARD: FILTERS & SEARCH BAR -->
+<div class="card border-0 shadow-sm rounded-3 p-3 mb-4" style="background: #ffffff; border: 1px solid #e5e7eb;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <!-- Filter Buttons (ONLY: All Patients, OPD Patients, IPD Patients, Discharged Patients) -->
+        <div class="filter-btn-group">
+            <a href="?filter=all{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if selected_filter == 'all' or not selected_filter %}active{% endif %}">All Patients</a>
+            <a href="?filter=opd{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if selected_filter == 'opd' %}active{% endif %}">OPD Patients</a>
+            <a href="?filter=ipd{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if selected_filter == 'ipd' %}active{% endif %}">IPD Patients</a>
+            <a href="?filter=discharged{% if search_query %}&q={{ search_query }}{% endif %}" class="filter-btn {% if selected_filter == 'discharged' %}active{% endif %}">Discharged Patients</a>
+        </div>
+
+        <!-- Search Bar -->
+        <form method="GET" action="{% url 'adminpanel:patients_all' %}" class="search-field position-relative" style="min-width: 300px; max-width: 400px; width: 100%;">
+            {% if selected_filter %}
+                <input type="hidden" name="filter" value="{{ selected_filter }}">
+            {% endif %}
+            <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
+            <input type="text" name="q" value="{{ search_query }}" class="form-control ps-5 border-1" placeholder="Search by Patient Name, UHID or Mobile Number..." style="border-radius: 8px; font-size: 0.84rem; background: #f8fafc;">
+        </form>
+    </div>
+</div>
+
+<!-- 3. PATIENT TABLE -->
+<div class="patient-table-card">
+    <div class="table-responsive">
+        <table class="table patient-table">
+            <thead>
+                <tr>
+                    <th>UHID / Patient ID</th>
+                    <th>Patient Name</th>
+                    <th>Age / Gender</th>
+                    <th>Mobile Number</th>
+                    <th>Visit Type</th>
+                    <th>Patient Type</th>
+                    <th>Registration Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in patients_data %}
+                <tr>
+                    <td class="fw-bold text-dark">{{ item.uhid }}</td>
+                    <td>
+                        <div class="fw-semibold text-dark">{{ item.full_name }}</div>
+                    </td>
+                    <td>{{ item.age|default:"-" }} / {{ item.gender }}</td>
+                    <td class="text-muted">{{ item.mobile_number }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ item.visit_type }}</span></td>
+                    <td>
+                        <span class="badge {% if item.patient_type == 'IPD' %}bg-primary-subtle text-primary border border-primary-subtle{% else %}bg-info-subtle text-info-emphasis border border-info-subtle{% endif %}">
+                            {{ item.patient_type }}
+                        </span>
+                    </td>
+                    <td class="text-muted">{{ item.created_at|date:"d M Y" }}</td>
+                    <td>
+                        <span class="{{ item.status_badge_class }}">
+                            {{ item.status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="bi bi-person-x fs-2 d-block mb-2"></i>
+                        No patient records found matching your filter criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Table Footer / Pagination UI -->
+    {% if page_obj.has_other_pages or page_obj.object_list %}
+    <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+        <div>
+            Showing <strong>{{ page_obj.start_index|default:0 }} - {{ page_obj.end_index|default:0 }}</strong> of <strong>{{ page_obj.paginator.count }}</strong> patients
+        </div>
+        {% if page_obj.has_other_pages %}
+        <div class="d-flex gap-1">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_filter %}&filter={{ selected_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+            {% else %}
+                <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+            {% endif %}
+
+            {% for page_num in page_obj.paginator.page_range %}
+                {% if page_obj.number == page_num %}
+                    <button class="btn btn-sm btn-primary active">{{ page_num }}</button>
+                {% else %}
+                    <a href="?page={{ page_num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_filter %}&filter={{ selected_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ page_num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_filter %}&filter={{ selected_filter }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+            {% else %}
+                <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

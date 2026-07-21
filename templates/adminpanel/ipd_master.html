@@ -1,0 +1,829 @@
+{% extends "adminpanel/base.html" %}
+{% load static %}
+
+{% block title %}IPD Master Dashboard - Vatsalya Shree Hospital ERP{% endblock %}
+
+{% block breadcrumb %}IPD Master{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Stat Cards */
+    .erp-stat-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px 24px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+    }
+
+    .erp-stat-card:hover {
+        transform: translateY(-3px);
+        border-color: #cbd5e1;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    }
+
+    .erp-icon-wrapper {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .erp-card-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+
+    .erp-card-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #1e293b;
+        line-height: 1.2;
+    }
+
+    /* Quick Action Cards */
+    .quick-action-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #1e293b;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+        text-decoration: none;
+        width: 100%;
+    }
+
+    .quick-action-card:hover {
+        border-color: #2563eb;
+        background: #f8fafc;
+        color: #2563eb;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        transform: translateY(-2px);
+    }
+
+    /* Tabs Styling */
+    .master-nav-tabs {
+        border-bottom: 1px solid #e2e8f0;
+        gap: 6px;
+    }
+
+    .master-nav-tabs .nav-link {
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: #64748b;
+        font-size: 0.875rem;
+        font-weight: 600;
+        padding: 10px 18px;
+        border-radius: 0;
+        background: transparent;
+        transition: all 0.15s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .master-nav-tabs .nav-link:hover {
+        color: #1e293b;
+        border-bottom-color: #cbd5e1;
+    }
+
+    .master-nav-tabs .nav-link.active {
+        color: #2563eb;
+        border-bottom: 2px solid #2563eb;
+        background: transparent;
+    }
+
+    /* Master Table Styles */
+    .master-table-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+        overflow: hidden;
+    }
+
+    .master-table {
+        margin-bottom: 0;
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .master-table th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
+        white-space: nowrap;
+    }
+
+    .master-table td {
+        padding: 16px 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: #334155;
+        font-size: 0.875rem;
+    }
+
+    .master-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .master-table tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    /* Action Buttons */
+    .action-btn-edit {
+        background-color: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #bfdbfe;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .action-btn-edit:hover {
+        background-color: #2563eb;
+        color: #ffffff;
+        border-color: #2563eb;
+    }
+
+    .action-btn-delete {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .action-btn-delete:hover {
+        background-color: #dc2626;
+        color: #ffffff;
+        border-color: #dc2626;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Django Messages Alert Container -->
+{% if messages %}
+<div class="mb-4">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Page Title Header -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="h4 fw-bold text-dark mb-1">IPD Master Dashboard</h2>
+        <p class="text-muted small mb-0">Central management dashboard for hospital wards, rooms, bed capacity, and IPD fee charges.</p>
+    </div>
+</div>
+
+<!-- 1. TOP STATISTICS CARDS (ONLY 3 CARDS) -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Wards -->
+    <div class="col-12 col-md-4">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total Wards</div>
+                <div class="erp-icon-wrapper" style="background-color: #eff6ff; color: #2563eb;">
+                    <i class="bi bi-door-open-fill"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_wards }}</div>
+        </div>
+    </div>
+
+    <!-- Card 2: Total Rooms -->
+    <div class="col-12 col-md-4">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total Rooms</div>
+                <div class="erp-icon-wrapper" style="background-color: #f0fdf4; color: #16a34a;">
+                    <i class="bi bi-door-closed-fill"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_rooms }}</div>
+        </div>
+    </div>
+
+    <!-- Card 3: Total Beds -->
+    <div class="col-12 col-md-4">
+        <div class="erp-stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="erp-card-title">Total Beds</div>
+                <div class="erp-icon-wrapper" style="background-color: #fef3c7; color: #d97706;">
+                    <i class="bi bi-layout-three-columns"></i>
+                </div>
+            </div>
+            <div class="erp-card-value">{{ total_beds }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. QUICK ACTION SECTION (4 BUTTONS) -->
+<div class="card border-0 shadow-sm rounded-3 p-3 mb-4" style="background: #ffffff; border: 1px solid #e5e7eb;">
+    <h6 class="fw-bold text-dark mb-3" style="font-size: 0.84rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b;">Quick Actions</h6>
+    <div class="row g-3">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <button type="button" class="quick-action-card border-0" data-bs-toggle="modal" data-bs-target="#addWardModal">
+                <div class="rounded-2 p-2" style="background: #eff6ff; color: #2563eb;">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <span>Add Ward</span>
+            </button>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <button type="button" class="quick-action-card border-0" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+                <div class="rounded-2 p-2" style="background: #f0fdf4; color: #16a34a;">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <span>Add Room</span>
+            </button>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <button type="button" class="quick-action-card border-0" data-bs-toggle="modal" data-bs-target="#addBedModal">
+                <div class="rounded-2 p-2" style="background: #fef3c7; color: #d97706;">
+                    <i class="bi bi-plus-circle-fill"></i>
+                </div>
+                <span>Add Bed</span>
+            </button>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <button type="button" class="quick-action-card border-0" data-bs-toggle="modal" data-bs-target="#updateChargeModal">
+                <div class="rounded-2 p-2" style="background: #f3e8ff; color: #9333ea;">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <span>Update IPD Charges</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 3. MASTER DATA SECTION & FILTER TABS -->
+<div class="card border-0 shadow-sm rounded-3 p-3 mb-4" style="background: #ffffff; border: 1px solid #e5e7eb;">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <!-- Filter Tabs -->
+        <ul class="nav master-nav-tabs" id="ipdMasterTabs" role="tablist">
+            <li class="nav-item">
+                <a href="?tab=wards{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if active_tab == 'wards' %}active{% endif %}">Wards</a>
+            </li>
+            <li class="nav-item">
+                <a href="?tab=rooms{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if active_tab == 'rooms' %}active{% endif %}">Rooms</a>
+            </li>
+            <li class="nav-item">
+                <a href="?tab=beds{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if active_tab == 'beds' %}active{% endif %}">Beds</a>
+            </li>
+            <li class="nav-item">
+                <a href="?tab=charges{% if search_query %}&q={{ search_query }}{% endif %}" class="nav-link {% if active_tab == 'charges' %}active{% endif %}">IPD Charges</a>
+            </li>
+        </ul>
+
+        <!-- Search Box -->
+        <form method="GET" action="{% url 'adminpanel:ipd_master' %}" class="search-field position-relative" style="min-width: 250px; max-width: 320px; width: 100%;">
+            <input type="hidden" name="tab" value="{{ active_tab }}">
+            <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
+            <input type="text" name="q" value="{{ search_query }}" class="form-control ps-5 border-1" placeholder="Search {{ active_tab|title }}..." style="border-radius: 8px; font-size: 0.84rem; background: #f8fafc;">
+        </form>
+    </div>
+
+    <!-- Tab Content Container -->
+    <div class="tab-content" id="ipdMasterTabContent">
+        <!-- TAB 1: WARDS -->
+        {% if active_tab == 'wards' %}
+        <div class="tab-pane fade show active" id="wards-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Ward Name</th>
+                                <th>Description</th>
+                                <th>Total Rooms</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ward in wards_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ ward.name }}</td>
+                                <td class="text-muted">{{ ward.description|default:"Standard Inpatient Ward" }}</td>
+                                <td>{{ ward.total_rooms }}</td>
+                                <td><span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 Active</span></td>
+                                <td class="text-end pe-4">
+                                    <form method="POST" action="{% url 'adminpanel:ipd_master' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete Ward \'{{ ward.name|escapejs }}\'?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete_ward">
+                                        <input type="hidden" name="ward_id" value="{{ ward.id }}">
+                                        <button type="submit" class="btn action-btn-delete">🗑 Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">No wards found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if wards_page.has_other_pages or wards_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ wards_page.start_index|default:0 }} - {{ wards_page.end_index|default:0 }}</strong> of <strong>{{ wards_page.paginator.count }}</strong> wards</div>
+                    {% if wards_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if wards_page.has_previous %}
+                            <a href="?tab=wards&page={{ wards_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in wards_page.paginator.page_range %}
+                            {% if wards_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=wards&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if wards_page.has_next %}
+                            <a href="?tab=wards&page={{ wards_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 2: ROOMS -->
+        {% if active_tab == 'rooms' %}
+        <div class="tab-pane fade show active" id="rooms-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Room Number</th>
+                                <th>Ward</th>
+                                <th>Room Type</th>
+                                <th>Capacity / Total Beds</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for room in rooms_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">Room {{ room.room_number }}</td>
+                                <td>{{ room.ward.name }}</td>
+                                <td>{{ room.room_type }}</td>
+                                <td>{{ room.total_beds|default:room.capacity }} Beds</td>
+                                <td><span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 Active</span></td>
+                                <td class="text-end pe-4">
+                                    <form method="POST" action="{% url 'adminpanel:ipd_master' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete Room {{ room.room_number|escapejs }}?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete_room">
+                                        <input type="hidden" name="room_id" value="{{ room.id }}">
+                                        <button type="submit" class="btn action-btn-delete">🗑 Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">No rooms found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if rooms_page.has_other_pages or rooms_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ rooms_page.start_index|default:0 }} - {{ rooms_page.end_index|default:0 }}</strong> of <strong>{{ rooms_page.paginator.count }}</strong> rooms</div>
+                    {% if rooms_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if rooms_page.has_previous %}
+                            <a href="?tab=rooms&page={{ rooms_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in rooms_page.paginator.page_range %}
+                            {% if rooms_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=rooms&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if rooms_page.has_next %}
+                            <a href="?tab=rooms&page={{ rooms_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 3: BEDS -->
+        {% if active_tab == 'beds' %}
+        <div class="tab-pane fade show active" id="beds-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Bed Number</th>
+                                <th>Ward</th>
+                                <th>Room</th>
+                                <th>Bed Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bed in beds_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">Bed {{ bed.bed_number }}</td>
+                                <td>{{ bed.room.ward.name }}</td>
+                                <td>Room {{ bed.room.room_number }}</td>
+                                <td>
+                                    {% if bed.is_occupied %}
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle fw-medium px-2 py-1">🔴 Occupied</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 Available</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <form method="POST" action="{% url 'adminpanel:ipd_master' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete Bed {{ bed.bed_number|escapejs }}?');">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="delete_bed">
+                                        <input type="hidden" name="bed_id" value="{{ bed.id }}">
+                                        <button type="submit" class="btn action-btn-delete" {% if bed.is_occupied %}disabled title="Occupied bed cannot be deleted"{% endif %}>🗑 Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">No beds found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if beds_page.has_other_pages or beds_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ beds_page.start_index|default:0 }} - {{ beds_page.end_index|default:0 }}</strong> of <strong>{{ beds_page.paginator.count }}</strong> beds</div>
+                    {% if beds_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if beds_page.has_previous %}
+                            <a href="?tab=beds&page={{ beds_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in beds_page.paginator.page_range %}
+                            {% if beds_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=beds&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if beds_page.has_next %}
+                            <a href="?tab=beds&page={{ beds_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- TAB 4: IPD CHARGES -->
+        {% if active_tab == 'charges' %}
+        <div class="tab-pane fade show active" id="charges-pane">
+            <div class="master-table-card">
+                <div class="table-responsive">
+                    <table class="table master-table">
+                        <thead>
+                            <tr>
+                                <th>Charge Code</th>
+                                <th>Charge Name</th>
+                                <th>Ward Scope</th>
+                                <th>Default Rate</th>
+                                <th>Unit / Type</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for charge in charges_page %}
+                            <tr>
+                                <td class="fw-bold text-dark">{{ charge.code }}</td>
+                                <td class="fw-semibold text-dark">{{ charge.name }}</td>
+                                <td>{{ charge.ward|default:"All Wards" }}</td>
+                                <td class="fw-semibold text-primary">₹ {{ charge.amount }}</td>
+                                <td>{{ charge.unit|default:charge.charge_type }}</td>
+                                <td>
+                                    {% if charge.is_active %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-medium px-2 py-1">🟢 Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fw-medium px-2 py-1">🔴 Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button type="button" class="btn action-btn-edit" onclick="openEditChargeModal('{{ charge.id }}', '{{ charge.amount }}', '{{ charge.is_active|yesno:'true,false' }}')">✏ Edit Rate</button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">No IPD charges found matching search criteria.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                {% if charges_page.has_other_pages or charges_page.object_list %}
+                <div class="d-flex flex-wrap align-items-center justify-content-between p-3 border-top bg-light" style="font-size: 0.8125rem; color: #64748b;">
+                    <div>Showing <strong>{{ charges_page.start_index|default:0 }} - {{ charges_page.end_index|default:0 }}</strong> of <strong>{{ charges_page.paginator.count }}</strong> charges</div>
+                    {% if charges_page.has_other_pages %}
+                    <div class="d-flex gap-1">
+                        {% if charges_page.has_previous %}
+                            <a href="?tab=charges&page={{ charges_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Previous</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Previous</button>
+                        {% endif %}
+                        {% for num in charges_page.paginator.page_range %}
+                            {% if charges_page.number == num %}
+                                <button class="btn btn-sm btn-primary active">{{ num }}</button>
+                            {% else %}
+                                <a href="?tab=charges&page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">{{ num }}</a>
+                            {% endif %}
+                        {% endfor %}
+                        {% if charges_page.has_next %}
+                            <a href="?tab=charges&page={{ charges_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn btn-sm btn-outline-secondary">Next</a>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-secondary disabled" disabled>Next</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- 1. Add Ward Modal -->
+<div class="modal fade" id="addWardModal" tabindex="-1" aria-labelledby="addWardModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark fs-6" id="addWardModalLabel">
+                    <i class="bi bi-door-open-fill text-primary me-2"></i>Add New Ward
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel:ipd_master' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_ward">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Ward Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. ICU, Special Ward, Deluxe Ward" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Ward description, facilities, or notes..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm px-3 fw-semibold">Save Ward</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Add Room Modal -->
+<div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark fs-6" id="addRoomModalLabel">
+                    <i class="bi bi-door-closed-fill text-success me-2"></i>Add New Room
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel:ipd_master' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_room">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Select Ward <span class="text-danger">*</span></label>
+                        <select name="ward_id" class="form-select" required>
+                            <option value="">-- Choose Ward --</option>
+                            {% for ward in all_wards_list %}
+                            <option value="{{ ward.id }}">{{ ward.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Room Number / Identifier <span class="text-danger">*</span></label>
+                        <input type="text" name="room_number" class="form-control" placeholder="e.g. 101, 102, GW-1" required>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Room Type</label>
+                            <select name="room_type" class="form-select">
+                                <option value="Room">Room</option>
+                                <option value="Hall">Hall</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-semibold fs-7">Bed Capacity</label>
+                            <input type="number" name="capacity" class="form-control" value="1" min="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success btn-sm px-3 fw-semibold">Save Room</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Add Bed Modal -->
+<div class="modal fade" id="addBedModal" tabindex="-1" aria-labelledby="addBedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark fs-6" id="addBedModalLabel">
+                    <i class="bi bi-layout-three-columns text-warning me-2"></i>Add New Bed
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel:ipd_master' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_bed">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Select Room <span class="text-danger">*</span></label>
+                        <select name="room_id" class="form-select" required>
+                            <option value="">-- Choose Room --</option>
+                            {% for rm in all_rooms_list %}
+                            <option value="{{ rm.id }}">{{ rm.ward.name }} - Room {{ rm.room_number }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Bed Number / Identifier <span class="text-danger">*</span></label>
+                        <input type="text" name="bed_number" class="form-control" placeholder="e.g. Bed 1, Bed 2, B-101-A" required>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning btn-sm px-3 fw-semibold text-dark">Save Bed</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Update IPD Charge Modal -->
+<div class="modal fade" id="updateChargeModal" tabindex="-1" aria-labelledby="updateChargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-dark fs-6" id="updateChargeModalLabel">
+                    <i class="bi bi-pencil-square text-purple me-2" style="color: #9333ea;"></i>Update IPD Charge Rate
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel:ipd_master' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_charge">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Select IPD Charge Record <span class="text-danger">*</span></label>
+                        <select name="charge_id" id="updateChargeSelect" class="form-select" required>
+                            <option value="">-- Choose Charge Record --</option>
+                            {% for chg in all_charges_list %}
+                            <option value="{{ chg.id }}" data-amount="{{ chg.amount }}" data-active="{{ chg.is_active|yesno:'true,false' }}">
+                                [{{ chg.code }}] {{ chg.name }} ({{ chg.ward|default:"All Wards" }}) - Current: ₹ {{ chg.amount }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">New Default Amount / Rate (₹) <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" name="amount" id="updateChargeAmount" class="form-control" placeholder="e.g. 500.00" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold fs-7">Status</label>
+                        <select name="is_active" id="updateChargeActive" class="form-select">
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn text-white btn-sm px-3 fw-semibold" style="background-color: #9333ea;">Update Charge</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const chargeSelect = document.getElementById('updateChargeSelect');
+    const amountInput = document.getElementById('updateChargeAmount');
+    const activeSelect = document.getElementById('updateChargeActive');
+
+    if (chargeSelect) {
+        chargeSelect.addEventListener('change', function () {
+            const selected = this.options[this.selectedIndex];
+            if (selected && selected.value) {
+                if (amountInput) amountInput.value = selected.getAttribute('data-amount') || '';
+                if (activeSelect) activeSelect.value = selected.getAttribute('data-active') || 'true';
+            }
+        });
+    }
+});
+
+function openEditChargeModal(chargeId, currentAmount, is_active) {
+    const chargeSelect = document.getElementById('updateChargeSelect');
+    const amountInput = document.getElementById('updateChargeAmount');
+    const activeSelect = document.getElementById('updateChargeActive');
+
+    if (chargeSelect) {
+        chargeSelect.value = chargeId;
+    }
+    if (amountInput) {
+        amountInput.value = currentAmount;
+    }
+    if (activeSelect) {
+        activeSelect.value = is_active;
+    }
+
+    const modalElem = document.getElementById('updateChargeModal');
+    if (modalElem) {
+        const modal = new bootstrap.Modal(modalElem);
+        modal.show();
+    }
+}
+</script>
+{% endblock %}

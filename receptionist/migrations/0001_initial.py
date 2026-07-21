@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('father_name', models.CharField(blank=True, max_length=255, null=True)),
                 ('date_of_birth', models.DateField(validators=[receptionist.models.validate_dob_not_in_future])),
                 ('gender', models.CharField(choices=[('Female', 'Female'), ('Male', 'Male'), ('Other', 'Other')], max_length=10)),
-                ('mobile_number', models.CharField(db_index=True, max_length=15, unique=True, validators=[django.core.validators.RegexValidator(message="Mobile number must be entered in the format: '+999999999'. Up to 15 digits allowed.", regex='^\\+?1?\\d{9,15}$')])),
+                ('mobile_number', models.CharField(db_index=True, max_length=15, validators=[django.core.validators.RegexValidator(message="Mobile number must be entered in the format: '+999999999'. Up to 15 digits allowed.", regex='^\\+?1?\\d{9,15}$')])),
                 ('address', models.TextField()),
                 ('is_active', models.BooleanField(default=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),

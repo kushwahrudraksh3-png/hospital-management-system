@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from .forms import PatientRegistrationForm, OPDVisitForm
 from .models import Patient, OPDVisit, HospitalSettings
@@ -78,8 +79,21 @@ def dashboard(request):
         opd_percent_change = 0
     opd_change_abs = abs(opd_percent_change)
     
-    # 3. Pending Lab Reports
-    pending_lab_reports = selected_visits.filter(status=OPDVisit.StatusChoices.PENDING_LAB).count()
+    # 3. Pending Lab Reports (excluding visits where all lab reports are completed/sent)
+    from lab.models import LaboratoryReport
+    completed_visit_ids = LaboratoryReport.objects.filter(
+        visit__in=selected_visits,
+        status__in=['COMPLETED', 'SENT']
+    ).exclude(
+        visit__laboratory_reports__status__in=['PENDING', 'IN_PROGRESS']
+    ).values_list('visit_id', flat=True)
+
+    pending_lab_reports = selected_visits.filter(
+        Q(status=OPDVisit.StatusChoices.PENDING_LAB) |
+        Q(laboratory_reports__isnull=False)
+    ).exclude(
+        id__in=completed_visit_ids
+    ).distinct().count()
     lab_reports_due_hour = 0
     
     # 4. Recent Patients table: Retrieve recent OPD visits on selected date
@@ -161,6 +175,7 @@ def patient_registration(request):
         visit_form.fields['visit_date'].required = False
         visit_form.fields['visit_time'].required = False
         visit_form.fields['status'].required = False
+        visit_form.fields['visit_type'].required = False
         
         patient_valid = patient_form.is_valid()
         visit_valid = visit_form.is_valid()
@@ -175,27 +190,18 @@ def patient_registration(request):
         if patient_valid and visit_valid:
             try:
                 with transaction.atomic():
-                    # 1. Reuse existing patient if already present (by mobile number)
-                    mobile = patient_form.cleaned_data['mobile_number']
-                    patient = Patient.objects.filter(mobile_number=mobile).first()
-                    
-                    is_new_patient = False
-                    if not patient:
-                        print("[DEBUG] Creating new patient.")
-                        patient = patient_form.save(commit=False)
-                        patient.created_by = request.user
-                        patient.updated_by = request.user
-                        patient.save()
-                        is_new_patient = True
-                        print(f"[DEBUG] New Patient saved with ID: {patient.id}, UHID: {patient.uhid}")
-                    else:
-                        print(f"[DEBUG] Reusing existing Patient with ID: {patient.id}, UHID: {patient.uhid}")
+                    # 1. Create new patient record for registration
+                    patient = patient_form.save(commit=False)
+                    patient.created_by = request.user
+                    patient.updated_by = request.user
+                    patient.save()
+                    is_new_patient = True
+                    print(f"[DEBUG] New Patient saved with ID: {patient.id}, UHID: {patient.uhid}")
                     
                     # 2. Create the OPD visit
                     visit = visit_form.save(commit=False)
                     visit.patient = patient
-                    if is_new_patient:
-                        visit.visit_type = OPDVisit.VisitTypeChoices.NEW_VISIT
+                    visit.visit_type = OPDVisit.VisitTypeChoices.NEW_VISIT
                     
                     # Always assign Visit Date and Visit Time using Django timezone utilities on the server
                     visit.visit_date = timezone.localdate()
