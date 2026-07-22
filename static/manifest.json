@@ -1,0 +1,17 @@
+{
+  "name": "Vatsalya Shree Hospital HMS",
+  "short_name": "HMS Enterprise",
+  "description": "Hospital Management System - Vatsalya Shree Hospital",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1d4ed8",
+  "icons": [
+    {
+      "src": "/static/images/vatsalya_child_logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,823 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Variables CSS */
+:root {
+  --clinic-primary: #2563eb;
+  --clinic-primary-dark: #1d4ed8;
+  --clinic-primary-light: #eff6ff;
+  --clinic-success: #16a34a;
+  --clinic-success-light: #f0fdf4;
+  --clinic-danger: #dc2626;
+  --clinic-danger-light: #fef2f2;
+  --clinic-warning: #f59e0b;
+  --clinic-warning-light: #fffbeb;
+  --clinic-info: #0284c7;
+  --clinic-bg: #f8fafc;
+  --clinic-surface: #ffffff;
+  --clinic-border: #e5e7eb;
+  --clinic-text: #111827;
+  --clinic-muted: #6b7280;
+  --clinic-sidebar-width: 256px;
+  --clinic-navbar-height: 72px;
+  --clinic-radius: 12px;
+  --clinic-radius-sm: 7px;
+  --clinic-shadow: 0 1px 3px rgba(15, 23, 42, .07), 0 1px 2px rgba(15, 23, 42, .04);
+  --clinic-shadow-lg: 0 10px 22px rgba(15, 23, 42, .08);
+}
+
+/* Style CSS */
+* { box-sizing: border-box; }
+html { font-size: 16px; }
+body { margin: 0; background: var(--clinic-bg); color: var(--clinic-text); font-family: 'Inter', sans-serif; font-size: .875rem; line-height: 1.5; }
+a { color: var(--clinic-primary); text-decoration: none; }
+a:hover { color: var(--clinic-primary-dark); }
+h1, h2, h3, h4, h5, h6 { color: var(--clinic-text); font-weight: 600; line-height: 1.25; }
+h1 { font-size: 1.75rem; } h2 { font-size: 1.375rem; } h3 { font-size: 1.125rem; } h4 { font-size: 1rem; }
+.text-muted { color: var(--clinic-muted) !important; }
+.page-title { margin: 0; font-size: 1.5rem; letter-spacing: -.025em; }
+.section-heading { margin: 0 0 1rem; font-size: .75rem; font-weight: 700; color: var(--clinic-muted); letter-spacing: .075em; text-transform: uppercase; }
+.component-demo { border: 1px solid var(--clinic-border); border-radius: var(--clinic-radius); background: var(--clinic-surface); padding: 1.25rem; }
+.color-swatch { min-height: 88px; border-radius: var(--clinic-radius-sm); color: #fff; display: flex; flex-direction: column; justify-content: flex-end; padding: .75rem; font-size: .75rem; font-weight: 600; }
+.color-swatch small { opacity: .82; font-weight: 400; }
+
+/* Components CSS */
+.btn { --bs-btn-font-size: .875rem; --bs-btn-font-weight: 600; --bs-btn-border-radius: var(--clinic-radius-sm); --bs-btn-padding-x: 1rem; --bs-btn-padding-y: .55rem; display: inline-flex; align-items: center; gap: .45rem; box-shadow: none !important; }
+.btn-primary { --bs-btn-bg: var(--clinic-primary); --bs-btn-border-color: var(--clinic-primary); --bs-btn-hover-bg: var(--clinic-primary-dark); --bs-btn-hover-border-color: var(--clinic-primary-dark); --bs-btn-active-bg: var(--clinic-primary-dark); --bs-btn-active-border-color: var(--clinic-primary-dark); }
+.btn-outline-primary { --bs-btn-color: var(--clinic-primary); --bs-btn-border-color: #bfdbfe; --bs-btn-hover-bg: var(--clinic-primary-light); --bs-btn-hover-color: var(--clinic-primary-dark); --bs-btn-hover-border-color: #93c5fd; --bs-btn-active-bg: #dbeafe; --bs-btn-active-color: var(--clinic-primary-dark); --bs-btn-active-border-color: #93c5fd; }
+.btn-light { --bs-btn-bg: #fff; --bs-btn-border-color: var(--clinic-border); --bs-btn-hover-bg: #f9fafb; --bs-btn-hover-border-color: #d1d5db; --bs-btn-color: #374151; }
+.btn-success { --bs-btn-bg: var(--clinic-success); --bs-btn-border-color: var(--clinic-success); }
+.btn-danger { --bs-btn-bg: var(--clinic-danger); --bs-btn-border-color: var(--clinic-danger); }
+.btn-sm { --bs-btn-padding-x: .7rem; --bs-btn-padding-y: .35rem; font-size: .75rem; }
+.btn-icon { width: 36px; height: 36px; justify-content: center; padding: 0; }
+
+.clinic-card { background: var(--clinic-surface); border: 1px solid var(--clinic-border); border-radius: var(--clinic-radius); box-shadow: var(--clinic-shadow); }
+.clinic-card .card-header { padding: 1rem 1.25rem; background: transparent; border-color: var(--clinic-border); font-size: .9375rem; font-weight: 600; }
+.clinic-card .card-body { padding: 1.25rem; }
+.form-label { margin-bottom: .4rem; color: #374151; font-size: .8125rem; font-weight: 600; }
+.form-control, .form-select { min-height: 42px; padding: .55rem .75rem; border-color: #d1d5db; border-radius: var(--clinic-radius-sm); color: var(--clinic-text); font-size: .875rem; }
+.form-control:focus, .form-select:focus { border-color: #93c5fd; box-shadow: 0 0 0 .2rem rgba(37, 99, 235, .12); }
+.form-control::placeholder { color: #9ca3af; }
+.input-group-text { border-color: #d1d5db; background: #f9fafb; color: var(--clinic-muted); }
+.form-check-input:checked { background-color: var(--clinic-primary); border-color: var(--clinic-primary); }
+.form-text { color: var(--clinic-muted); font-size: .75rem; }
+
+.table-responsive { border: 1px solid var(--clinic-border); border-radius: var(--clinic-radius); }
+.clinic-table { margin: 0; vertical-align: middle; }
+.clinic-table > :not(caption) > * > * { padding: .875rem 1rem; border-color: #edf0f2; }
+.clinic-table thead th { background: #f8fafc; color: var(--clinic-muted); font-size: .6875rem; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; white-space: nowrap; }
+.clinic-table tbody tr { transition: background .15s ease; }
+.clinic-table tbody tr:hover { background: #f8fbff; }
+.search-field { position: relative; min-width: 240px; }
+.search-field .bi-search { position: absolute; left: .8rem; top: 50%; transform: translateY(-50%); color: var(--clinic-muted); z-index: 2; }
+.search-field .form-control { padding-left: 2.25rem; }
+
+.alert { display: flex; align-items: flex-start; gap: .65rem; border: 1px solid; border-radius: var(--clinic-radius-sm); font-size: .8125rem; }
+.alert-primary { --bs-alert-bg: var(--clinic-primary-light); --bs-alert-border-color: #bfdbfe; --bs-alert-color: #1e40af; }
+.alert-success { --bs-alert-bg: var(--clinic-success-light); --bs-alert-border-color: #bbf7d0; --bs-alert-color: #166534; }
+.alert-warning { --bs-alert-bg: var(--clinic-warning-light); --bs-alert-border-color: #fde68a; --bs-alert-color: #92400e; }
+.alert-danger { --bs-alert-bg: var(--clinic-danger-light); --bs-alert-border-color: #fecaca; --bs-alert-color: #991b1b; }
+.badge { padding: .35em .65em; border-radius: 999px; font-size: .6875rem; font-weight: 600; }
+.badge-soft-primary { background: var(--clinic-primary-light); color: #1d4ed8; }.badge-soft-success { background: var(--clinic-success-light); color: #15803d; }.badge-soft-warning { background: var(--clinic-warning-light); color: #b45309; }.badge-soft-danger { background: var(--clinic-danger-light); color: #b91c1c; }.badge-soft-muted { background: #f3f4f6; color: #4b5563; }
+.pagination { --bs-pagination-color: #4b5563; --bs-pagination-border-color: var(--clinic-border); --bs-pagination-hover-color: var(--clinic-primary); --bs-pagination-hover-bg: var(--clinic-primary-light); --bs-pagination-hover-border-color: #bfdbfe; --bs-pagination-active-bg: var(--clinic-primary); --bs-pagination-active-border-color: var(--clinic-primary); --bs-pagination-border-radius: var(--clinic-radius-sm); gap: .25rem; margin: 0; }.page-link { border-radius: var(--clinic-radius-sm) !important; font-size: .8125rem; }
+.spinner-border { color: var(--clinic-primary); }.spinner-border-sm { width: 1rem; height: 1rem; }
+.empty-state { padding: 2.5rem 1rem; text-align: center; }.empty-state-icon { width: 52px; height: 52px; margin: 0 auto 1rem; border-radius: 50%; display: grid; place-items: center; background: var(--clinic-primary-light); color: var(--clinic-primary); font-size: 1.35rem; }.empty-state h3 { font-size: 1rem; margin-bottom: .35rem; }.empty-state p { max-width: 340px; margin: 0 auto 1rem; color: var(--clinic-muted); font-size: .8125rem; }
+.toast { border: 1px solid var(--clinic-border); border-radius: var(--clinic-radius); box-shadow: var(--clinic-shadow-lg); }.toast-header { font-size: .8125rem; }.toast-body { font-size: .8125rem; }
+.modal-content { border: 0; border-radius: var(--clinic-radius); box-shadow: var(--clinic-shadow-lg); }.modal-header, .modal-footer { border-color: var(--clinic-border); }.modal-title { font-size: 1rem; font-weight: 600; }.modal-body { font-size: .875rem; }
+.dropdown-menu { padding: .4rem; border: 1px solid var(--clinic-border); border-radius: var(--clinic-radius-sm); box-shadow: var(--clinic-shadow-lg); font-size: .8125rem; }.dropdown-item { border-radius: 5px; padding: .55rem .7rem; }.dropdown-item:hover, .dropdown-item:focus { background: var(--clinic-primary-light); color: var(--clinic-primary-dark); }.dropdown-item i { width: 1.25rem; color: var(--clinic-muted); }
+
+.metric-card { height: 100%; padding: 1.15rem; }.metric-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 9px; font-size: 1.1rem; }.metric-label { margin: 1rem 0 .25rem; color: var(--clinic-muted); font-size: .75rem; font-weight: 500; }.metric-value { font-size: 1.5rem; font-weight: 700; letter-spacing: -.025em; }.metric-change { font-size: .6875rem; font-weight: 600; }.icon-primary { background: var(--clinic-primary-light); color: var(--clinic-primary); }.icon-success { background: var(--clinic-success-light); color: var(--clinic-success); }.icon-warning { background: var(--clinic-warning-light); color: #d97706; }.icon-danger { background: var(--clinic-danger-light); color: var(--clinic-danger); }
+.quick-action { display: flex; align-items: center; gap: .85rem; min-height: 76px; padding: 1rem; border: 1px solid var(--clinic-border); border-radius: var(--clinic-radius-sm); color: var(--clinic-text); transition: border-color .15s ease, box-shadow .15s ease; }.quick-action:hover { color: var(--clinic-text); border-color: #bfdbfe; box-shadow: var(--clinic-shadow); }.quick-action-icon { width: 38px; height: 38px; flex: 0 0 38px; display: grid; place-items: center; border-radius: 8px; background: var(--clinic-primary-light); color: var(--clinic-primary); font-size: 1rem; }.quick-action strong { display: block; font-size: .8125rem; }.quick-action small { color: var(--clinic-muted); font-size: .6875rem; }
+.timeline { margin: 0; padding: 0; list-style: none; }.timeline-item { position: relative; padding: 0 0 1.2rem 1.75rem; }.timeline-item:last-child { padding-bottom: 0; }.timeline-item:not(:last-child)::before { content: ''; position: absolute; top: 18px; bottom: 0; left: 7px; width: 1px; background: var(--clinic-border); }.timeline-dot { position: absolute; top: 3px; left: 0; width: 15px; height: 15px; display: grid; place-items: center; border: 3px solid #fff; border-radius: 50%; background: var(--clinic-primary); box-shadow: 0 0 0 1px #bfdbfe; }.timeline-item h4 { margin: 0 0 .15rem; font-size: .8125rem; }.timeline-item p, .timeline-item time { margin: 0; color: var(--clinic-muted); font-size: .71875rem; }.timeline-item time { display: block; margin-top: .2rem; }
+
+
+.form-section-title { display: flex; align-items: center; gap: .55rem; margin: 0; font-size: .9375rem; font-weight: 600; }.form-section-title i { color: var(--clinic-primary); }.readonly-control { background: #f8fafc; color: var(--clinic-muted); }.required-mark { color: var(--clinic-danger); }.form-actions { display: flex; justify-content: flex-end; gap: .65rem; padding: 1rem 1.25rem; border-top: 1px solid var(--clinic-border); background: #fcfcfd; border-radius: 0 0 var(--clinic-radius) var(--clinic-radius); }
+
+.filter-tabs { display: flex; flex-wrap: wrap; gap: .35rem; }.filter-tab { padding: .45rem .75rem; border: 1px solid transparent; border-radius: var(--clinic-radius-sm); background: transparent; color: var(--clinic-muted); font-size: .75rem; font-weight: 600; }.filter-tab:hover { background: #f8fafc; color: var(--clinic-primary); }.filter-tab.active { border-color: #bfdbfe; background: var(--clinic-primary-light); color: var(--clinic-primary); }.table-loading { padding: 3.5rem 1rem; text-align: center; }
+
+.patient-hero { overflow: hidden; }.patient-hero-top { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; background: linear-gradient(90deg, #eff6ff 0%, #fff 68%); border-bottom: 1px solid var(--clinic-border); }.patient-photo { width: 68px; height: 68px; flex: 0 0 68px; display: grid; place-items: center; border: 3px solid #fff; border-radius: 50%; background: #bfdbfe; color: #1d4ed8; box-shadow: var(--clinic-shadow); font-size: 1.75rem; }.patient-hero-name { margin: 0 0 .25rem; font-size: 1.25rem; }.patient-hero-meta { color: var(--clinic-muted); font-size: .75rem; }.patient-hero-meta span + span::before { content: '•'; margin: 0 .35rem; color: #9ca3af; }.patient-info-grid { display: grid; grid-template-columns: repeat(4, 1fr); }.patient-info-item { padding: .9rem 1.25rem; border-right: 1px solid var(--clinic-border); }.patient-info-item:last-child { border-right: 0; }.patient-info-label { display: block; margin-bottom: .2rem; color: var(--clinic-muted); font-size: .65rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }.patient-info-value { font-size: .8125rem; font-weight: 600; }.data-label { display: block; color: var(--clinic-muted); font-size: .675rem; font-weight: 600; }.data-value { display: block; margin-top: .15rem; color: var(--clinic-text); font-size: .8125rem; font-weight: 600; }
+@media (max-width: 991.98px) { .patient-info-grid { grid-template-columns: repeat(2, 1fr); }.patient-info-item:nth-child(2) { border-right: 0; }.patient-info-item:nth-child(-n+2) { border-bottom: 1px solid var(--clinic-border); } } @media (max-width: 575.98px) { .patient-hero-top { align-items: flex-start; }.patient-info-grid { grid-template-columns: 1fr; }.patient-info-item, .patient-info-item:nth-child(2) { border-right: 0; border-bottom: 1px solid var(--clinic-border); }.patient-info-item:last-child { border-bottom: 0; } }
+
+.health-summary-card { height: 100%; padding: 1rem; }.health-summary-icon { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 9px; background: var(--clinic-primary-light); color: var(--clinic-primary); font-size: 1rem; }.health-summary-label { margin: .75rem 0 .2rem; color: var(--clinic-muted); font-size: .6875rem; font-weight: 600; }.health-summary-value { font-size: 1.0625rem; font-weight: 700; }.health-summary-unit { color: var(--clinic-muted); font-size: .6875rem; font-weight: 500; }.clinical-note { padding: .85rem 1rem; border-left: 3px solid var(--clinic-primary); border-radius: 0 var(--clinic-radius-sm) var(--clinic-radius-sm) 0; background: #f8fbff; font-size: .8125rem; }.visit-history-date { display: inline-flex; min-width: 74px; align-items: center; justify-content: center; padding: .25rem .5rem; border-radius: 999px; background: #f3f4f6; color: #4b5563; font-size: .6875rem; font-weight: 600; }
+.prescription-table .form-control, .prescription-table .form-select { min-width: 110px; min-height: 38px; padding: .4rem .55rem; font-size: .75rem; }.prescription-table .medicine-name { min-width: 180px; }.prescription-table .instruction-select { min-width: 130px; }
+.amount-summary { padding: .25rem 0; }.amount-summary.total { margin-top: .35rem; padding-top: .85rem; border-top: 1px solid var(--clinic-border); font-size: 1rem; }.amount-summary.total strong { color: var(--clinic-primary); font-size: 1.25rem; }
+.receipt-paper { max-width: 920px; margin: 0 auto; padding: 2.25rem; background: #fff; box-shadow: var(--clinic-shadow-lg); }.receipt-clinic-name { margin: 0; color: var(--clinic-primary); font-size: 1.45rem; font-weight: 700; }.receipt-meta { color: var(--clinic-muted); font-size: .75rem; }.receipt-rule { margin: 1.5rem 0; border: 0; border-top: 1px dashed #cbd5e1; }.receipt-details { display: grid; grid-template-columns: repeat(2, 1fr); gap: .7rem 2rem; }.receipt-details .data-value { font-weight: 500; }.receipt-total { padding: 1rem 0; border-top: 1px solid var(--clinic-border); border-bottom: 1px solid var(--clinic-border); }.receipt-footer { margin-top: 2rem; color: var(--clinic-muted); font-size: .75rem; text-align: center; }.receipt-footer strong { color: var(--clinic-text); }
+@media print { @page { size: A4; margin: 14mm; } body { background: #fff; } .sidebar, .top-navbar, .receipt-actions, .breadcrumb, .page-heading-screen { display: none !important; } .main-area { margin: 0 !important; } .page-content { padding: 0 !important; } .receipt-paper { max-width: none; padding: 0; box-shadow: none; } .receipt-paper .table-responsive { overflow: visible; } .receipt-paper .clinic-table { font-size: 11px; } .receipt-paper .clinic-table > :not(caption) > * > * { padding: .45rem .5rem; } }
+
+/* Layout CSS */
+.app-shell { min-height: 100vh; }.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 1040; width: var(--clinic-sidebar-width); overflow-y: auto; background: #fff; border-right: 1px solid var(--clinic-border); }.brand { height: var(--clinic-navbar-height); display: flex; align-items: center; gap: .7rem; padding: 0 1.25rem; border-bottom: 1px solid var(--clinic-border); color: var(--clinic-text); font-weight: 700; }.brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 9px; background: var(--clinic-primary); color: #fff; font-size: 1.1rem; }.brand small { display: block; color: var(--clinic-muted); font-size: .625rem; font-weight: 500; letter-spacing: .03em; }.sidebar-nav { padding: 1rem .75rem; }.nav-section-label { padding: .7rem .75rem .4rem; color: #9ca3af; font-size: .625rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }.sidebar .nav-link { display: flex; align-items: center; gap: .75rem; padding: .65rem .75rem; margin-bottom: .15rem; border-radius: var(--clinic-radius-sm); color: #4b5563; font-size: .8125rem; font-weight: 500; }.sidebar .nav-link i { font-size: 1rem; }.sidebar .nav-link:hover { background: #f8fafc; color: var(--clinic-primary); }.sidebar .nav-link.active { background: var(--clinic-primary-light); color: var(--clinic-primary); font-weight: 600; }.main-area { margin-left: var(--clinic-sidebar-width); min-width: 0; }.top-navbar { height: var(--clinic-navbar-height); display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 2rem; background: #fff; border-bottom: 1px solid var(--clinic-border); }.current-date { color: var(--clinic-muted); font-size: .75rem; }.user-avatar { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #dbeafe; color: #1d4ed8; font-size: .75rem; font-weight: 700; }.page-content { padding: 1.75rem 2rem 3rem; }.breadcrumb { margin-bottom: .75rem; font-size: .75rem; }.breadcrumb-item + .breadcrumb-item::before { color: #9ca3af; }.breadcrumb-item.active { color: var(--clinic-muted); }.mobile-toggle { display: none; }
+.u-shadow { box-shadow: var(--clinic-shadow) !important; }.u-shadow-lg { box-shadow: var(--clinic-shadow-lg) !important; }.u-rounded { border-radius: var(--clinic-radius) !important; }.u-border { border: 1px solid var(--clinic-border) !important; }.u-bg-surface { background: var(--clinic-surface) !important; }.u-text-muted { color: var(--clinic-muted) !important; }.u-text-primary { color: var(--clinic-primary) !important; }.u-cursor-pointer { cursor: pointer; }.u-nowrap { white-space: nowrap; }
+@media (max-width: 991.98px) { .sidebar { transform: translateX(-100%); transition: transform .2s ease; box-shadow: var(--clinic-shadow-lg); }.sidebar.is-open { transform: translateX(0); }.main-area { margin-left: 0; }.mobile-toggle { display: inline-flex; }.top-navbar { padding: 0 1rem; }.page-content { padding: 1.25rem 1rem 2rem; }.sidebar-backdrop { position: fixed; inset: 0; z-index: 1035; background: rgba(17, 24, 39, .35); } }
+@media (max-width: 575.98px) { .top-navbar .current-date, .top-navbar .user-name { display: none; }.search-field { min-width: 100%; }.page-title { font-size: 1.25rem; } }
+
+/* Lab module CSS (overrides) */
+.sidebar-nav .nav-link.lab-active {
+  background: var(--clinic-primary-light);
+  color: var(--clinic-primary);
+  font-weight: 600;
+}
+
+.badge-soft-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-soft-billed {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.badge-soft-collected {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.badge-soft-testing {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.badge-soft-ready {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge-soft-sent {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.status-flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.status-flow-step {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .6875rem;
+  font-weight: 600;
+  color: var(--clinic-muted);
+}
+
+.status-flow-step.done .sf-dot {
+  background: var(--clinic-success);
+}
+
+.status-flow-step.current .sf-dot {
+  background: var(--clinic-primary);
+}
+
+.status-flow-step.pending .sf-dot {
+  background: #d1d5db;
+}
+
+.sf-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sf-arrow {
+  width: 22px;
+  height: 1px;
+  background: var(--clinic-border);
+  margin: 0 .15rem;
+  flex-shrink: 0;
+}
+
+.status-flow-step.done {
+  color: var(--clinic-success);
+}
+
+.status-flow-step.current {
+  color: var(--clinic-primary);
+}
+
+.lab-receipt-paper {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.25rem;
+  background: #fff;
+  box-shadow: var(--clinic-shadow-lg);
+}
+
+.lab-receipt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  border-bottom: 2px solid var(--clinic-primary);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.lab-receipt-clinic-name {
+  margin: 0 0 .15rem;
+  color: var(--clinic-primary);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.lab-receipt-sub {
+  color: var(--clinic-muted);
+  font-size: .75rem;
+}
+
+.lab-receipt-title {
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--clinic-primary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  text-align: right;
+}
+
+.lab-receipt-meta {
+  color: var(--clinic-muted);
+  font-size: .75rem;
+}
+
+.lab-receipt-rule {
+  border: 0;
+  border-top: 1px dashed #cbd5e1;
+  margin: 1rem 0;
+}
+
+.lab-patient-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem 1.5rem;
+  margin-bottom: .75rem;
+}
+
+.lab-patient-row .data-label {
+  display: block;
+  color: var(--clinic-muted);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.lab-patient-row .data-value {
+  display: block;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--clinic-text);
+  margin-top: .1rem;
+}
+
+.lab-receipt-footer {
+  margin-top: 2rem;
+  color: var(--clinic-muted);
+  font-size: .75rem;
+  text-align: center;
+  border-top: 1px solid var(--clinic-border);
+  padding-top: 1rem;
+}
+
+.lab-receipt-footer strong {
+  color: var(--clinic-text);
+}
+
+.report-table .result-input {
+  min-width: 120px;
+}
+
+.report-table .ref-range {
+  color: var(--clinic-muted);
+  font-size: .6875rem;
+}
+
+.report-table .unit-label {
+  color: var(--clinic-muted);
+  font-size: .75rem;
+}
+
+.result-flag-high {
+  color: var(--clinic-danger);
+  font-weight: 700;
+  font-size: .6875rem;
+}
+
+.result-flag-low {
+  color: var(--clinic-info);
+  font-weight: 700;
+  font-size: .6875rem;
+}
+
+.result-flag-normal {
+  color: var(--clinic-success);
+  font-weight: 700;
+  font-size: .6875rem;
+}
+
+.lab-report-paper {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.25rem;
+  background: #fff;
+  box-shadow: var(--clinic-shadow-lg);
+}
+
+.lab-report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  border-bottom: 2px solid var(--clinic-primary);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.report-section-title {
+  margin: 1rem 0 .5rem;
+  padding: .4rem .75rem;
+  background: var(--clinic-primary-light);
+  color: var(--clinic-primary);
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  border-radius: var(--clinic-radius-sm);
+}
+
+.report-table th {
+  background: #f8fafc;
+  color: var(--clinic-muted);
+  font-size: .6875rem;
+  font-weight: 700;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+.report-table td {
+  font-size: .8125rem;
+  padding: .65rem .75rem;
+  border-color: #edf0f2;
+  vertical-align: middle;
+}
+
+.report-footer-sig {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.report-footer-sig .sig-block {
+  text-align: center;
+  min-width: 160px;
+}
+
+.report-footer-sig .sig-line {
+  border-top: 1px solid var(--clinic-text);
+  margin-top: 2.5rem;
+  padding-top: .35rem;
+  font-size: .75rem;
+  font-weight: 600;
+}
+
+.icon-info {
+  background: #e0f2fe;
+  color: var(--clinic-info);
+}
+
+.test-rate-card {
+  padding: .85rem 1rem;
+  border: 1px solid var(--clinic-border);
+  border-radius: var(--clinic-radius-sm);
+  background: #fff;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.test-rate-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: var(--clinic-shadow);
+}
+
+.test-rate-card .test-name {
+  font-size: .8125rem;
+  font-weight: 600;
+  margin: 0 0 .2rem;
+}
+
+.test-rate-card .test-price {
+  color: var(--clinic-primary);
+  font-size: .875rem;
+  font-weight: 700;
+}
+
+.test-rate-card .test-cat {
+  color: var(--clinic-muted);
+  font-size: .6875rem;
+}
+
+.report-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .3em .65em;
+  border-radius: 999px;
+  font-size: .6875rem;
+  font-weight: 600;
+}
+
+
+
+.sig-sub {
+  font-weight: 400;
+  color: var(--clinic-muted);
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .sidebar,
+  .top-navbar,
+  .lab-actions,
+  .breadcrumb,
+  .page-heading-screen,
+  .form-actions,
+  .no-print {
+    display: none !important;
+  }
+
+  .main-area {
+    margin: 0 !important;
+  }
+
+  .page-content {
+    padding: 0 !important;
+  }
+
+  .lab-receipt-paper,
+  .lab-report-paper {
+    max-width: none;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .lab-receipt-paper .table-responsive,
+  .lab-report-paper .table-responsive {
+    overflow: visible;
+  }
+
+  .clinic-table {
+    font-size: 11px;
+  }
+
+  .clinic-table > :not(caption) > * > * {
+    padding: .45rem .5rem;
+  }
+}
+
+
+/* ==========================================================================
+   Prescription Pad Preview Styles (Copied from Doctor Module)
+   ========================================================================== */
+.prescription-pad {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 12mm 15mm;
+  background: var(--clinic-surface);
+  border: 1px solid var(--clinic-border);
+  box-shadow: var(--clinic-shadow-lg);
+  position: relative;
+  font-family: 'Inter', sans-serif;
+  color: #111;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+.prescription-pad::before {
+  content: "";
+  position: absolute;
+  top: 100mm;
+  left: 30mm;
+  right: 30mm;
+  bottom: 50mm;
+  background-image: url('../../doctor/assets/images/prescription/baby_watermark.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+}
+.prescription-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid #1d4ed8;
+  padding-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+.header-logo-left {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+.header-title-container {
+  text-align: center;
+  flex-grow: 1;
+}
+.header-title-container h1 {
+  font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+  color: #1e3a8a;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+.header-logo-right {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+.reg-bar {
+  background-color: #1d4ed8;
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 0;
+  margin-top: 4px;
+  border-radius: 2px;
+  position: relative;
+  z-index: 1;
+}
+.doctor-info-section {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #1d4ed8;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  position: relative;
+  z-index: 1;
+}
+.doc-details-left {
+  width: 35%;
+}
+.doc-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #991b1b;
+  margin-bottom: 4px;
+}
+.doc-degrees {
+  font-weight: 600;
+  color: #333;
+}
+.doc-details-center {
+  width: 25%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.doc-details-center img {
+  width: 85px;
+  height: auto;
+  object-fit: contain;
+}
+.doc-details-right {
+  width: 38%;
+  text-align: right;
+}
+.prev-docs-title {
+  font-weight: 700;
+  color: #991b1b;
+  margin-bottom: 3px;
+}
+.prev-docs-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  color: #444;
+}
+.patient-demographics-section {
+  padding: 12px 0;
+  font-size: 0.8rem;
+  line-height: 1.8;
+  position: relative;
+  z-index: 1;
+}
+.demographics-row-1 {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.field-group {
+  display: flex;
+  align-items: flex-end;
+}
+.field-label {
+  font-weight: 600;
+  color: #333;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+.field-value-dotted {
+  border-bottom: 1px dotted #666;
+  flex-grow: 1;
+  padding-bottom: 1px;
+  min-width: 80px;
+}
+.demographics-row-2 {
+  display: flex;
+  justify-content: space-between;
+}
+.bottle-feed-options {
+  display: inline-flex;
+  gap: 12px;
+}
+.prescription-body-grid {
+  display: flex;
+  flex-grow: 1;
+  margin-top: 10px;
+  border-top: 1px solid #ccc;
+  position: relative;
+  z-index: 1;
+}
+.body-left-panel {
+  width: 28%;
+  border-right: 1px solid #ccc;
+  padding-right: 10px;
+  padding-top: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.exam-fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.exam-item-heading {
+  font-weight: 700;
+  color: #333;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+.exam-item-value-dotted {
+  border-bottom: 1px dotted #bbb;
+  height: 20px;
+  width: 100%;
+}
+.vitals-card-box {
+  margin-top: 40px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fafafa;
+}
+.vitals-box-title {
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: #1e3a8a;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+.vital-line-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+}
+.vital-line-label {
+  font-weight: 600;
+  color: #444;
+}
+.vital-line-value-underlined {
+  border-bottom: 1px solid #666;
+  width: 60%;
+  text-align: center;
+}
+.body-right-panel {
+  width: 72%;
+  padding-left: 15px;
+  padding-top: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+.rx-symbol {
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-family: 'Times New Roman', Times, serif;
+  color: #1e3a8a;
+  margin-bottom: 10px;
+}
+.prescription-lines-canvas {
+  flex-grow: 1;
+  background-image: linear-gradient(#e2e8f0 1px, transparent 1px);
+  background-size: 100% 28px;
+  line-height: 28px;
+  margin-bottom: 20px;
+}
+.prescription-text-entry {
+  font-size: 0.85rem;
+  color: #222;
+  padding-left: 5px;
+}
+.signature-container {
+  align-self: flex-end;
+  text-align: center;
+  width: 160px;
+  margin-top: 30px;
+  padding-top: 10px;
+}
+.signature-line {
+  border-top: 1px solid #555;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #333;
+  margin-top: 45px;
+  padding-top: 4px;
+}
+.prescription-footer {
+  margin-top: auto;
+  border-top: 2px solid #1d4ed8;
+  position: relative;
+  z-index: 1;
+}
+.footer-slogan-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 0;
+}
+.footer-slogan {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-weight: 600;
+  color: #1d4ed8;
+  font-size: 0.85rem;
+}
+.footer-timing-bar {
+  background-color: #1d4ed8;
+  color: #ffffff;
+  text-align: center;
+  font-size: 0.75rem;
+  padding: 5px 10px;
+  border-radius: 2px;
+  line-height: 1.4;
+}
+.footer-address-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  color: #1e3a8a;
+  padding: 6px 0;
+  font-weight: 600;
+}
+.swachh-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6rem;
+  color: #666;
+}
+.swachh-logo-container img {
+  height: 20px;
+  width: auto;
+}
+
+
+
+/* Print overrides for Prescription Pad */
+@media print {
+  .prescription-pad {
+    width: 210mm !important;
+    height: 297mm !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 10mm 12mm !important;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .prescription-pad::before {
+    opacity: 0.08 !important; /* Force watermark transparency print */
+  }
+}

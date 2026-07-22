@@ -1,0 +1,73 @@
+.auth-page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--clinic-bg);
+  padding: 2rem 1rem;
+}
+
+.auth-card-container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.auth-brand-mark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--clinic-primary);
+  color: #fff;
+  font-size: 1.25rem;
+}
+
+.auth-brand-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin: 0;
+  color: var(--clinic-text);
+}
+
+.auth-brand-sub {
+  display: block;
+  color: var(--clinic-muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-top: 0.15rem;
+}
+
+/* OTP Verification Styles */
+.otp-inputs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.otp-input-field {
+  width: 3.5rem;
+  height: 3.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border-radius: var(--clinic-radius-sm);
+  border: 1px solid #d1d5db;
+}
+
+.otp-input-field:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+@media (max-width: 400px) {
+  .otp-input-field {
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1.25rem;
+  }
+}

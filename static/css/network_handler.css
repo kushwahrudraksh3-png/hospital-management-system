@@ -1,0 +1,124 @@
+/* HMS Global Network Connection Handler Styles */
+:root {
+  --hms-primary: #1d4ed8;
+  --hms-primary-hover: #1e40af;
+  --hms-bg: #f8fafc;
+  --hms-card-bg: #ffffff;
+  --hms-border: #e2e8f0;
+  --hms-text: #0f172a;
+  --hms-text-muted: #64748b;
+}
+
+/* Fixed Overlay */
+.hms-network-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  box-sizing: border-box;
+}
+
+/* Glass Backdrop */
+.hms-network-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: -1;
+}
+
+/* Card Structure */
+.hms-network-card {
+  background: var(--hms-card-bg);
+  border: 1px solid var(--hms-border);
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 440px;
+  padding: 2rem 1.75rem;
+  position: relative;
+  animation: hmsPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes hmsPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.94) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Brand Header */
+.hms-brand-logo-wrap {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hms-brand-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.hms-brand-icon {
+  font-size: 2.25rem;
+  color: var(--hms-primary);
+}
+
+.hms-brand-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--hms-text);
+  letter-spacing: -0.01em;
+}
+
+.hms-brand-sub {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+/* Checklist Box */
+.hms-checklist-box {
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+/* Rotating icon for auto-retry */
+.spin-icon {
+  display: inline-block;
+  animation: hmsSpin 3s linear infinite;
+}
+
+@keyframes hmsSpin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button overrides */
+.hms-card-actions .btn-primary {
+  background-color: var(--hms-primary);
+  border-color: var(--hms-primary);
+  transition: all 0.2s ease;
+}
+
+.hms-card-actions .btn-primary:hover {
+  background-color: var(--hms-primary-hover);
+  border-color: var(--hms-primary-hover);
+}

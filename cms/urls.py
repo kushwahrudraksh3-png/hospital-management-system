@@ -15,12 +15,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
+from django.shortcuts import render
 
+def ping_view(request):
+    response = HttpResponse("pong", content_type="text/plain", status=200)
+    response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
+
+def offline_view(request):
+    return render(request, "offline.html")
 
 urlpatterns = [
+    path('ping/', ping_view, name='ping'),
+    path('offline/', offline_view, name='offline'),
     path('admin/', admin.site.urls),
     path("", include("accounts.urls")),
     path("receptionist/", include("receptionist.urls")),

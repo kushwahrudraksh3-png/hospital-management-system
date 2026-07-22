@@ -1,0 +1,73 @@
+{% load static %}
+<div id="hms-network-overlay" class="hms-network-overlay d-none" role="dialog" aria-modal="true" aria-labelledby="hms-overlay-title">
+  <div class="hms-network-backdrop"></div>
+  <div class="hms-network-card">
+    
+    <!-- Brand Header -->
+    <div class="hms-card-header text-center mb-4">
+      <div class="hms-brand-logo-wrap mx-auto mb-2">
+        <img src="{% static 'images/vatsalya_child_logo.png' %}" alt="Vatsalya Shree Hospital Logo" class="hms-brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+        <i class="bi bi-heart-pulse-fill hms-brand-icon" style="display:none;"></i>
+      </div>
+      <h2 class="hms-brand-name mb-0">Vatsalya Shree Hospital</h2>
+      <span class="hms-brand-sub text-muted">Hospital Management System</span>
+    </div>
+
+    <!-- Status Badge -->
+    <div class="text-center mb-4">
+      <span id="hms-status-badge" class="badge rounded-pill bg-danger-subtle text-danger px-3 py-2 border border-danger-subtle">
+        <i class="bi bi-wifi-off me-1"></i> <span id="hms-status-text">Network Connection Lost</span>
+      </span>
+    </div>
+
+    <!-- Dynamic Content Section -->
+    <div class="hms-card-body text-center">
+      
+      <!-- CASE 1: NO INTERNET CONNECTION -->
+      <div id="hms-case-no-internet" class="hms-case-content d-none">
+        <div class="hms-case-icon mb-3 text-danger">
+          <span class="display-3" role="img" aria-label="Satellite dish">📡</span>
+        </div>
+        <h3 id="hms-overlay-title" class="hms-title fw-bold text-dark mb-2">Network Connection Lost</h3>
+        <p class="hms-subtitle text-secondary mb-4">No Internet connection detected.</p>
+        
+        <div class="hms-checklist-box text-start p-3 rounded mb-4">
+          <div class="fw-semibold text-dark mb-2"><i class="bi bi-info-circle me-1 text-primary"></i> Please check:</div>
+          <ul class="list-unstyled mb-0 ps-2 text-secondary small">
+            <li class="mb-1"><i class="bi bi-dot text-primary fs-5 align-middle"></i> Wi-Fi</li>
+            <li class="mb-1"><i class="bi bi-dot text-primary fs-5 align-middle"></i> LAN Connection</li>
+            <li><i class="bi bi-dot text-primary fs-5 align-middle"></i> Mobile Hotspot</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- CASE 2: HOSPITAL SERVER UNAVAILABLE -->
+      <div id="hms-case-server-down" class="hms-case-content d-none">
+        <div class="hms-case-icon mb-3 text-warning">
+          <span class="display-3" role="img" aria-label="Hospital">🏥</span>
+        </div>
+        <h3 class="hms-title fw-bold text-dark mb-2">Hospital Server Unavailable</h3>
+        <p class="hms-subtitle text-secondary mb-3">Unable to connect to the HMS Server.</p>
+        
+        <div class="alert alert-warning border-warning-subtle text-dark small py-2 px-3 mb-4 rounded-3 text-center">
+          <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Please contact the Administrator.
+        </div>
+      </div>
+
+      <!-- Auto Retry Countdown / Status Note -->
+      <div id="hms-auto-retry-note" class="text-muted small mb-4">
+        <i class="bi bi-arrow-repeat spin-icon me-1 text-primary"></i> Auto retrying every 10 seconds...
+      </div>
+
+      <!-- Actions -->
+      <div class="hms-card-actions">
+        <button id="hms-retry-btn" type="button" class="btn btn-primary btn-lg w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center gap-2 shadow-sm">
+          <span id="hms-retry-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          <i id="hms-retry-icon" class="bi bi-arrow-counterclockwise fs-5"></i>
+          <span id="hms-retry-btn-text">Retry Connection</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
