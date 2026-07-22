@@ -23,12 +23,13 @@
 
         <!-- Sidebar -->
         <aside class="sidebar d-flex flex-column" aria-label="Main navigation">
-            <a class="brand" href="{% url 'doctor:dashboard' %}">
+            <a class="brand d-flex align-items-center gap-2" href="{% url 'doctor:dashboard' %}">
                 <span class="brand-mark">
-                    <i class="bi bi-heart-pulse-fill"></i>
+                    <img src="{% static 'images/vatsalya_child_logo.png' %}" alt="Vatsalya Shree Hospital Logo" style="height: 32px; width: auto; object-fit: contain;">
                 </span>
                 <span>Vatsalya Shree Hospital</span>
             </a>
+
             <nav class="sidebar-nav">
                 <div class="nav-section-label">Medical</div>
                 <a href="{% url 'doctor:dashboard' %}" class="nav-link {% if active_nav == 'dashboard' %}active{% endif %}">

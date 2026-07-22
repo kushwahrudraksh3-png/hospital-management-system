@@ -1,15 +1,18 @@
 {% extends "accounts/base_auth.html" %}
+{% load static %}
 
 {% block title %}Login | Vatsalya Shree Hospital{% endblock %}
+
 
 {% block content %}
 <div class="text-center mb-4">
   <div class="auth-brand-mark mx-auto mb-2">
-    <i class="bi bi-heart-pulse-fill"></i>
+    <img src="{% static 'images/vatsalya_child_logo.png' %}" alt="Vatsalya Shree Hospital Logo" style="height: 52px; width: auto; object-fit: contain;">
   </div>
   <h1 class="auth-brand-title">Vatsalya Shree Hospital</h1>
   <span class="auth-brand-sub">Hospital Management System</span>
 </div>
+
 
 {% if messages %}
   {% for message in messages %}

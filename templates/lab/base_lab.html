@@ -22,10 +22,11 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar d-flex flex-column" aria-label="Lab module navigation">
-      <a class="brand" href="{% url 'lab:dashboard' %}">
-        <span class="brand-mark"><i class="bi bi-heart-pulse-fill"></i></span>
+      <a class="brand d-flex align-items-center gap-2" href="{% url 'lab:dashboard' %}">
+        <span class="brand-mark"><img src="{% static 'images/vatsalya_child_logo.png' %}" alt="Vatsalya Shree Hospital Logo" style="height: 32px; width: auto; object-fit: contain;"></span>
         <span>Vatsalya Shree Hospital</span>
       </a>
+
       <nav class="sidebar-nav">
         <div class="nav-section-label">Lab Module</div>
         <a class="nav-link {% if active_nav == 'dashboard' %}active{% endif %}" href="{% url 'lab:dashboard' %}"><i class="bi bi-grid-1x2"></i>Dashboard</a>
